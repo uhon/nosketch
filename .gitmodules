@@ -1,0 +1,3 @@
+[submodule "modules/html5-canvas-drawing-app.git"]
+	path = modules/html5-canvas-drawing-app.git
+	url = git@github.com:uhon/html5-canvas-drawing-app.git
