@@ -1,111 +1,146 @@
-hexagon = undefined;
+var wWidth = 500;
+var wHeight = 500;
+var cSize = 500;
+var defaultPlaygroundSize = 500;
+var globalZoomFactor = 1;
+var currentStrokeWidth = 5;
+var currentPath;
+var hexagon;
+var innerCircle;
+var innerCircleRadius;
+// Containing Paths
+var shapes = [];
 
-var redrawHexagon = function(canvasSize) {
-    console.log("draw hexagon on canvas size: " + canvasSize);
-    var hexagonSize = canvasSize / 4;
-    var mostRightCorner = new Point(canvasSize / 2 - hexagonSize, canvasSize / 2);
+
+
+var resizeWindow = function() {
+    console.log("resize window...");
+    //$("#drawing").width(defaultPlaygroundSize);
+    //$("#drawing").height(defaultPlaygroundSize);
+
+    wWidth = $(window).width();
+    wHeight = $(window).height() -40; // minus the padding that is applied. a possible headers should also be taken in place
+    console.log("windowWidth: " + wWidth + ", windowHeight: ", wHeight);
+    console.log("oldZoomFactor: " + globalZoomFactor);
+
+    var zWidth = wWidth / defaultPlaygroundSize;
+    var zHeight = wHeight / defaultPlaygroundSize;
+    cSize = 0;
+    var newZoomFactor = 1;
+    if(zWidth < zHeight) {
+        cSize = wWidth;
+        newZoomFactor = zWidth;
+    } else {
+        cSize = wHeight;
+        newZoomFactor = zHeight;
+    }
+    console.log("newZoomFactor: " + newZoomFactor);
+
+    currentStrokeWidth *= newZoomFactor / globalZoomFactor;
+
+    $("#canvasContainer").height(cSize);
+    $("#canvasContainer").width(cSize + 200);
+    $("#drawing").width(cSize);
+    $("#drawing").height(cSize);
+
+    view.viewSize = new Size(cSize, cSize);
+
+    rescaleShapes(newZoomFactor / globalZoomFactor);
+    redrawHexagon();
+    redrawInnerCircle();
+    globalZoomFactor = newZoomFactor;
+};
+
+var rescaleShapes = function(zoomFactor) {
+    var exportedJson = "";
+    $.each(shapes, function() {
+        this.scale(zoomFactor);
+        this.position *= zoomFactor;
+        this.strokeWidth *= zoomFactor;
+        exportedJson += this.exportJSON();
+    });
+    console.log(exportedJson);
+};
+
+var redrawHexagon = function() {
+    var mostRightCorner = new paper.Point(cSize / 2, cSize / 2);
     console.log("draw hexagon with rightCorner: " + mostRightCorner);
     if(typeof(hexagon) !== "undefined") {
         hexagon.clear();
     }
-    hexagon = new Path.RegularPolygon(mostRightCorner, 6, 20);
+    hexagon = new Path.RegularPolygon(mostRightCorner, 6, cSize / 2);
     hexagon.fillColor = '#e9e9ff';
-    hexagon.lineWidth = 10;
-    //hexagon.rotate(30);
-    //hexagon.selected = true;
+};
+
+var redrawInnerCircle = function() {
+    if(typeof(innerCircle) !== "undefined") {
+        innerCircle.clear();
+    }
+    innerCircleRadius = (1/2) * Math.sqrt(3) * cSize / 2;
+    var center = new Point(cSize / 2);
+    console.log("redraw innerCircle with radius: " + innerCircleRadius + ", center: " + center);
+    innerCircle = new Path.Circle(center, innerCircleRadius);
+    innerCircle.fillColor = '#e9e9aa';
 };
 
 $(function() {
-    // setup view
-    paper.view.viewSize = [4000, 4000];
-    $("#drawing").width(4000);
-    $("#drawing").height(4000);
-    var zoomFactor=1;
-
-    var cWidth = $("#canvasContainer").width();
-    var cHeight = $(window).height();
-    console.log("containerWidth: " + cWidth + ", containerHeight: ", cHeight);
-
-    var zWidth = cWidth / 4000;
-    var zHeight = cHeight / 4000;
-
-    if(zWidth < zHeight) {
-        zoomFactor = zWidth;
-    } else {
-        zoomFactor = zHeight;
-    }
-
-    console.log("zoomFactor: " + zoomFactor);
-
-
-    paper.view.zoom = zoomFactor;
-    var newSize = Math.abs(4000 * zoomFactor);
-    paper.view.viewSize = new Size(newSize, newSize);
-    $("#drawing").width(newSize);
-    $("#drawing").height(newSize);
-
-    $("#drawing").show();
-
-    redrawHexagon(4000);
-
-    console.log(paper.view.size);
+    console.log("view size: " + view.size);
+    console.log("view viewSize: " + view.viewSize);
+    console.log("view center: " + view.center);
+    resizeWindow();
+    console.log("view size: " + view.size);
+    console.log("view viewSize: " + view.viewSize);
+    console.log("view center: " + view.center);
 
 
 
-    window.onresize = function() {
-        ////redrawHexagon(hexagon);
-        ////console.log(view.viewSize);
-        ////view.scale([ $(window).width(), $(window).height() ]);
-        //console.log(view.viewSize);
-        //console.log(hexagon);
-        //paper.view.zoom = 2;
-        //console.log(view.viewSize);
-        //console.log(hexagon);
-    };
+    $(window).afterResize(resizeWindow);
 });
 
-var path;
-
-var textItem = new PointText(new Point(20, 30));
-textItem.fillColor = 'black';
-textItem.content = 'Click and drag to draw a line.';
 
 function onMouseDown(event) {
     // If we produced a path before, deselect it:
-    if (path) {
-        path.selected = false;
+    if (typeof(currentPath) !== "undefined") {
+        currentPath.selected = false;
     }
 
-    path = new Path();
-    path.strokeColor = 'black';
+    currentPath = new Path();
+    currentPath.strokeColor = 'black';
+    currentPath.strokeWidth = currentStrokeWidth;
 
     // Select the path, so we can see its segment points:
-    path.fullySelected = true;
+    currentPath.fullySelected = true;
 }
 
 function onMouseDrag(event) {
     // Every drag event, add a point to the path at the current
     // position of the mouse:
-    path.add(event.point);
+    var x1 = event.point.x;
+    var y1 = event.point.y;
+    var x0 = paper.view.center.x;
+    var y0 = paper.view.center.y;
+    var distanceToCenter = Math.sqrt((x1-x0)*(x1-x0) + (y1-y0)*(y1-y0));
+    var r = innerCircleRadius;
+    //console.log("x1: " + x1 + " " + "y1: " + y1 + " " + "x0: " + x0 + " " + "y0: " + y0);
+    //console.log("distanceToCenter: " + distanceToCenter);
+    if(distanceToCenter < r) {
+        currentPath.add(event.point);
+    }
 
-    textItem.content = 'Segment count: ' + path.segments.length;
 }
 
 function onMouseUp(event) {
-    var segmentCount = path.segments.length;
+    var segmentCount = currentPath.segments.length;
 
     // When the mouse is released, simplify it:
-    path.simplify();
-    console.log("path started at: " + path.getPointAt(0));
-    console.log("path ended at: " + path.getPointAt(path.length - 1));
+    currentPath.simplify();
+
+    console.log("path started at: " + currentPath.getPointAt(0));
+    console.log("path ended at: " + currentPath.getPointAt(currentPath.length - 1));
 
     // Select the path, so we can see its segments:
-    path.selected = true;
+    currentPath.selected = true;
 
-    var newSegmentCount = path.segments.length;
-    var difference = segmentCount - newSegmentCount;
-    var percentage = 100 - Math.round(newSegmentCount / segmentCount * 100);
-    textItem.content = difference + ' of the ' + segmentCount + ' segments were removed. Saving ' + percentage + '%';
-
+    shapes.push(currentPath);
 }
 
