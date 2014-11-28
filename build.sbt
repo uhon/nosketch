@@ -1,4 +1,4 @@
-name := """nosketch.com"""
+name := """nosketch"""
 
 version := "1.0-SNAPSHOT"
 

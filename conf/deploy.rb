@@ -78,7 +78,7 @@ namespace :play do
   task :build do
     on roles(:app) do
 			with_verbosity Logger::DEBUG do
-      	execute "cd #{release_path}/#{fetch(:play_dir)} ; play clean compile stage"
+      	execute "cd #{release_path}/#{fetch(:play_dir)} ; /opt/activator/activator clean compile stage"
 			end
 		end
   end
@@ -117,7 +117,7 @@ namespace :play do
 	task :test do
 		on roles(:app) do
 			with_verbosity Logger::DEBUG do
-				execute "cd #{current_path}/#{fetch(:play_dir)} ; play test"
+				execute "cd #{current_path}/#{fetch(:play_dir)} ; /opt/activator/activator test"
 			end
 		end
 	end
