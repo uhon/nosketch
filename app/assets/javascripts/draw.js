@@ -1,6 +1,6 @@
-var wWidth = 500;
-var wHeight = 500;
-var cSize = 500;
+var wWidth = 1000;
+var wHeight = 1000;
+var cSize = 1000;
 var defaultPlaygroundSize = 500;
 var globalZoomFactor = 1;
 var currentStrokeWidth = 5;
@@ -8,8 +8,11 @@ var currentPath;
 var hexagon;
 var innerCircle;
 var innerCircleRadius;
+var connectors = [];
 // Containing Paths
 var shapes = [];
+var dragActive = false;
+tool.minDistance = 1;
 
 
 
@@ -48,6 +51,7 @@ var resizeWindow = function() {
     rescaleShapes(newZoomFactor / globalZoomFactor);
     redrawHexagon();
     redrawInnerCircle();
+    redrawConnectors();
     globalZoomFactor = newZoomFactor;
 };
 
@@ -83,6 +87,20 @@ var redrawInnerCircle = function() {
     innerCircle.fillColor = '#e9e9aa';
 };
 
+var redrawConnectors = function() {
+    var vector = new Point(0) + new Point(innerCircleRadius, 0);
+    console.log("initial vector: " + vector);
+    for(var i = 0; i < 6; i++) {
+        var center = new Point(cSize / 2) + vector;
+        console.log("draw connector at center: " + center);
+        var connector = new Path.Circle(center, innerCircleRadius / 30);
+        //connector = connector.center = vector;
+        connector.fillColor = "#336699";
+        vector.angle += 60;
+        connectors.push(connector);
+    }
+};
+
 $(function() {
     console.log("view size: " + view.size);
     console.log("view viewSize: " + view.viewSize);
@@ -99,6 +117,7 @@ $(function() {
 
 
 function onMouseDown(event) {
+    dragActive = true;
     // If we produced a path before, deselect it:
     if (typeof(currentPath) !== "undefined") {
         currentPath.selected = false;
@@ -113,25 +132,32 @@ function onMouseDown(event) {
 }
 
 function onMouseDrag(event) {
-    // Every drag event, add a point to the path at the current
-    // position of the mouse:
-    var x1 = event.point.x;
-    var y1 = event.point.y;
-    var x0 = paper.view.center.x;
-    var y0 = paper.view.center.y;
-    var distanceToCenter = Math.sqrt((x1-x0)*(x1-x0) + (y1-y0)*(y1-y0));
-    var r = innerCircleRadius;
-    //console.log("x1: " + x1 + " " + "y1: " + y1 + " " + "x0: " + x0 + " " + "y0: " + y0);
-    //console.log("distanceToCenter: " + distanceToCenter);
-    if(distanceToCenter < r) {
-        currentPath.add(event.point);
-    }
+    if(dragActive) {
+        // Every drag event, add a point to the path at the current
+        // position of the mouse:
+        var x1 = event.point.x;
+        var y1 = event.point.y;
+        var x0 = paper.view.center.x;
+        var y0 = paper.view.center.y;
+        var distanceToCenter = Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
+        if (distanceToCenter < innerCircleRadius) {
+            currentPath.add(event.point);
 
+            $.each(connectors, function () {
+                if (this.hitTest(event.point) !== null) {
+                    finishShape();
+                }
+            });
+        }
+    }
 }
 
 function onMouseUp(event) {
-    var segmentCount = currentPath.segments.length;
+    finishShape();
+}
 
+function finishShape() {
+    dragActive = false;
     // When the mouse is released, simplify it:
     currentPath.simplify();
 
