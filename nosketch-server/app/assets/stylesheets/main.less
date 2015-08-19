@@ -1,0 +1,60 @@
+@import "lib/bootstrap/less/bootstrap.less";
+
+h1 {
+  color: white;
+}
+
+body {
+  background-color:#336699;
+}
+
+#mainArea {
+
+}
+
+#canvasContainer {
+  padding: 20px;
+
+  #drawer {
+    background-color: #4477aa;
+    width: 500px;
+    height: 500px;
+    padding-left: 0;
+    padding-right: 0;
+    border-radius: 10%;
+    display: block;
+  }
+}
+
+#controlsContainer {
+  padding: 0 20px;
+  #controlBar {
+    background-color: #4477aa;
+    height: 500px;
+    border-radius: 10%;
+    display: block;
+
+    .control {
+      font-size: 20px;
+      border-radius: 10%;
+      margin-top: 20px;
+      font-weight: bold;
+      color: white;
+      line-height: 70px;
+      background-color: darkslategray;
+      text-align: center;
+    }
+    .active,.control:hover {
+      background-color:darkgreen;
+    }
+  }
+}
+
+a {
+  color: springgreen;
+  text-decoration: underline;
+}
+
+a:hover {
+  color: sandybrown;
+}
