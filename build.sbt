@@ -34,20 +34,37 @@ lazy val nosketchClient = (project in file("nosketch-client")).settings(
     "org.scala-js" %%% "scalajs-tools" % "0.6.4",
     "be.doeraene" %%% "scalajs-jquery" % "0.8.0",
     // "org.scala-js" % "sbt-scalajs" % "0.6.4",
-    "com.github.yoeluk" %%% "paper-scala-js" % "0.1.3-SNAPSHOT",
     "com.lihaoyi" %%% "scalarx" % "0.2.8"
   ),
   jsDependencies ++= Seq(
     RuntimeDOM,
     "org.webjars" % "jquery" % "2.1.4" / "jquery.js",
-    "org.webjars" % "paperjs" % "0.9.22" / "paper-full.min.js" commonJSName "paper",
     "org.webjars" % "bootstrap" % "3.3.5" / "bootstrap.js"
 ),
   persistLauncher in Compile := false,
   persistLauncher in Test := false,
   skip in packageJSDependencies := false
-).enablePlugins(ScalaJSPlugin, ScalaJSPlay).
-  dependsOn(nosketchSharedJs)
+).enablePlugins(ScalaJSPlugin, ScalaJSPlay)
+  .dependsOn(nosketchSharedJs)
+  .dependsOn(paperScalaJs)
+
+lazy val paperScalaJs = (project in file("paper-scala-js")).settings(
+  scalaVersion := scalaV,
+  persistLauncher := true,
+  persistLauncher in Test := false,
+  libraryDependencies ++= Seq(
+    "org.scala-js" %%% "scalajs-dom" % "0.8.0" withJavadoc(),
+    "org.scala-js" %%% "scalajs-tools" % "0.6.4" withJavadoc()
+  ),
+  jsDependencies ++= Seq(
+    "org.webjars" % "paperjs" % "0.9.22" / "paper-full.min.js" commonJSName "paper"
+  ),
+  persistLauncher in Compile := false,
+  persistLauncher in Test := false,
+  skip in packageJSDependencies := false
+)
+  .enablePlugins(ScalaJSPlugin)
+
 
 lazy val nosketchShared = (crossProject.crossType(CrossType.Pure) in file("nosketch-shared")).
   settings(scalaVersion := scalaV).
@@ -56,6 +73,7 @@ lazy val nosketchShared = (crossProject.crossType(CrossType.Pure) in file("noske
 
 lazy val nosketchSharedJvm = nosketchShared.jvm
 lazy val nosketchSharedJs = nosketchShared.js
+
 
 //lazy val root = (project in file(".")).enablePlugins(PlayScala)
 

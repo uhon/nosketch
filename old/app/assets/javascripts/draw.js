@@ -39,8 +39,6 @@ var resizeWindow = function() {
     }
     console.log("newZoomFactor: " + newZoomFactor);
 
-    currentStrokeWidth *= newZoomFactor / globalZoomFactor;
-
     $("#canvasContainer").height(cSize);
     $("#canvasContainer").width(cSize + 200);
     $("#drawing").width(cSize);
@@ -55,12 +53,12 @@ var resizeWindow = function() {
     globalZoomFactor = newZoomFactor;
 };
 
-var rescaleShapes = function(zoomFactor) {
+var rescaleShapes = function(scaleFactor) {
     var exportedJson = "";
     $.each(shapes, function() {
-        this.scale(zoomFactor);
-        this.position *= zoomFactor;
-        this.strokeWidth *= zoomFactor;
+        this.scale(scaleFactor);
+        this.position *= scaleFactor;
+        this.strokeWidth *= scaleFactor;
         exportedJson += this.exportJSON();
     });
     console.log(exportedJson);
