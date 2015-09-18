@@ -1,0 +1,3 @@
+[submodule "paper-scala-js"]
+	path = paper-scala-js
+	url = git@github.com:uhon/paper-scala-js.git

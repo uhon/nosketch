@@ -1,6 +1,7 @@
-package nosketch
+package nosketch.components
 
 import paperjs.Paths.Path
+import paperjs.Basic.Point
 
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;

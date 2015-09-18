@@ -6,6 +6,10 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 
 resolvers += "Sonatype repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
+resolvers += "spray repo" at "http://repo.spray.io"
+
+addSbtPlugin("com.lihaoyi" % "workbench" % "0.2.3")
+
 // web plugins
 addSbtPlugin("com.typesafe.sbt" % "sbt-coffeescript" % "1.0.0")
 
@@ -26,7 +30,7 @@ addSbtPlugin("com.vmunier" % "sbt-play-scalajs" % "0.2.7")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-gzip" % "1.0.0")
 
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.4")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.5")
 
 addSbtPlugin("com.lihaoyi" % "workbench" % "0.2.3")
 

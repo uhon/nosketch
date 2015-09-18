@@ -6,7 +6,7 @@ version := "1.0-SNAPSHOT"
 import sbt.Project.projectToRef
 
 lazy val clients = Seq(nosketchClient)
-lazy val scalaV = "2.11.6"
+lazy val scalaV = "2.11.7"
 
 
 lazy val nosketchServer = (project in file("nosketch-server")).settings(
@@ -26,14 +26,14 @@ lazy val nosketchServer = (project in file("nosketch-server")).settings(
 lazy val nosketchClient = (project in file("nosketch-client")).settings(
   scalaVersion := scalaV,
   persistLauncher := true,
+  //refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile),
   persistLauncher in Test := false,
   sourceMapsDirectories += nosketchSharedJs.base / "..",
   resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
   libraryDependencies ++= Seq(
-    "org.scala-js" %%% "scalajs-dom" % "0.8.0",
-    "org.scala-js" %%% "scalajs-tools" % "0.6.4",
+    "org.scala-js" %%% "scalajs-dom" % "0.8.1",
+    "org.scala-js" %%% "scalajs-tools" % "0.6.0",
     "be.doeraene" %%% "scalajs-jquery" % "0.8.0",
-    // "org.scala-js" % "sbt-scalajs" % "0.6.4",
     "com.lihaoyi" %%% "scalarx" % "0.2.8"
   ),
   jsDependencies ++= Seq(
@@ -44,6 +44,7 @@ lazy val nosketchClient = (project in file("nosketch-client")).settings(
   persistLauncher in Compile := false,
   persistLauncher in Test := false,
   skip in packageJSDependencies := false
+
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay)
   .dependsOn(nosketchSharedJs)
   .dependsOn(paperScalaJs)
@@ -53,8 +54,8 @@ lazy val paperScalaJs = (project in file("paper-scala-js")).settings(
   persistLauncher := true,
   persistLauncher in Test := false,
   libraryDependencies ++= Seq(
-    "org.scala-js" %%% "scalajs-dom" % "0.8.0" withJavadoc(),
-    "org.scala-js" %%% "scalajs-tools" % "0.6.4" withJavadoc()
+    "org.scala-js" %%% "scalajs-dom" % "0.8.1" withJavadoc(),
+    "org.scala-js" %%% "scalajs-tools" % "0.6.5" withJavadoc()
   ),
   jsDependencies ++= Seq(
     "org.webjars" % "paperjs" % "0.9.22" / "paper-full.min.js" commonJSName "paper"
@@ -79,6 +80,13 @@ lazy val nosketchSharedJs = nosketchShared.js
 
 resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
+
+// Scala-Js Workbench (Live-Reload and such things)
+workbenchSettings
+
+bootSnippet := "nosketch.Viewer.startViewer(document.getElementById('canvas'));"
+
+scalaJSStage in Global := FastOptStage
 
 
 persistLauncher in Compile := false

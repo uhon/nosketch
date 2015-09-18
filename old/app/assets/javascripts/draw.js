@@ -17,14 +17,14 @@ tool.minDistance = 1;
 
 
 var resizeWindow = function() {
-    console.log("resize window...");
+    // console.log("resize window...");
     //$("#drawing").width(defaultPlaygroundSize);
     //$("#drawing").height(defaultPlaygroundSize);
 
     wWidth = $(window).width();
     wHeight = $(window).height() -40; // minus the padding that is applied. a possible headers should also be taken in place
-    console.log("windowWidth: " + wWidth + ", windowHeight: ", wHeight);
-    console.log("oldZoomFactor: " + globalZoomFactor);
+    // console.log("windowWidth: " + wWidth + ", windowHeight: ", wHeight);
+    // console.log("oldZoomFactor: " + globalZoomFactor);
 
     var zWidth = wWidth / defaultPlaygroundSize;
     var zHeight = wHeight / defaultPlaygroundSize;
@@ -37,7 +37,7 @@ var resizeWindow = function() {
         cSize = wHeight;
         newZoomFactor = zHeight;
     }
-    console.log("newZoomFactor: " + newZoomFactor);
+    // console.log("newZoomFactor: " + newZoomFactor);
 
     $("#canvasContainer").height(cSize);
     $("#canvasContainer").width(cSize + 200);
@@ -61,12 +61,12 @@ var rescaleShapes = function(scaleFactor) {
         this.strokeWidth *= scaleFactor;
         exportedJson += this.exportJSON();
     });
-    console.log(exportedJson);
+    // console.log(exportedJson);
 };
 
 var redrawHexagon = function() {
     var mostRightCorner = new paper.Point(cSize / 2, cSize / 2);
-    console.log("draw hexagon with rightCorner: " + mostRightCorner);
+    // console.log("draw hexagon with rightCorner: " + mostRightCorner);
     if(typeof(hexagon) !== "undefined") {
         hexagon.clear();
     }
@@ -80,17 +80,17 @@ var redrawInnerCircle = function() {
     }
     innerCircleRadius = (1/2) * Math.sqrt(3) * cSize / 2;
     var center = new Point(cSize / 2);
-    console.log("redraw innerCircle with radius: " + innerCircleRadius + ", center: " + center);
+    // console.log("redraw innerCircle with radius: " + innerCircleRadius + ", center: " + center);
     innerCircle = new Path.Circle(center, innerCircleRadius);
     innerCircle.fillColor = '#e9e9aa';
 };
 
 var redrawConnectors = function() {
     var vector = new Point(0) + new Point(innerCircleRadius, 0);
-    console.log("initial vector: " + vector);
+    // console.log("initial vector: " + vector);
     for(var i = 0; i < 6; i++) {
         var center = new Point(cSize / 2) + vector;
-        console.log("draw connector at center: " + center);
+        // console.log("draw connector at center: " + center);
         var connector = new Path.Circle(center, innerCircleRadius / 30);
         //connector = connector.center = vector;
         connector.fillColor = "#336699";
@@ -100,13 +100,13 @@ var redrawConnectors = function() {
 };
 
 $(function() {
-    console.log("view size: " + view.size);
-    console.log("view viewSize: " + view.viewSize);
-    console.log("view center: " + view.center);
+    // console.log("view size: " + view.size);
+    // console.log("view viewSize: " + view.viewSize);
+    // console.log("view center: " + view.center);
     resizeWindow();
-    console.log("view size: " + view.size);
-    console.log("view viewSize: " + view.viewSize);
-    console.log("view center: " + view.center);
+    // console.log("view size: " + view.size);
+    // console.log("view viewSize: " + view.viewSize);
+    // console.log("view center: " + view.center);
 
 
 
@@ -159,8 +159,8 @@ function finishShape() {
     // When the mouse is released, simplify it:
     currentPath.simplify();
 
-    console.log("path started at: " + currentPath.getPointAt(0));
-    console.log("path ended at: " + currentPath.getPointAt(currentPath.length - 1));
+    // console.log("path started at: " + currentPath.getPointAt(0));
+    // console.log("path ended at: " + currentPath.getPointAt(currentPath.length - 1));
 
     // Select the path, so we can see its segments:
     currentPath.selected = true;

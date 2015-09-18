@@ -1,6 +1,6 @@
-package nosketch
+package nosketch.components
 
-import nosketch.{Hexagon, NosketchObject}
+import nosketch.components.NosketchObject
 import org.scalajs.dom._
 import paperjs.Basic.Point
 import paperjs.Paths.Path
@@ -13,12 +13,13 @@ class CircleCanvas(hexagon: Hexagon, scaleFactor: Double) extends NosketchObject
 
   override def redraw(scaleFactor: Double): Unit = {
 
-    console.log("draw circle with center at: " + hexagon.getCenter)
+    //// console.log("draw circle with center at: " + hexagon.getCenter)
     if (circle != null) {
       circle.remove()
     }
 
-    var center = new Point(hexagon.getCenter.x * scaleFactor, hexagon.getCenter.y * scaleFactor)
+    console.log("getRadius: ", getRadius)
+    val center = new Point(hexagon.getCenter.x * scaleFactor, hexagon.getCenter.y * scaleFactor)
 
     circle = Path.Circle(center, 0.5 * getRadius * scaleFactor)
 
@@ -28,5 +29,10 @@ class CircleCanvas(hexagon: Hexagon, scaleFactor: Double) extends NosketchObject
 
   override def getPath: Path = circle
 
-  def getRadius = Math.sqrt(3) * hexagon.getRadius
+  def getRadius = CircleCanvas.getRadiusForInnerCircle(hexagon.getRadius)
+
+}
+
+object CircleCanvas {
+  def getRadiusForInnerCircle(radius: Double) = Math.sqrt(3) * radius
 }

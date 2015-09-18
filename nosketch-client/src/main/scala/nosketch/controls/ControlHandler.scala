@@ -1,7 +1,8 @@
-package nosketch
+package nosketch.controls
 
-import org.scalajs.jquery._
+import nosketch.io.Freehand
 import org.scalajs.dom.console
+import org.scalajs.jquery._
 
 
 object ControlHandler {
@@ -13,7 +14,7 @@ object ControlHandler {
   }
 
   def setStrokeWith(event: JQueryEventObject, size: Int): Unit = {
-    console.log("New StrokeWidth is:", size.toString.toInt)
+    // console.log("New StrokeWidth is:", size.toString.toInt)
     jQuery("#controlBar .control") removeClass "active"
     jQuery(event.target) addClass "active"
     freehand.currentStrokeWidth = size.toString.toInt

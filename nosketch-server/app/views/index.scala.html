@@ -6,17 +6,17 @@
             // Get a re ference to the canvas object
             var canvas = document.getElementById('canvas');
             // Call the scalajs app entry point
-            sketcher.Sketcher().startSketchpad(canvas);
+            nosketch.Viewer().startViewer(canvas);
         });
     </script>
 }
 
 @main(title, script) {
-    <h1>Welcome to nosketch.com</h1>
+    <h1>✬ + ☕ + ☯ = ✌</h1>
     <p><a href="@routes.Application.draw()">you might want to start drawing...</a></p>
 
     <div>
-        <canvas style="display: block" id="canvas" width="500" height="500"></canvas>
+        <canvas style="display: block" id="canvas" width="700" height="700"></canvas>
     </div>
 }
 
