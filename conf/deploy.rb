@@ -49,7 +49,7 @@ namespace :play do
       execute "touch #{shared_path}/local.conf"
 
 			# create start-scripts in #{shared_path}/bin
-      execute "echo -e '#!/bin/bash\\nnohup bash -c \"echo \\\"STARTING APP (#{current_path}/#{fetch(:play_dir)})\\\" && cd #{current_path}/#{fetch(:play_dir)}/target/universal/stage && bin/#{fetch(:application.downcase)} $* &> /dev/null 2>&1\" &> /dev/null &' > #{shared_path}/bin/nohup_process.sh"
+      execute "echo -e '#!/bin/bash\\nnohup bash -c \"echo \\\"STARTING APP (#{current_path}/#{fetch(:play_dir)})\\\" && cd #{current_path}/#{fetch(:play_dir)}/target/universal/stage && bin/#{fetch(:application).downcase} $* &> /dev/null 2>&1\" &> /dev/null &' > #{shared_path}/bin/nohup_process.sh"
       execute "echo -e '#!/bin/bash\\npid=`cat #{fetch(:app_pid)} 2> /dev/null`\\nif [ \"$pid\" == \"\" ]; then echo #{fetch(:application)} is not running; exit 0; fi\\necho Stopping #{fetch(:application)}...\\nif ! kill -SIGTERM $pid  > /dev/null 2>&1; then echo unable to stop Service! No process with PID `cat #{fetch(:app_pid)}` running, pid-file: #{fetch(:app_pid)}! Remove PID-File... ; rm -f #{fetch(:app_pid)} ; fi' > #{shared_path}/bin/stop.sh"
       execute "echo -e '#!/bin/bash\\npid=`cat #{fetch(:app_pid)} 2> /dev/null`\\nif [ \"$pid\" == \"\" ]; then echo #{fetch(:application)} is not running; exit 0; fi\\necho PROCESS ID of Play instance: `cat #{fetch(:app_pid)}`, pid-file: #{fetch(:app_pid)}' > #{shared_path}/bin/displayPID.sh"
 
@@ -78,7 +78,7 @@ namespace :play do
   task :build do
     on roles(:app) do
 			with_verbosity Logger::DEBUG do
-      	execute "cd #{release_path}/#{fetch(:play_dir)} ; /opt/activator/activator clean compile stage"
+      	execute "cd #{release_path} ; /opt/activator/activator compile stage"
 			end
 		end
   end
@@ -87,7 +87,7 @@ namespace :play do
 	task :post_build do
 		on roles(:app) do
 			# symlink public directory from repo to the staged folder (so we can access assets directly within application, needed for imagemagick magic)
-			execute "ln -sf #{fetch(:deploy_to)}/repo/#{fetch(:play_dir)}/public #{release_path}/#{fetch(:play_dir)}/target/universal/stage/"
+			#execute "ln -sf #{fetch(:deploy_to)}/repo/#{fetch(:play_dir)}/public #{release_path}/#{fetch(:play_dir)}/target/universal/stage/"
 
 			# symlink logs directory from shared folder to the staged application
 			execute "rm -rf #{release_path}/#{fetch(:play_dir)}/target/universal/stage/logs"

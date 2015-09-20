@@ -8,7 +8,7 @@ role :db,  "nosketch@uhon.ch"
 set :user, "nosketch"
 set :use_sudo, false
 
-set :application, "nosketch"
+set :application, "nosketchServer"
 set :repo_url, "git@bitbucket.org:uhon/nosketch.git"
 set :port, 22
 
@@ -23,11 +23,11 @@ set :scm_verbose, true
 # Tag a deploy
 set :skip_deploy_tagging, true
 
-set :ssh_options, { :forward_agent => false }
+set :ssh_options, { :forward_agent => true }
 
 set :java_options, '-Xms1024m -Xmx4096m'
 
-set :play_dir, "." # set :play_dir to "." unless your app lives in a subfolder of the repo
+set :play_dir, "nosketch-server" # set :play_dir to "." unless your app lives in a subfolder of the repo
 
 set :app_port, "9000"
 
