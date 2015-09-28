@@ -205,7 +205,6 @@ namespace :play do
 				#puts "\nSERVER doesn't serve a website over HTTP".red
 			end
 		end
-
   end
 
   desc 'Show PID of current Server-Instance'

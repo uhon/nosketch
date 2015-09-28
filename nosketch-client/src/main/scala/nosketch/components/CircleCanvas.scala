@@ -1,12 +1,12 @@
 package nosketch.components
 
-import nosketch.components.NosketchObject
+import nosketch.components.PathObject
 import org.scalajs.dom._
 import paperjs.Basic.Point
 import paperjs.Paths.Path
 import paperjs.Styling.Color
 
-class CircleCanvas(hexagon: Hexagon, scaleFactor: Double) extends NosketchObject {
+class CircleCanvas(hexagon: Hexagon, scaleFactor: Double) extends PathObject {
   var circle: Path = null
 
   redraw(scaleFactor)

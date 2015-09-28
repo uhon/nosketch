@@ -12,7 +12,7 @@ import paperjs._
 import Basic._,Paths._,Styling._,Tools._
 
 @JSExport
-object Drawer extends Playground {
+object Drawer extends ViewportSubscriber {
 
   var hexagon: Hexagon = null
 
@@ -39,14 +39,16 @@ object Drawer extends Playground {
     tool.onMouseUp = (event: ToolEvent) => freeHand.finishShape()
 
 
-    update
+    onScale
     Paper.view.draw()
   }
 
-  def update = {
+  override def onScale = {
     if(hexagon != null) {
       hexagon.redraw(viewPort.scaleFactor)
       freeHand.scaleFactor = viewPort.scaleFactor
     }
   }
+
+  def onZoom = {}
 }

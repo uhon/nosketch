@@ -1,6 +1,6 @@
 package nosketch.viewport
 
-import nosketch.{SimplePanAndZoom, Playground}
+import nosketch.{SimplePanAndZoom, ViewportSubscriber}
 import org.scalajs.dom._
 import org.scalajs.dom.html.Canvas
 import paperjs.Basic._
@@ -13,9 +13,7 @@ import scala.scalajs.js._
 import org.scalajs.jquery._
 
 
-class ViewPort(canvas: Canvas, playground: Playground) {
-
-  var scaleIndicator: PointText = null
+class ViewPort(canvas: Canvas, playground: ViewportSubscriber) {
 
   val defaultPlaygroundSize = 500d
 
@@ -24,7 +22,12 @@ class ViewPort(canvas: Canvas, playground: Playground) {
   var scaleFactor = 1d
 
 
+  def getView = view
 
+
+  def getOffsetVector = {
+    view.center.subtract(center)
+  }
 
   def init = {
     Paper.setup(canvas)
@@ -49,7 +52,8 @@ class ViewPort(canvas: Canvas, playground: Playground) {
         case 40 => SimplePanAndZoom.changeCenter(view.center, 0, +1, 100 ) // down
       }
 
-      playground.update
+      playground.onScale
+      playground.onZoom
       view.update()
 
 
@@ -84,7 +88,7 @@ class ViewPort(canvas: Canvas, playground: Playground) {
 
     // console.log("offset", offset)
 
-    //playground.update
+    playground.onZoom
     view.update()
   }
 
@@ -101,14 +105,6 @@ class ViewPort(canvas: Canvas, playground: Playground) {
 
 
     val scaleFactor = if(zWidth < zHeight) zWidth else zHeight
-
-    if(scaleIndicator != null) {
-      scaleIndicator remove()
-    }
-    scaleIndicator = new PointText(Point(30,30));
-    scaleIndicator.fillColor = Color(Math.random(), Math.random(), Math.random(), 1)
-    scaleIndicator.content = scaleFactor.toString
-    scaleIndicator.fontSize = 40
 
     scaleFactor
   }
@@ -130,11 +126,12 @@ class ViewPort(canvas: Canvas, playground: Playground) {
 
     scaleFactor = calculateScaleFactor
 
-    playground.update
+    playground.onScale
     view.update()
   }
 
-
-
-
+  def cornerTopLeft() = new Point(view.bounds.x, view.bounds.y)
+  def cornerTopRight() = new Point(view.bounds.x + view.bounds.width, view.bounds.y)
+  def cornerBottomLeft() = new Point(view.bounds.x, view.bounds.y + view.bounds.width)
+  def cornerBottomRight() = new Point(view.bounds.x + view.bounds.width, view.bounds.y + view.bounds.height)
 }

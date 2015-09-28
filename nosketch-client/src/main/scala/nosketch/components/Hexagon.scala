@@ -1,6 +1,6 @@
 package nosketch.components
 
-import nosketch.components.NosketchObject
+import nosketch.components.PathObject
 import org.scalajs.dom._
 import paperjs.Basic.Point
 import paperjs.Items.{Item, Group}
@@ -12,7 +12,7 @@ import scala.scalajs.js
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerCircle: Boolean = false) extends NosketchObject {
+class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerCircle: Boolean = false) extends PathObject {
 
 
 

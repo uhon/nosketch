@@ -1,6 +1,6 @@
 package nosketch.components
 
-import nosketch.components.NosketchObject
+import nosketch.components.PathObject
 import org.scalajs.dom._
 import paperjs.Basic.Point
 import paperjs.Paths.Path
@@ -9,7 +9,7 @@ import paperjs.Styling.Color
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-class CircleConnector(hexagon: Hexagon, orientation: Int, scaleFactor: Double) extends NosketchObject {
+class CircleConnector(hexagon: Hexagon, orientation: Int, scaleFactor: Double) extends PathObject {
   var connector: Path = null
 
   redraw(scaleFactor)
