@@ -4,7 +4,7 @@ import java.awt.event.MouseWheelEvent
 
 import nosketch.components.Cluster
 import nosketch.hud.DebugHUD
-import nosketch.hud.elements.debug.{ZoomIndicator, ScaleIndicator}
+import nosketch.hud.elements.debug.{TextIndicator}
 import nosketch.viewport.ViewPort
 import org.scalajs.dom._
 import paperjs.Basic.Point
@@ -28,8 +28,9 @@ object Viewer extends ViewportSubscriber {
 
     // enable Debug HUD and add Content to it
     DebugHUD.enabled = true
-    DebugHUD.addElement(new ScaleIndicator)
-    DebugHUD.addElement(new ZoomIndicator(viewPort))
+    DebugHUD.addElement(new TextIndicator(() => "scale: " + viewPort.scaleFactor.toString))
+    DebugHUD.addElement(new TextIndicator(() => "zoom: " + viewPort.getView.zoom.toString))
+    DebugHUD.addElement(new TextIndicator(() => "delta-c: " + viewPort.getOffsetVector))
 
     clusterList ::= new Cluster(viewPort.center, viewPort.scaleFactor)
 
@@ -50,6 +51,7 @@ object Viewer extends ViewportSubscriber {
     if (viewPort != null) {
       // console.log("redraw clusters with scaleFactor", 1 + viewPort.zoomFactor)
       this.clusterList.foreach(_.redraw(viewPort.scaleFactor))
+      DebugHUD.redraw(viewPort)
     }
   }
 }

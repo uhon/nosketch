@@ -82,7 +82,7 @@ class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerC
   def addScratchShapes = {
     val newRadius = CircleCanvas.getRadiusForInnerCircle(radius)
     shapes.foreach(_.remove())
-    for(i <- 1 to 10) {
+    for(i <- 1 to 5) {
       var p = new Path()
       p.strokeColor = Color(Math.random(), Math.random(), Math.random(), 1)
       p.strokeWidth = 1
