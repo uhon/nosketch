@@ -1,0 +1,24 @@
+@(title: String)
+
+@script = {
+    <script type="text/javascript">
+        document.onreadystatechange = function () {
+            if (document.readyState == "complete") {
+                // Get a re ference to the canvas object
+                // var canvas = document.getElementById('canvas');
+                // Call the scalajs app entry point
+                nosketch.Viewer.main();
+            }
+        };
+    </script>
+}
+
+@main(title, script) {
+    <h1>✬ + ☕ + ☯ = ✌</h1>
+    <p><a href="@routes.Application.draw()">you might want to start drawing...</a></p>
+
+    <div>
+        <canvas style="display: block" id="canvas" width="700" height="700"></canvas>
+    </div>
+}
+

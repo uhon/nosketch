@@ -1,15 +1,48 @@
+import sbt.Project.projectToRef
 
 name := """nosketch"""
 
 version := "1.0-SNAPSHOT"
 
-import sbt.Project.projectToRef
-
-lazy val clients = Seq(nosketchClient)
+lazy val clients = Seq(nosketchJS)
 lazy val scalaV = "2.11.7"
 
 
-lazy val nosketchServer = (project in file("nosketch-server")).settings(
+lazy val nosketch = crossProject.
+  crossType(NosketchCrossType).
+  settings(
+    name          := "nosketch",
+    scalaVersion  := "2.11.7",
+    scalacOptions += "-feature"
+  ).jvmSettings(
+    initialCommands in console := """
+                                    |import nosketch._
+                                  """.trim.stripMargin,
+    cleanupCommands in console := """
+                                    |doodle.jvm.quit()
+                                  """.trim.stripMargin
+  ).jsSettings(
+    workbenchSettings : _*
+
+  ).jsSettings(
+    persistLauncher         := true,
+    persistLauncher in Test := false,
+    bootSnippet             := """
+                                 |nosketch.Viewer.main();
+                               """.trim.stripMargin,
+    testFrameworks          += new TestFramework("utest.runner.Framework"),
+    libraryDependencies    ++= Seq(
+      "org.scalaz"                %%  "scalaz-core" % "7.1.0",
+      "org.scala-js"              %%% "scalajs-dom" % "0.8.1",
+      "com.lihaoyi"               %%% "utest"       % "0.3.0" % "test",
+      "com.github.japgolly.nyaya" %%% "nyaya-test"  % "0.5.3" % "test"
+    ),
+    refreshBrowsers <<= refreshBrowsers.triggeredBy(packageJSDependencies in Compile)
+  )
+
+
+
+lazy val nosketchJVM = (project in file("jvm")).settings(
   scalaVersion := scalaV,
   scalaJSProjects := clients,
   pipelineStages := Seq(scalaJSProd, gzip),
@@ -20,10 +53,10 @@ lazy val nosketchServer = (project in file("nosketch-server")).settings(
     specs2 % Test
   )
 ).enablePlugins(PlayScala)
-.aggregate(clients.map(projectToRef): _*)
-.dependsOn(nosketchSharedJvm)
+  .aggregate(clients.map(projectToRef): _*)
+  .dependsOn(nosketchSharedJvm)
 
-lazy val nosketchClient = (project in file("nosketch-client")).settings(
+lazy val nosketchJS = (project in file("js")).settings(
   scalaVersion := scalaV,
   persistLauncher := true,
   //refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile),
@@ -40,9 +73,8 @@ lazy val nosketchClient = (project in file("nosketch-client")).settings(
     RuntimeDOM,
     "org.webjars" % "jquery" % "2.1.4" / "jquery.js",
     "org.webjars" % "bootstrap" % "3.3.5" / "bootstrap.js"
-),
-  persistLauncher in Compile := false,
-  persistLauncher in Test := false,
+  ),
+  persistLauncher in Compile := true,
   skip in packageJSDependencies := false
 
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay)
@@ -61,13 +93,12 @@ lazy val paperScalaJs = (project in file("paper-scala-js")).settings(
     "org.webjars" % "paperjs" % "0.9.22" / "paper-full.min.js" commonJSName "paper"
   ),
   persistLauncher in Compile := false,
-  persistLauncher in Test := false,
   skip in packageJSDependencies := false
 )
   .enablePlugins(ScalaJSPlugin)
 
 
-lazy val nosketchShared = (crossProject.crossType(CrossType.Pure) in file("nosketch-shared")).
+lazy val nosketchShared = (crossProject.crossType(CrossType.Pure) in file("shared")).
   settings(scalaVersion := scalaV).
   jsConfigure(_ enablePlugins ScalaJSPlay).
   jsSettings(sourceMapsBase := baseDirectory.value / "..")
@@ -82,9 +113,9 @@ resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositor
 
 
 // Scala-Js Workbench (Live-Reload and such things)
-workbenchSettings
+//workbenchSettings
 
-bootSnippet := "nosketch.Viewer.startViewer(document.getElementById('canvas'));"
+//bootSnippet := "nosketch.Viewer.startViewer(document.getElementById('canvas'));"
 
 scalaJSStage in Global := FastOptStage
 
@@ -96,8 +127,6 @@ persistLauncher in Test := false
 skip in packageJSDependencies := false
 
 
-
-
-
 // loads the Play project at sbt startup
-onLoad in Global := (Command.process("project nosketchServer", _: State)) compose (onLoad in Global).value
+onLoad in Global := (Command.process("project nosketchJVM", _: State)) compose (onLoad in Global).value
+

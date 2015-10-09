@@ -9,11 +9,11 @@
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
     <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
     <!-- for live-reload -->
-    <script type="text/javascript" src="/workbench.js"></script>
+    <script type="text/javascript" src="//localhost:12345/workbench.js"></script>
   </head>
   <body>
     @content
-    @playscalajs.html.scripts("nosketchClient")
+    @playscalajs.html.scripts("nosketchJS")
     @onLoadScript
   </body>
 </html>

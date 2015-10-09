@@ -311,6 +311,7 @@ after 'deploy:updated', 'play:post_build'
 #after 'deploy:updated', 'play:test'
 after :deploy, 'deploy:unlock'
 after :deploy, 'deploy:completed'
+after :deploy, 'play:restart'
 
 
 # Hooks for Rollback

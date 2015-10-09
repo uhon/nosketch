@@ -11,13 +11,19 @@ import paperjs.Basic.Point
 import paperjs.Paper
 
 import scala.scalajs.js.annotation.JSExport
+import org.scalajs.dom._
 
 @JSExport
-object Viewer extends ViewportSubscriber {
+object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
   var viewPort: ViewPort = null
 
   var clusterList: List[Cluster] = List()
+
+  @JSExport
+  def main() = {
+    startViewer(document.getElementById("canvas").asInstanceOf[html.Canvas])
+  }
 
   @JSExport
   def startViewer(canvas: html.Canvas) = {
