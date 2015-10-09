@@ -1,10 +1,13 @@
 package nosketch.viewport
 
+import nosketch.hud.elements.debug.MouseIndicator
+import nosketch.util.{MouseEventDistributor, MouseEventListener}
 import nosketch.{SimplePanAndZoom, ViewportSubscriber}
 import org.scalajs.dom._
 import org.scalajs.dom.html.Canvas
 import paperjs.Basic._
 import paperjs.Styling._
+import paperjs.Tools.ToolEvent
 import paperjs.Typography.PointText
 import paperjs._
 import paperjs.Paper._
@@ -13,7 +16,8 @@ import scala.scalajs.js._
 import org.scalajs.jquery._
 
 
-class ViewPort(canvas: Canvas, playground: ViewportSubscriber) {
+class ViewPort(canvas: Canvas, playground: ViewportSubscriber) extends MouseEventListener {
+
 
   val defaultPlaygroundSize = 500d
 
@@ -23,6 +27,8 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber) {
 
 
   def getView = view
+
+  MouseEventDistributor.registerToMouseEvents(this)
 
 
   def getOffsetVector = {
@@ -40,8 +46,6 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber) {
     window.onresize = (event: UIEvent) => {
       resizeWindow()
     }
-
-    window.onmousewheel = (event: WheelEvent) => mouseScrolled(event)
 
     window.onkeydown = (event: KeyboardEvent) => {
 
@@ -66,30 +70,31 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber) {
 
 
 
-  def mouseScrolled(event: WheelEvent) = {
+  override def onMouseScroll(event: WheelEvent) = {
+    // TODO: only works for viewer at the moment, drawer can't zoom. must be implemented
+    if(jQuery("#canvas").length > 0) {
+      val topLeftCorner = jQuery("#canvas").offset().asInstanceOf[Dynamic]
+      val cTop = topLeftCorner.selectDynamic("top").asInstanceOf[Double]
+      val cLeft = topLeftCorner.selectDynamic("left").asInstanceOf[Double]
 
-    val topLeftCorner = jQuery("#canvas").offset().asInstanceOf[Dynamic]
-    val cTop = topLeftCorner.selectDynamic("top").asInstanceOf[Double]
-    val cLeft = topLeftCorner.selectDynamic("left").asInstanceOf[Double]
+      val mousePosition = new Point(event.pageX - cLeft, event.pageY - cTop)
+      console.log("mousePosition on scroll", mousePosition)
 
-    val mousePosition = new Point(event.pageX - cLeft, event.pageY - cTop)
+      val zoomAndOffset = StableZoom.changeZoom(view.zoom, event.deltaY, view.center, mousePosition)
+      view.zoom = zoomAndOffset._1
+      val currentOffset = zoomAndOffset._2
 
-    console.log("mousePosition:", mousePosition)
-
-    val zoomAndOffset = StableZoom.changeZoom(view.zoom, event.deltaY, view.center, mousePosition)
-    view.zoom = zoomAndOffset._1
-    val currentOffset = zoomAndOffset._2
-
-    view.center = view.center add currentOffset
+      view.center = view.center add currentOffset
 
 
 
-    // console.log("center after: ", center)
+      // console.log("center after: ", center)
 
-    // console.log("offset", offset)
+      // console.log("offset", offset)
 
-    playground.onZoom
-    view.update()
+      playground.onZoom
+      view.update()
+    }
   }
 
 
@@ -134,4 +139,9 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber) {
   def cornerTopRight() = new Point(view.bounds.x + view.bounds.width, view.bounds.y)
   def cornerBottomLeft() = new Point(view.bounds.x, view.bounds.y + view.bounds.width)
   def cornerBottomRight() = new Point(view.bounds.x + view.bounds.width, view.bounds.y + view.bounds.height)
+
+  def onMouseMove(event: ToolEvent) = {}
+  def onMouseDrag(event: ToolEvent) = {}
+  def onMouseDown(event: ToolEvent) = {}
+  def onMouseUp(event: ToolEvent) = {}
 }

@@ -1,7 +1,10 @@
 package nosketch.io
 
+import java.awt.event.MouseEvent
+
 import nosketch.components.Hexagon
 import nosketch.controls.ControlHandler
+import nosketch.util.{MouseEventListener, MouseEventDistributor}
 import org.scalajs.dom._
 import paperjs.Basic.Point
 import paperjs.Items.{Group, Item}
@@ -16,14 +19,18 @@ import scala.scalajs.js.Math
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-class Freehand(hexagon: Hexagon, var scaleFactor: Double) {
-
+class Freehand(hexagon: Hexagon, var scaleFactor: Double) extends MouseEventListener{
   var currentStrokeWidth = ControlHandler.StrokeWidth.Medium
+
   var currentPath: Path = null
 
   var dragActive = false
 
-  def mouseDown(event: ToolEvent): Unit = {
+  MouseEventDistributor.registerToMouseEvents(this)
+
+  override def onMouseUp(event: ToolEvent) = finishShape()
+
+  override def onMouseDown(event: ToolEvent): Unit = {
     dragActive = true
     // If we produced a path before, deselect it:
     if (currentPath != null) {
@@ -41,7 +48,9 @@ class Freehand(hexagon: Hexagon, var scaleFactor: Double) {
     currentPath.fullySelected = true
   }
 
-  def mouseDrag(event: ToolEvent): Unit = {
+
+
+  override def onMouseDrag(event: ToolEvent): Unit = {
     if (dragActive) {
       // Every drag event, add a point to the path at the current
       // position of the mouse:
@@ -67,7 +76,9 @@ class Freehand(hexagon: Hexagon, var scaleFactor: Double) {
     }
   }
 
+  override def onMouseMove(event: ToolEvent) = {}
 
+  override def onMouseScroll(event: WheelEvent) = {}
 
   def finishShape(): Unit = {
     dragActive = false
@@ -82,5 +93,7 @@ class Freehand(hexagon: Hexagon, var scaleFactor: Double) {
 
     hexagon.addShape(currentPath)
   }
+
+
 
 }

@@ -22,6 +22,8 @@ class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerC
   var connectors: List[CircleConnector] = List()
   var oldScaleFactor = scaleFactor
   var shapesGroup = Group(js.Array[Item]())
+  var neighbours = Array(6)
+
 
 
 

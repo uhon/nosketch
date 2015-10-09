@@ -4,7 +4,7 @@ import java.awt.event.MouseWheelEvent
 
 import nosketch.components.Cluster
 import nosketch.hud.DebugHUD
-import nosketch.hud.elements.debug.{TextIndicator}
+import nosketch.hud.elements.debug.{MouseIndicator, TextIndicator}
 import nosketch.viewport.ViewPort
 import org.scalajs.dom._
 import paperjs.Basic.Point
@@ -26,7 +26,9 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
   }
 
   @JSExport
-  def startViewer(canvas: html.Canvas) = {
+  def startViewer(canvas: html.Canvas): Unit = {
+    if(canvas == null) { return }
+
     viewPort = new ViewPort(canvas, this)
 
     // Initialize the ViewPort
@@ -37,6 +39,7 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
     DebugHUD.addElement(new TextIndicator(() => "scale: " + viewPort.scaleFactor.toString))
     DebugHUD.addElement(new TextIndicator(() => "zoom: " + viewPort.getView.zoom.toString))
     DebugHUD.addElement(new TextIndicator(() => "delta-c: " + viewPort.getOffsetVector))
+    DebugHUD.addElement(new MouseIndicator(viewPort))
 
     clusterList ::= new Cluster(viewPort.center, viewPort.scaleFactor)
 
@@ -50,6 +53,7 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
   override def onZoom = {
     if (viewPort != null) {
       DebugHUD.redraw(viewPort)
+
     }
   }
 
