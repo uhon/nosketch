@@ -17,8 +17,6 @@ import org.scalajs.jquery._
 
 
 class ViewPort(canvas: Canvas, playground: ViewportSubscriber) extends MouseEventListener {
-
-
   val defaultPlaygroundSize = 500d
 
   val center = new Point(defaultPlaygroundSize / 2, defaultPlaygroundSize / 2)
@@ -64,8 +62,8 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber) extends MouseEven
     }
 
 
-    resizeWindow()
-    view.update()
+
+    //view.update()
   }
 
 
@@ -132,7 +130,6 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber) extends MouseEven
     scaleFactor = calculateScaleFactor
 
     playground.onScale
-    view.update()
   }
 
   def cornerTopLeft() = new Point(view.bounds.x, view.bounds.y)

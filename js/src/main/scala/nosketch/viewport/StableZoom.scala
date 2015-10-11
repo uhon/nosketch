@@ -38,7 +38,7 @@ import org.scalajs.dom._
 object StableZoom {
 
   def changeZoom(oldZoom: Double, delta: Double, c: Point, p: Point): (Double,Point) = {
-    console.info(oldZoom, delta, c, p)
+    //console.info(oldZoom, delta, c, p)
     val newZoom = SimplePanAndZoom.changeZoom(oldZoom, delta)
     val beta = oldZoom / newZoom
     val pc = p.subtract(c)

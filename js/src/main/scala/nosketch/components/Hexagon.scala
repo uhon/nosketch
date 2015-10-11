@@ -12,17 +12,14 @@ import scala.scalajs.js
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerCircle: Boolean = false) extends PathObject {
+class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerCircle: Boolean = false) extends VisibleHexagon(center, radius, scaleFactor) with PathObject  {
 
 
-
-  var hex: Path = null
   var shapes = List[Path]()
   var circleCanvas: CircleCanvas = null
   var connectors: List[CircleConnector] = List()
   var oldScaleFactor = scaleFactor
   var shapesGroup = Group(js.Array[Item]())
-  var neighbours = Array(6)
 
 
 
@@ -44,22 +41,11 @@ class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerC
 
 
 
-  def redraw(scaleFactor: Double) = {
+  override def redraw(scaleFactor: Double) = {
     oldScaleFactor = this.scaleFactor
     this.scaleFactor = scaleFactor
 
-
-    //console log "draw hexagon with center at: " + center
-    if (hex != null) hex remove()
-
-    val c = new Point(center.x * scaleFactor, center.y * scaleFactor)
-    hex = Path RegularPolygon(c, 6, radius * scaleFactor)
-    hex rotate 30
-
-    //hex.fillColor = Color(Math.random(), Math.random(), Math.random(), 1)
-    hex fillColor = Color("#f9f7ef")
-    hex strokeColor = Color("#3c3f41")
-    hex strokeWidth = 0.1
+    super.redraw(scaleFactor)
 
     if(showInnerCircle) circleCanvas redraw (scaleFactor)
 
@@ -74,21 +60,18 @@ class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerC
 
   def getCircleCanvas = circleCanvas
 
-  def getRadius: Double = radius
 
-  def getCenter: Point = center
-
-  override def getPath: Path = hex
 
 
   def addScratchShapes = {
     val newRadius = CircleCanvas.getRadiusForInnerCircle(radius)
     shapes.foreach(_.remove())
+    val scratchColor = Color(Math.random(), Math.random(), Math.random(), 1)
     for(i <- 1 to 5) {
       var p = new Path()
-      p.strokeColor = Color(Math.random(), Math.random(), Math.random(), 1)
+      p.strokeColor = scratchColor
       p.strokeWidth = 1
-      for(j <- 1 to 30) {
+      for(j <- 1 to 10) {
         p.add(center.subtract(newRadius / 2).add(new Point(Math.random() * newRadius, Math.random() * newRadius)).multiply(scaleFactor))
       }
       shapes :+= p

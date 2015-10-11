@@ -45,7 +45,7 @@ class MouseIndicator(viewPort: ViewPort) extends DebugHUDElement with MouseEvent
     group = Group(js.Array[Item]())
     text = new PointText(position)
     text.fillColor = Color(255, 255, 255, 0.9)
-    text.content = mousePosition.toString
+    text.content = "mouse: " + mousePosition.toString
     text.fontSize = 12 / viewPort.getView.zoom * viewPort.scaleFactor
     group.addChild(text)
   }

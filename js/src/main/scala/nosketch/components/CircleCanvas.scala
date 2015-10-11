@@ -24,7 +24,7 @@ class CircleCanvas(hexagon: Hexagon, scaleFactor: Double) extends PathObject {
     circle = Path.Circle(center, 0.5 * getRadius * scaleFactor)
 
     //circle.fillColor = Color(Math.random(), Math.random(), Math.random(), 1)
-    circle.fillColor = Color("#e9e9aa")
+    circle.fillColor = Color(233, 233, 170, 0.4)
   }
 
   override def getPath: Path = circle

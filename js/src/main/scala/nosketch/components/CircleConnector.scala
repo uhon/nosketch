@@ -11,6 +11,7 @@ import paperjs.Styling.Color
  */
 class CircleConnector(hexagon: Hexagon, orientation: Int, scaleFactor: Double) extends PathObject {
   var connector: Path = null
+  val color = Color(Math.random(), Math.random(), Math.random(), 1)
 
   redraw(scaleFactor)
 
@@ -29,7 +30,7 @@ class CircleConnector(hexagon: Hexagon, orientation: Int, scaleFactor: Double) e
     connector = Path.Circle(center, hexagon.getRadius / 30 * scaleFactor)
 
 
-    connector.fillColor = Color(Math.random(), Math.random(), Math.random(), 1)
+    connector.fillColor = color
   }
 
 

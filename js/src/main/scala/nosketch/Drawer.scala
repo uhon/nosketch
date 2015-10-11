@@ -40,7 +40,7 @@ object Drawer extends ViewportSubscriber {
     DebugHUD.addElement(new TextIndicator(() => "delta-c: " + viewPort.getOffsetVector))
     DebugHUD.addElement(new MouseIndicator(viewPort))
 
-    onScale
+    viewPort.resizeWindow() // triggers on scale
     Paper.view.draw()
   }
 
