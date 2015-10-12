@@ -50,7 +50,7 @@ lazy val nosketchJVM = (project in file("jvm")).settings(
   libraryDependencies ++= Seq(
     "com.vmunier" %% "play-scalajs-scripts" % "0.3.0",
     "org.webjars" % "bootstrap" % "3.3.5",
-    specs2 % Test
+    "org.webjars" % "font-awesome" % "4.4.0"
   )
 ).enablePlugins(PlayScala)
   .aggregate(clients.map(projectToRef): _*)

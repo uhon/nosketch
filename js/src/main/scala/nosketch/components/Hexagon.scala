@@ -1,13 +1,17 @@
 package nosketch.components
 
+
 import nosketch.components.PathObject
+import org.scalajs.dom
 import org.scalajs.dom._
+import org.scalajs.dom.raw.HTMLImageElement
 import paperjs.Basic.Point
 import paperjs.Items.{Item, Group}
 import paperjs.Paths.Path
 import paperjs.Styling.Color
 
 import scala.scalajs.js
+import paperjs.Items.Raster
 
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
@@ -20,9 +24,6 @@ class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerC
   var connectors: List[CircleConnector] = List()
   var oldScaleFactor = scaleFactor
   var shapesGroup = Group(js.Array[Item]())
-
-
-
 
 
   // Setup circleCanvas
@@ -42,6 +43,7 @@ class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerC
 
 
   override def redraw(scaleFactor: Double) = {
+
     oldScaleFactor = this.scaleFactor
     this.scaleFactor = scaleFactor
 
@@ -67,11 +69,11 @@ class Hexagon(center: Point, radius: Double, var scaleFactor: Double, showInnerC
     val newRadius = CircleCanvas.getRadiusForInnerCircle(radius)
     shapes.foreach(_.remove())
     val scratchColor = Color(Math.random(), Math.random(), Math.random(), 1)
-    for(i <- 1 to 5) {
+    for(i <- 1 to 15) {
       var p = new Path()
       p.strokeColor = scratchColor
       p.strokeWidth = 1
-      for(j <- 1 to 10) {
+      for(j <- 1 to 30) {
         p.add(center.subtract(newRadius / 2).add(new Point(Math.random() * newRadius, Math.random() * newRadius)).multiply(scaleFactor))
       }
       shapes :+= p

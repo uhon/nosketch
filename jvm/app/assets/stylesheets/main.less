@@ -1,4 +1,12 @@
 @import "lib/bootstrap/less/bootstrap.less";
+@import "lib/font-awesome/less/font-awesome.less";
+@import "_navigation.less";
+
+@fa-font-path: "/assets/lib/font-awesome/fonts";
+
+body {
+  font-size: 0.3em;
+}
 
 h1 {
   color: white;
@@ -8,8 +16,16 @@ body {
   background-color:#323232;
 }
 
+.header-bar {
+  z-index: 1;
+  opacity: 0.8
+}
+
 canvas {
   background-color:#3c3f41;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 #mainArea {

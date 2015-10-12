@@ -8,11 +8,15 @@ import nosketch.util.HexConstants
 import paperjs.Basic.Point
 import paperjs.Paths.Path
 import paperjs.Styling.Color
+import paperjs.Items.{Item, Layer}
+import scala.scalajs.js
 
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
 abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double, showInnerCircle: Boolean = false) extends AbstractHexagon {
+  val layer = new Layer(new js.Array[Item](0))
+
   var neighbours: Array[_ >: AbstractHexagon] =  Array[AbstractHexagon](PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon)
 
   var hex: Path = null
@@ -20,8 +24,12 @@ abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double
   val color = Color(Math.random(), Math.random(), Math.random(), 0.3)
 
   def destroy: Any = {
-    hex.remove
-    hex = null
+    layer.removeChildren()
+    layer.remove()
+    if(hex != null) {
+      hex.remove
+      hex = null
+    }
 
     for (i <- 0 to 5) {
       neighbours(i) match {
@@ -29,8 +37,6 @@ abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double
         case x: AbstractHexagon => {}
       }
     }
-
-    neighbours = null
   }
 
 
@@ -46,6 +52,7 @@ abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double
 
 
   def redraw(scaleFactor: Double) = {
+    layer.activate()
     //console log "draw hexagon with center at: " + center
     if (hex != null) hex remove()
 
@@ -59,6 +66,11 @@ abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double
     hex strokeWidth = 1
   }
 
+  /**
+   * Assign new hexagons as neighbour if they fit into the bounds of the current view
+   * newly on screen
+   * @return
+   */
   def assignNeighbours: Any = {
     //console.log("====== assignNeighbours on ", center.toString())
     // We assume this Hexagon is Visible

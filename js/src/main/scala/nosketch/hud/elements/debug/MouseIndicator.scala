@@ -19,7 +19,6 @@ class MouseIndicator(viewPort: ViewPort) extends DebugHUDElement with MouseEvent
 
   var text: PointText = null
   var mousePosition = new Point(0)
-  var group = Group(js.Array[Item]())
 
   override var position: Point = _
 
@@ -41,13 +40,15 @@ class MouseIndicator(viewPort: ViewPort) extends DebugHUDElement with MouseEvent
   override def onMouseScroll(event: WheelEvent): Unit = {}
 
   override def redraw(viewPort: ViewPort) = {
-    group.removeChildren()
-    group = Group(js.Array[Item]())
+    layer.activate
+    layer.removeChildren()
+
     text = new PointText(position)
     text.fillColor = Color(255, 255, 255, 0.9)
     text.content = "mouse: " + mousePosition.toString
     text.fontSize = 12 / viewPort.getView.zoom * viewPort.scaleFactor
-    group.addChild(text)
+    layer.bringToFront()
+
   }
 
 }

@@ -27,7 +27,7 @@ set :ssh_options, { :forward_agent => true }
 
 set :java_options, '-Xms1024m -Xmx4096m'
 
-set :play_dir, "nosketch-server" # set :play_dir to "." unless your app lives in a subfolder of the repo
+set :play_dir, "jvm" # set :play_dir to "." unless your app lives in a subfolder of the repo
 
 set :app_port, "9000"
 
