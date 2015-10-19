@@ -37,8 +37,11 @@ object DebugHUD extends ZoomAwareObject {
       val currentStartPosition = startPosition.divide(viewPort.getView.zoom).multiply(viewPort.scaleFactor)
       val curPosition = viewPort.cornerTopLeft().add(currentStartPosition)
       val curVerticalOffset = verticalOffset / viewPort.getView.zoom * viewPort.scaleFactor
-
-      rectangle = Rectangle(curPosition.subtract(new Point(10, 15).divide(viewPort.getView.zoom)), new Size(viewPort.getView.size.width / 2, curVerticalOffset * elements.length))
+      val padding = new Point(10, 15).divide(viewPort.getView.zoom).multiply(viewPort.scaleFactor)
+      rectangle = Rectangle(
+        curPosition.subtract(padding),
+        new Size(250 / viewPort.getView.zoom * viewPort.scaleFactor, curVerticalOffset * elements.length + padding.y)
+      )
       rectangle.fillColor = new Color(0, 0, 0, 0.7)
 
       elements.zipWithIndex.foreach({ case(e,i) =>

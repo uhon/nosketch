@@ -8,7 +8,7 @@ role :db,  "nosketch@uhon.ch"
 set :user, "nosketch"
 set :use_sudo, false
 
-set :application, "nosketchServer"
+set :application, "nosketchJvm"
 set :repo_url, "git@bitbucket.org:uhon/nosketch.git"
 set :port, 22
 

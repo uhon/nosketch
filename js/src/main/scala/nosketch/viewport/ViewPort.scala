@@ -27,6 +27,8 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
   var scaleFactor = 1d
 
+  var changeCenterOnKey: Option[MoveOnKey] = None
+
 
   def getView = view
 
@@ -37,9 +39,9 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
     view.center.subtract(center)
   }
 
+
   def init = {
     Paper.setup(canvas)
-
     view.viewSize = new Size(
       defaultPlaygroundSize,
       defaultPlaygroundSize
@@ -50,17 +52,19 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
     }
 
     window.onkeydown = (event: KeyboardEvent) => {
-
-      view.center = event.keyCode match {
-        case 37 => SimplePanAndZoom.changeCenter(view.center, 1, 0, 100) // left
-        case 38 => SimplePanAndZoom.changeCenter(view.center, 0, -1, 100) // up
-        case 39 => SimplePanAndZoom.changeCenter(view.center, -1, 0, 100) // right
-        case 40 => SimplePanAndZoom.changeCenter(view.center, 0, +1, 100 ) // down
+      if(event.keyCode >= 37 && event.keyCode <= 40) {
+          changeCenterOnKey = Some(MoveOnKey(event))
       }
 
       //playground.onScale
-      playground.onZoom
+
       //view.update()
+    }
+
+    window.onkeyup = (event: KeyboardEvent) => {
+      if(event.keyCode >= 37 && event.keyCode <= 40) {
+        changeCenterOnKey = None
+      }
     }
 
     // TODO: this might be an option for performance improvement. use views onFrame method
@@ -69,8 +73,32 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
   }
 
   def onFrameEvent(v: View, e: FrameEvent) = {
+
+    moveCenterOnKeyboardRequest
+
+
     if(e.count % 30 == 0) FPSIndicator.fps = calcFPS(e)
     DebugHUD.redraw(this)
+  }
+
+  def moveCenterOnKeyboardRequest = {
+    changeCenterOnKey match {
+      case Some(x) => {
+        val now = Date.now()
+        val delta = now - x.startTime
+
+        view.center = x.event.keyCode match {
+          case 37 => SimplePanAndZoom.changeCenter(view.center, -1, 0, delta * 1) // right
+          case 38 => SimplePanAndZoom.changeCenter(view.center, 0, +1, delta * 1) // down
+          case 39 => SimplePanAndZoom.changeCenter(view.center, 1, 0, delta * 1) // left
+          case 40 => SimplePanAndZoom.changeCenter(view.center, 0, -1, delta * 1) // up
+        }
+
+        playground.onZoom
+        x.startTime = Date.now()
+      }
+      case None => Unit
+    }
   }
 
 
@@ -157,8 +185,8 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
   def onMouseMove(event: ToolEvent) = {}
   def onMouseDrag(event: ToolEvent) = {
-    val vector = event.lastPoint.subtract(event.point).divide(1.2)
-    view.center = SimplePanAndZoom.changeCenter(view.center, vector.x, vector.y * -1, 1 ) // down
+    val vector = event.middlePoint  .subtract(event.point).divide(1.2)
+    view.center = SimplePanAndZoom.changeCenter(view.center, vector.x, vector.y * -1, 2 ) // down
 
     //playground.onScale
     playground.onZoom

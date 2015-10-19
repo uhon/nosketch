@@ -120,14 +120,14 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
             // TODO: call cluster logic from here to create hexagons with sketches
             // for now just test-shapes and Hexagons Types shown
             var newHex:VisibleHexagon = null
-            if((Math.random() * 10).toInt % 9 == 0) {
+//            if((Math.random() * 10).toInt % 9 == 0) {
               newHex = new ImageHexagon(center, radius, scaleFactor);
-            } else if((Math.random() * 5).toInt % 4 == 0) {
-              newHex = new EmptyHexagon(center, radius, scaleFactor)
-            } else {
-              newHex = new Hexagon(center, radius, scaleFactor)
-              newHex.asInstanceOf[Hexagon].addScratchShapes
-            }
+//            } else if((Math.random() * 5).toInt % 4 == 0) {
+//              newHex = new EmptyHexagon(center, radius, scaleFactor)
+//            } else {
+//              newHex = new Hexagon(center, radius, scaleFactor)
+//              newHex.asInstanceOf[Hexagon].addScratchShapes
+//            }
 
             visibleHexagons.put(roundedCenter, newHex)
             // redraw new hexagon

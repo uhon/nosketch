@@ -89,9 +89,9 @@ lazy val paperScalaJs = (project in file("paper-scala-js")).settings(
     "org.scala-js" %%% "scalajs-dom" % "0.8.1" withJavadoc(),
     "org.scala-js" %%% "scalajs-tools" % "0.6.5" withJavadoc()
   ),
-  jsDependencies ++= Seq(
-    "org.webjars" % "paperjs" % "0.9.22" / "paper-full.min.js" commonJSName "paper"
-  ),
+//  jsDependencies ++= Seq(
+//    "org.webjars" % "paperjs" % "0.9.24" / "paper-full.min.js" commonJSName "paper"
+//  ),
   persistLauncher in Compile := false,
   skip in packageJSDependencies := false
 )
