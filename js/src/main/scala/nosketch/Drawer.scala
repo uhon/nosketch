@@ -26,7 +26,7 @@ object Drawer extends ViewportSubscriber {
   @JSExport
   def startDrawer(canvas: html.Canvas): Unit = {
 
-    viewPort = new ViewPort(canvas, this)
+    viewPort = new ViewPort(canvas, this, true, false)
     viewPort.init
 
     hexagon = new Hexagon(viewPort.center, viewPort.defaultPlaygroundSize / 2, viewPort.scaleFactor, true)
@@ -40,7 +40,9 @@ object Drawer extends ViewportSubscriber {
     DebugHUD.addElement(new TextIndicator(() => "delta-c: " + viewPort.getOffsetVector))
     DebugHUD.addElement(new MouseIndicator(viewPort))
 
-    viewPort.resizeWindow // triggers on scale
+    viewPort.resizeWindow
+
+     // triggers on scale
     Paper.view.draw()
   }
 

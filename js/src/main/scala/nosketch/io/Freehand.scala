@@ -37,7 +37,9 @@ class Freehand(hexagon: Hexagon, var scaleFactor: Double) extends MouseEventList
       currentPath.selected = false
     }
 
+
     currentPath = Path()
+    hexagon.addShape(currentPath)
     currentPath.removeSegment(0)
     // console.log(currentPath)
     currentPath.strokeWidth = currentStrokeWidth.toString.toDouble * scaleFactor
@@ -90,8 +92,6 @@ class Freehand(hexagon: Hexagon, var scaleFactor: Double) extends MouseEventList
 
     // Select the path, so we can see its segments:
     currentPath.selected = true
-
-    hexagon.addShape(currentPath)
   }
 
 

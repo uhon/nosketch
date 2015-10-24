@@ -24,7 +24,7 @@ abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double
   val color = Color(Math.random(), Math.random(), Math.random(), 0.3)
 
   def destroy: Any = {
-    layer.removeChildren()
+    //layer.removeChildren()
     layer.remove()
     if(hex != null) {
       hex.remove
@@ -52,6 +52,7 @@ abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double
 
 
   def redraw(scaleFactor: Double) = {
+    //console.log("redraw")
     layer.activate()
     //console log "draw hexagon with center at: " + center
     if (hex != null) hex remove()
@@ -72,7 +73,7 @@ abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double
    * @return
    */
   def assignNeighbours: Any = {
-    //console.log("====== assignNeighbours on ", center.toString())
+    //console.log("====== assignNeighbours")
     // We assume this Hexagon is Visible
     for(i <- 0 to 5) {
       //console.log("=== checking neighbour " + i)
@@ -80,12 +81,16 @@ abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double
         case PhantomHexagon => {
           val center = PhantomHexagon.getCenter(this, HexConstants.sideMappings(i))
           //console.log("creating new Hexagon at Pos", center.toString())
-          val hex = Viewer.findOrCreateHexagon(center, radius, scaleFactor)
-          neighbours(i) = hex
-          hex match {
-            case visibleHexagon: VisibleHexagon =>
-              visibleHexagon.neighbours(HexConstants.sideMappings(i)) = this
-              visibleHexagon.assignNeighbours
+          val hexTuple = Viewer.findOrCreateHexagon(center, radius, scaleFactor)
+          neighbours(i) = hexTuple._1
+          hexTuple match {
+            case (v: VisibleHexagon, r:Boolean) =>
+              v.neighbours(HexConstants.sideMappings(i)) = this
+              // TODO:
+              // val leftNeighbour = i -1  <== tell the new hexagon the two relevant neighbours
+              if(r) {
+                v.assignNeighbours
+              }
             case _ =>
           }
         }

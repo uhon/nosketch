@@ -2,7 +2,7 @@ package nosketch.components
 
 import nosketch.viewport.ViewPort
 import org.scalajs.dom
-import org.scalajs.dom.raw.HTMLImageElement
+import org.scalajs.dom.raw.{Event, HTMLImageElement}
 import paperjs.Basic.{Rect, Point, Size}
 import paperjs.Items.Raster
 import paperjs.Paths.Path
@@ -20,13 +20,16 @@ class ImageHexagon(center: Point, radius: Double, scaleFactor: Double) extends V
   val bgImage = dom.document.createElement("img").asInstanceOf[HTMLImageElement]
   //bgImage.src = "/assets/images/hex.png"
   bgImage.src = "/assets/shapes/" + (Math.random() * 15).round + ".svg"
+  bgImage.addEventListener("load", { e: Event => redraw(scaleFactor) })
 
   override def getRadius: Double = radius
 
   override def getCenter: Point = center
 
   override def redraw(scaleFactor: Double): Unit = {
+
     super.redraw(scaleFactor)
+
     layer.activate()
 
     val imageSize = new Size(CircleCanvas.getRadiusForInnerCircle(radius) * 2 * scaleFactor * 0.8)

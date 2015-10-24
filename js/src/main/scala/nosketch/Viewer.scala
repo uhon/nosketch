@@ -73,9 +73,12 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
   def initHexagons = {
     val startTime = System.nanoTime
-    val initialHex = new Hexagon(viewPort.center, 250, 1)
+    val initialHex = new ImageHexagon(viewPort.center, view.size.width / 10, 1)
+    visibleHexagons.put(viewPort.center.round(), initialHex)
     initialHex.assignNeighbours
     //reportDuration("Viewer::initHexagons", startTime)
+    updateView()
+    //setTimeout(() => updateView(), 2000)
   }
 
   def isOutOfScope(center: Point, radius: Double) = {
@@ -106,22 +109,24 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
    * @param scaleFactor scale Factor to Scale the whole thing
    * @return
    */
-  def findOrCreateHexagon(center: Point, radius: Double, scaleFactor: Double): AbstractHexagon = {
+  def findOrCreateHexagon(center: Point, radius: Double, scaleFactor: Double): (AbstractHexagon, Boolean) = {
+    //console.log("find or create hexagons")
     val startTime = System.nanoTime
     try {
+      if (Viewer.isOutOfScope(center, radius)) {
+        //console.log("Not creating Hexagon at Pos", center.toString())
+        return (PhantomHexagon, false)
+      }
+
       val roundedCenter = center.round()
       visibleHexagons.find(p => p._1.equals(roundedCenter)) match {
-        case Some(x) => x._2
+        case Some(x) => (x._2, false)
         case None => {
-          if (Viewer.isOutOfScope(center, radius)) {
-            //console.log("Not creating Hexagon at Pos", center.toString())
-            PhantomHexagon
-          } else {
-            // TODO: call cluster logic from here to create hexagons with sketches
-            // for now just test-shapes and Hexagons Types shown
-            var newHex:VisibleHexagon = null
+          // TODO: call cluster logic from here to create hexagons with sketches
+          // for now just test-shapes and Hexagons Types shown
+          var newHex:VisibleHexagon = null
 //            if((Math.random() * 10).toInt % 9 == 0) {
-              newHex = new ImageHexagon(center, radius, scaleFactor);
+          newHex = new ImageHexagon(center, radius, scaleFactor)
 //            } else if((Math.random() * 5).toInt % 4 == 0) {
 //              newHex = new EmptyHexagon(center, radius, scaleFactor)
 //            } else {
@@ -129,11 +134,10 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
 //              newHex.asInstanceOf[Hexagon].addScratchShapes
 //            }
 
-            visibleHexagons.put(roundedCenter, newHex)
-            // redraw new hexagon
-            newHex.redraw(scaleFactor)
-            newHex
-          }
+          visibleHexagons.put(roundedCenter, newHex)
+          // redraw new hexagon
+          newHex.redraw(scaleFactor)
+          (newHex, true)
         }
       }
     } finally reportDuration("Viewer::findOrCreateHexagon", startTime)
@@ -150,8 +154,9 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
    */
   def updateView(forceRedrawVisible: Boolean = false) = {
     val startTime = System.nanoTime
-    console.log("update viewPort with Bounds:" + viewPort.getView.bounds.right, viewPort.getView.bounds.top, viewPort.getView.bounds.left, viewPort.getView.bounds.bottom)
+    //console.log("update viewPort with Bounds:" + viewPort.getView.bounds.right, viewPort.getView.bounds.top, viewPort.getView.bounds.left, viewPort.getView.bounds.bottom)
     //console.log("SIZE OF VISIBLE HEXAGONS: ", visibleHexagons.size, printCoordinates(visibleHexagons))
+
 
     // Remove invisible hexagons
     for(vH <- visibleHexagons) {
@@ -160,11 +165,15 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
         visibleHexagons.remove(vH._1)
       }
     }
+    reportDuration("Viewer::remove invisible", startTime)
 
     // Assign new hexagons and redraw them when appear
+    val assignNeighboursTime = System.nanoTime
     visibleHexagons.foreach(_._2.assignNeighbours)
+    reportDuration("Viewer::remove invisible", assignNeighboursTime)
 
     if(forceRedrawVisible) {
+      console.log("forced redraw of all hexagons")
       visibleHexagons.foreach(_._2.redraw(viewPort.scaleFactor))
     }
     // We don't redraw all Hexagons here (meight not be necessary)

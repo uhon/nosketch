@@ -8,6 +8,7 @@ import nosketch.{Viewer, SimplePanAndZoom, ViewportSubscriber}
 import org.scalajs.dom._
 import org.scalajs.dom.html.Canvas
 import paperjs.Basic._
+import paperjs.Items.Raster
 import paperjs.Projects.{View, FrameEvent}
 import paperjs.Styling._
 import paperjs.Projects.Project
@@ -20,7 +21,7 @@ import scala.scalajs.js._
 import org.scalajs.jquery._
 
 
-class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean = false) extends MouseEventListener {
+class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean = false, allowPanAndZoom: Boolean = true) extends MouseEventListener {
   val defaultPlaygroundSize = 500d
 
   val center = new Point(defaultPlaygroundSize / 2, defaultPlaygroundSize / 2)
@@ -53,7 +54,12 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
     window.onkeydown = (event: KeyboardEvent) => {
       if(event.keyCode >= 37 && event.keyCode <= 40) {
+        console.log("on key down")
+        if(changeCenterOnKey.isEmpty) {
           changeCenterOnKey = Some(MoveOnKey(event))
+        } else {
+          changeCenterOnKey.get.event = event
+        }
       }
 
       //playground.onScale
@@ -73,9 +79,7 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
   }
 
   def onFrameEvent(v: View, e: FrameEvent) = {
-
     moveCenterOnKeyboardRequest
-
 
     if(e.count % 30 == 0) FPSIndicator.fps = calcFPS(e)
     DebugHUD.redraw(this)
@@ -84,18 +88,26 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
   def moveCenterOnKeyboardRequest = {
     changeCenterOnKey match {
       case Some(x) => {
+        val raster = paperjs.Items.Shape.Rectangle(cornerTopLeft(), view.size)
+        raster.fillColor = new Color(0,0,0,.9)
+        val speedFactor = 0.5
         val now = Date.now()
-        val delta = now - x.startTime
+        val delta = (now - x.startTime) * speedFactor
+        x.startTime = now
+
+        //console.log(delta)
 
         view.center = x.event.keyCode match {
-          case 37 => SimplePanAndZoom.changeCenter(view.center, -1, 0, delta * 1) // right
-          case 38 => SimplePanAndZoom.changeCenter(view.center, 0, +1, delta * 1) // down
-          case 39 => SimplePanAndZoom.changeCenter(view.center, 1, 0, delta * 1) // left
-          case 40 => SimplePanAndZoom.changeCenter(view.center, 0, -1, delta * 1) // up
+          case 37 => SimplePanAndZoom.changeCenter(view.center, -1, 0, delta) // right
+          case 38 => SimplePanAndZoom.changeCenter(view.center, 0, +1, delta) // down
+          case 39 => SimplePanAndZoom.changeCenter(view.center, 1, 0, delta) // left
+          case 40 => SimplePanAndZoom.changeCenter(view.center, 0, -1, delta) // up
         }
+        x.timeUpdated = Date.now()
 
         playground.onZoom
-        x.startTime = Date.now()
+        raster.remove()
+
       }
       case None => Unit
     }
@@ -118,7 +130,7 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
       val zoomAndOffset = StableZoom.changeZoom(view.zoom, event.deltaY, view.center, mousePosition)
       reportDuration("zoom and offset calc", startZoomAndOffset)
 
-      val startZoomView = System.nanoTime()
+      val   startZoomView = System.nanoTime()
       view.zoom = zoomAndOffset._1
       playground.onZoom
       reportDuration("zoom the PaperJs-View", startZoomView)
@@ -185,12 +197,14 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
   def onMouseMove(event: ToolEvent) = {}
   def onMouseDrag(event: ToolEvent) = {
-    val vector = event.middlePoint  .subtract(event.point).divide(1.2)
-    view.center = SimplePanAndZoom.changeCenter(view.center, vector.x, vector.y * -1, 2 ) // down
+    if(allowPanAndZoom) {
+      val vector = event.middlePoint.subtract(event.point).divide(1.2)
+      view.center = SimplePanAndZoom.changeCenter(view.center, vector.x, vector.y * -1, 2) // down
 
-    //playground.onScale
-    playground.onZoom
-    view.update()
+      //playground.onScale
+      playground.onZoom
+      view.update()
+    }
   }
   def onMouseDown(event: ToolEvent) = {}
   def onMouseUp(event: ToolEvent) = {}

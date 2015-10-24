@@ -4,11 +4,12 @@
 }
 .nav-main {
   text-transform: uppercase;
-  font-weight: 300;
+  font-weight: 800;
   font-size: @font-size-large;
   z-index: 12;
   small {
-    font-size: @font-size-small;
+    font-weight: 600;
+    font-size: 0.5em;
     text-transform: none;
   }
   #nav-logout {
@@ -16,7 +17,7 @@
     position: relative;
     top: -12px;
     a {
-      font-weight: 400 !important;
+      font-weight: 600 !important;
     }
   }
   .nav .open > a, .nav .open > a:hover, .nav .open > a:focus {
@@ -30,11 +31,21 @@
     &:first-child {
       border-left: none;
     }
-    padding-left: @line-height-computed;
-    padding-right: @line-height-computed;
+    padding-left: 2em;
+    padding-right: 2em;
   }
+
+  .navbar-nav{
+    li{
+      a {
+        padding:0.5em;
+      }
+    }
+  }
+
+
   .navbar-form {
-    margin-top: 20px;
+    margin-top: 15px;
     padding-right: 0;
     .btn-link {
       color: @gray-light;
@@ -57,14 +68,16 @@
 
   }
   .logo-small {
+    padding: 0;
     .transition(all 0.3s);
-    width: 0;
-    height: 0;
+    width: 130px;
+    height: 65px;
     a {
       .transition(all 0.3s);
-      //background: url('../images/hex.png') no-repeat;
-      background-position: 0px -100px;
-      height: 73px;
+      display: bock;
+      widht: 130px;
+      height: 65px;
+      background: url('/assets/images/logo.png') no-repeat;
       text-indent: -10000px;
       padding-left: 0;
       padding-right: 0;
@@ -90,4 +103,22 @@
     }
   }
 
+  #login-btn-sticky {
+    font-size: 1.8em;
+  }
+
+}
+
+.navbar {
+  .container {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  padding-left: 0;
+}
+
+.navbar-collapse {
+  margin: 0;
+  padding: 0;
 }
