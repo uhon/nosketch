@@ -85,10 +85,10 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
     val startTime = System.nanoTime
     val viewportBounds = viewPort.getView.bounds
 
-    val distE = (viewportBounds.right * viewPort.scaleFactor - center.x * viewPort.scaleFactor)
-    val distN = (viewportBounds.top * viewPort.scaleFactor - center.y * viewPort.scaleFactor )
-    val distW = (viewportBounds.left * viewPort.scaleFactor - center.x * viewPort.scaleFactor )
-    val distS = (viewportBounds.bottom * viewPort.scaleFactor - center.y * viewPort.scaleFactor )
+    val distE = (viewportBounds.right * viewPort.scaleFactor - center.x * viewPort.scaleFactor) +radius / 3 * viewPort.scaleFactor
+    val distN = (viewportBounds.top * viewPort.scaleFactor - center.y * viewPort.scaleFactor ) -radius / 3 * viewPort.scaleFactor
+    val distW = (viewportBounds.left * viewPort.scaleFactor - center.x * viewPort.scaleFactor ) -radius / 3 * viewPort.scaleFactor
+    val distS = (viewportBounds.bottom * viewPort.scaleFactor - center.y * viewPort.scaleFactor ) +radius / 3 * viewPort.scaleFactor
 
 
     val result = (distE < 0 && Math.abs(distE) > radius) ||

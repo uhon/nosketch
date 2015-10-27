@@ -28,7 +28,11 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
   var scaleFactor = 1d
 
-  var changeCenterOnKey: Option[MoveOnKey] = None
+  var changeCenterOnKey: Option[SlideAction] = None
+
+  var changeCenterOnDrag: Option[DragAction] = None
+
+  var changeZoomOnScroll: Option[ZoomAction] = None
 
 
   def getView = view
@@ -56,7 +60,7 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
       if(event.keyCode >= 37 && event.keyCode <= 40) {
         console.log("on key down")
         if(changeCenterOnKey.isEmpty) {
-          changeCenterOnKey = Some(MoveOnKey(event))
+          changeCenterOnKey = Some(SlideAction(event))
         } else {
           changeCenterOnKey.get.event = event
         }
@@ -80,17 +84,17 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
   def onFrameEvent(v: View, e: FrameEvent) = {
     moveCenterOnKeyboardRequest
+    moveCenterOnDragRequest
+    zoomOnScrollwheel
 
     if(e.count % 30 == 0) FPSIndicator.fps = calcFPS(e)
-    DebugHUD.redraw(this)
+      DebugHUD.redraw(this)
   }
 
   def moveCenterOnKeyboardRequest = {
     changeCenterOnKey match {
       case Some(x) => {
-        val raster = paperjs.Items.Shape.Rectangle(cornerTopLeft(), view.size)
-        raster.fillColor = new Color(0,0,0,.9)
-        val speedFactor = 0.5
+        val speedFactor = 0.8
         val now = Date.now()
         val delta = (now - x.startTime) * speedFactor
         x.startTime = now
@@ -103,11 +107,34 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
           case 39 => SimplePanAndZoom.changeCenter(view.center, 1, 0, delta) // left
           case 40 => SimplePanAndZoom.changeCenter(view.center, 0, -1, delta) // up
         }
-        x.timeUpdated = Date.now()
 
         playground.onZoom
-        raster.remove()
 
+      }
+      case None => Unit
+    }
+  }
+
+  def moveCenterOnDragRequest = {
+    changeCenterOnDrag match {
+      case Some(x) => {
+        val eventPoint = new Point(x.event.clientX, x.event.clientY)
+        val vector = x.initialMouseCoordinates.subtract(eventPoint.subtract(x.initialViewCenter.subtract(view.center)))
+//        console.log("vector on drag", vector)
+        val newCenter = SimplePanAndZoom.changeCenter(x.initialViewCenter,  vector.x, vector.y * -1, 1 / view.zoom) // down
+        //val zoomAndOffset = StableZoom.changeZoom(view.zoom, 1, view.center, new Point(vector.x, vector.y * -1))
+
+
+        if(!view.center.equals(newCenter)) {
+          view.center = newCenter
+          console.log("move center to", newCenter)
+          //view.center = view.center add
+          // set._2
+          x.initialMouseCoordinates = eventPoint
+          x.initialViewCenter = newCenter
+
+          playground.onZoom
+        }
       }
       case None => Unit
     }
@@ -115,33 +142,39 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
 
 
-  override def onMouseScroll(event: WheelEvent) = {
+  def zoomOnScrollwheel() = {
     // TODO: only works for viewer at the moment, drawer can't zoom. must be implemented
     if(jQuery("#canvas").length > 0) {
-      val topLeftCorner = jQuery("#canvas").offset().asInstanceOf[Dynamic]
-      val cTop = topLeftCorner.selectDynamic("top").asInstanceOf[Double]
-      val cLeft = topLeftCorner.selectDynamic("left").asInstanceOf[Double]
+      changeZoomOnScroll match {
+        case Some(x) => {
+          val topLeftCorner = jQuery("#canvas").offset().asInstanceOf[Dynamic]
+          val cTop = topLeftCorner.selectDynamic("top").asInstanceOf[Double]
+          val cLeft = topLeftCorner.selectDynamic("left").asInstanceOf[Double]
 
-      //val mousePosition = new Point(event.pageX - cLeft - view.size.width / 2, event.pageY - cTop - view.size.height / 2).add(view.center)
-      val mousePosition = MouseEventDistributor.currentMousePosition
-      console.log("mousePosition on scroll", mousePosition)
+          //val mousePosition = new Point(event.pageX - cLeft - view.size.width / 2, event.pageY - cTop - view.size.height / 2).add(view.center)
+          val mousePosition = MouseEventDistributor.currentMousePosition
+          console.log("mousePosition on scroll", mousePosition)
 
-      val startZoomAndOffset = System.nanoTime()
-      val zoomAndOffset = StableZoom.changeZoom(view.zoom, event.deltaY, view.center, mousePosition)
-      reportDuration("zoom and offset calc", startZoomAndOffset)
+          val startZoomAndOffset = System.nanoTime()
+          val zoomAndOffset = StableZoom.changeZoom(view.zoom, x.delta, view.center, mousePosition)
+          changeZoomOnScroll = None
+          reportDuration("zoom and offset calc", startZoomAndOffset)
 
-      val   startZoomView = System.nanoTime()
-      view.zoom = zoomAndOffset._1
-      playground.onZoom
-      reportDuration("zoom the PaperJs-View", startZoomView)
+          val startZoomView = System.nanoTime()
+          view.zoom = zoomAndOffset._1
+          //playground.onZoom
+          reportDuration("zoom the PaperJs-View", startZoomView)
 
-      val currentOffset = zoomAndOffset._2
+          val currentOffset = zoomAndOffset._2
 
-      val startOffsetTime = System.nanoTime()
-      view.center = view.center add currentOffset
-      reportDuration("Viewer::offset the PaperJs-View", startOffsetTime)
+          val startOffsetTime = System.nanoTime()
+          view.center = view.center add currentOffset
+          reportDuration("Viewer::offset the PaperJs-View", startOffsetTime)
 
-      playground.onZoom
+          playground.onZoom
+        }
+        case None => Unit
+      }
     }
   }
 
@@ -196,18 +229,39 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
   def cornerBottomRight() = new Point(view.bounds.left + view.bounds.width, view.bounds.top + view.bounds.height)
 
   def onMouseMove(event: ToolEvent) = {}
-  def onMouseDrag(event: ToolEvent) = {
-    if(allowPanAndZoom) {
-      val vector = event.middlePoint.subtract(event.point).divide(1.2)
-      view.center = SimplePanAndZoom.changeCenter(view.center, vector.x, vector.y * -1, 2) // down
 
-      //playground.onScale
-      playground.onZoom
-      view.update()
+  override def onRealMouseDrag(event: MouseEvent) = {
+
+    if(allowPanAndZoom) {
+      if(changeCenterOnDrag.isEmpty) {
+        changeCenterOnDrag = Some(DragAction(event, new Point(event.clientX, event.clientY), view.center))
+      } else {
+        changeCenterOnDrag.get.event = event
+        console.log("drag event at point", new Point(event.clientX, event.clientY))
+      }
     }
   }
+
+
+  override def onMouseScroll(event: WheelEvent) = onMouseScrollFirefox(event.deltaY)
+
+  override def onMouseScrollFirefox(deltaY: Double) = {
+    if(allowPanAndZoom) {
+      if(changeZoomOnScroll.isEmpty) {
+        changeZoomOnScroll = Some(ZoomAction(deltaY, MouseEventDistributor.currentMousePosition))
+      } else {
+        changeZoomOnScroll.get.delta += deltaY
+      }
+    }
+  }
+
+  def onMouseDrag(event: ToolEvent) = {}
+
+
   def onMouseDown(event: ToolEvent) = {}
-  def onMouseUp(event: ToolEvent) = {}
+  def onMouseUp(event: ToolEvent) = {
+    changeCenterOnDrag = None
+  }
 
   def calcFPS(event: FrameEvent) = {
     (1/event.delta).toInt
