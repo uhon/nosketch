@@ -1,13 +1,12 @@
-package nosketch.util
+package nosketch.io
 
 import org.scalajs.dom._
 import org.scalajs.dom.raw.MouseEvent
-import org.scalajs.jquery._
-import paperjs.Tools.{ToolEvent, Tool}
 import paperjs.Basic.Point
+import paperjs.Tools.{Tool, ToolEvent}
 
 import scala.scalajs.js
-
+import org.scalajs.dom.document
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
@@ -25,10 +24,9 @@ object MouseEventDistributor {
   window.onmouseup = (event: MouseEvent) => { mouseIsDown = false; observers.foreach(_.onRealMouseUp(event))}
   window.onmousemove = (event: MouseEvent) => { if(mouseIsDown)  observers.foreach(_.onRealMouseDrag(event))  else observers.foreach(_.onRealMouseMove(event))}
 
-  document.getElementById("canvas").addEventListener("DOMMouseScroll", (event: js.Dynamic) => {
+  document.getElementsByTagName("canvas").item(0).addEventListener("DOMMouseScroll", (event: js.Dynamic) => {
     event.preventDefault()
     observers.foreach(o => {
-      console.log(event)
       o.onMouseScrollFirefox(
         event.selectDynamic("detail").asInstanceOf[Double]
       )

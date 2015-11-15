@@ -9,5 +9,5 @@ import scala.scalajs.js.Date
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-case class DragAction(var event: MouseEvent, var initialMouseCoordinates: Point, var initialViewCenter: Point) {
+case class DragAction(var eventPoint: Point, var initialMouseCoordinates: Point, var initialViewCenter: Point) {
 }

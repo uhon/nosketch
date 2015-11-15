@@ -1,11 +1,7 @@
-package nosketch.util
+package nosketch.io
 
 import org.scalajs.dom._
-
 import org.scalajs.dom.raw.MouseEvent
-import nosketch.viewport.ViewPort
-import org.w3c.dom.events
-import paperjs.Basic.Point
 import paperjs.Tools.ToolEvent
 
 /**
@@ -19,9 +15,9 @@ trait MouseEventListener {
   def onRealMouseMove(event: MouseEvent): Unit = {}
   def onRealMouseDrag(event: MouseEvent): Unit = {}
 
-  def onMouseMove(event: ToolEvent)
-  def onMouseDrag(event: ToolEvent)
-  def onMouseDown(event: ToolEvent)
-  def onMouseUp(event: ToolEvent)
-  def onMouseScroll(event: WheelEvent)
+  def onMouseMove(event: ToolEvent): Unit = {}
+  def onMouseDrag(event: ToolEvent): Unit = {}
+  def onMouseDown(event: ToolEvent): Unit = {}
+  def onMouseUp(event: ToolEvent): Unit = {}
+  def onMouseScroll(event: WheelEvent): Unit = {}
 }

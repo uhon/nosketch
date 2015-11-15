@@ -1,43 +1,43 @@
 package nosketch.hud.elements.debug
 
+import javafx.scene.input.TouchEvent
+
 import nosketch.hud.DebugHUDElement
-import nosketch.io.MouseEventDistributor
-import nosketch.io.MouseEventListener
+import nosketch.io.{TouchEventDistributor, TouchEventListener, MouseEventDistributor, MouseEventListener}
 import nosketch.viewport.ViewPort
-import org.scalajs.dom.WheelEvent
+import org.scalajs.dom.html.Canvas
 import paperjs.Basic.Point
-import paperjs.Items.{Item, Group}
 import paperjs.Styling.Color
 import paperjs.Tools.ToolEvent
 import paperjs.Typography.PointText
-
-import scala.scalajs.js
+import org.scalajs.dom._
 
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-class MouseIndicator(viewPort: ViewPort) extends DebugHUDElement with MouseEventListener {
+class TouchIndicator(viewPort: ViewPort) extends DebugHUDElement with TouchEventListener {
 
   var text: PointText = null
-  var mousePosition = new Point(0)
+  var touchPosition = new Point(0)
 
   override var position: Point = _
 
 
-  MouseEventDistributor.registerToMouseEvents(this)
+  TouchEventDistributor.registerTouchListener(document.getElementsByTagName("canvas").item(0).asInstanceOf[Canvas], this, viewPort)
 
-  override def onMouseMove(event: ToolEvent): Unit = {
-    mousePosition = event.point
+  override def onDrag(eventPoint: Point): Unit = {
+    touchPosition = eventPoint
     redraw(viewPort)
   }
 
   override def redraw(viewPort: ViewPort) = {
+    // TODO: Reregister
     layer.activate
     layer.removeChildren()
 
     text = new PointText(position)
     text.fillColor = Color(255, 255, 255, 0.9)
-    text.content = "mouse: " + mousePosition.toString
+    text.content = "touch-center: " + touchPosition.toString
     text.fontSize = 12 / viewPort.getView.zoom * viewPort.scaleFactor
     layer.bringToFront()
 

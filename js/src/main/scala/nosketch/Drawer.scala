@@ -3,7 +3,7 @@ package nosketch
 import nosketch.components.Hexagon
 import nosketch.controls.ControlHandler
 import nosketch.hud.DebugHUD
-import nosketch.hud.elements.debug.{MouseIndicator, TextIndicator}
+import nosketch.hud.elements.debug.{TouchIndicator, MouseIndicator, TextIndicator}
 import nosketch.io.Freehand
 import nosketch.viewport.ViewPort
 import org.scalajs.dom._
@@ -34,11 +34,13 @@ object Drawer extends ViewportSubscriber {
     freeHand = new Freehand(hexagon, viewPort.scaleFactor)
     ControlHandler(freeHand)
 
-    DebugHUD.enabled = true
-    DebugHUD.addElement(new TextIndicator(() => "scale: " + viewPort.scaleFactor.toString))
-    DebugHUD.addElement(new TextIndicator(() => "zoom: " + viewPort.getView.zoom.toString))
-    DebugHUD.addElement(new TextIndicator(() => "delta-c: " + viewPort.getOffsetVector))
-    DebugHUD.addElement(new MouseIndicator(viewPort))
+//    DebugHUD.enabled = true
+//    DebugHUD.addElement(new TextIndicator(() => "scale: " + viewPort.scaleFactor.toString))
+//    DebugHUD.addElement(new TextIndicator(() => "zoom: " + viewPort.getView.zoom.toString))
+//    DebugHUD.addElement(new TextIndicator(() => "delta-c: " + viewPort.getOffsetVector))
+//    DebugHUD.addElement(new MouseIndicator(viewPort))
+//    DebugHUD.addElement(new TouchIndicator(viewPort))
+
 
     viewPort.resizeWindow
 

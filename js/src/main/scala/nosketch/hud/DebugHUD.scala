@@ -18,7 +18,7 @@ import scala.scalajs.js.Object
 object DebugHUD extends ZoomAwareObject {
   val layer = new Layer(new js.Array[Item](0))
   val verticalOffset = 20
-  var enabled = true
+  var enabled = false
   var elements = List[DebugHUDElement]()
   var startPosition = new Point(10, 50)
   var rectangle: Shape = null

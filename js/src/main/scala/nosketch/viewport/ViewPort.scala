@@ -2,8 +2,8 @@ package nosketch.viewport
 
 import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.{FPSIndicator, MouseIndicator}
+import nosketch.io.{TouchEventListener, TouchEventDistributor, MouseEventListener, MouseEventDistributor}
 import nosketch.util.Profiler._
-import nosketch.util.{MouseEventDistributor, MouseEventListener}
 import nosketch.{Viewer, SimplePanAndZoom, ViewportSubscriber}
 import org.scalajs.dom._
 import org.scalajs.dom.html.Canvas
@@ -21,23 +21,24 @@ import scala.scalajs.js._
 import org.scalajs.jquery._
 
 
-class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean = false, allowPanAndZoom: Boolean = true) extends MouseEventListener {
+class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean = false, allowPanAndZoom: Boolean = true) extends MouseEventListener with TouchEventListener {
   val defaultPlaygroundSize = 500d
 
   val center = new Point(defaultPlaygroundSize / 2, defaultPlaygroundSize / 2)
 
   var scaleFactor = 1d
 
-  var changeCenterOnKey: Option[SlideAction] = None
+  var activeSlideAction: Option[SlideAction] = None
 
-  var changeCenterOnDrag: Option[DragAction] = None
+  var activeDragAction: Option[DragAction] = None
 
-  var changeZoomOnScroll: Option[ZoomAction] = None
+  var activeZoomAction: Option[ZoomAction] = None
 
 
   def getView = view
 
   MouseEventDistributor.registerToMouseEvents(this)
+  TouchEventDistributor.registerTouchListener(canvas, this, this)
 
 
   def getOffsetVector = {
@@ -58,11 +59,11 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
     window.onkeydown = (event: KeyboardEvent) => {
       if(event.keyCode >= 37 && event.keyCode <= 40) {
-        console.log("on key down")
-        if(changeCenterOnKey.isEmpty) {
-          changeCenterOnKey = Some(SlideAction(event))
+//        console.log("on key down")
+        if(activeSlideAction.isEmpty) {
+          activeSlideAction = Some(SlideAction(event))
         } else {
-          changeCenterOnKey.get.event = event
+          activeSlideAction.get.event = event
         }
       }
 
@@ -73,7 +74,7 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
     window.onkeyup = (event: KeyboardEvent) => {
       if(event.keyCode >= 37 && event.keyCode <= 40) {
-        changeCenterOnKey = None
+        activeSlideAction = None
       }
     }
 
@@ -83,16 +84,16 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
   }
 
   def onFrameEvent(v: View, e: FrameEvent) = {
-    moveCenterOnKeyboardRequest
-    moveCenterOnDragRequest
-    zoomOnScrollwheel
+    handleSlides
+    handleDrags
+    handleZoom
 
-    if(e.count % 30 == 0) FPSIndicator.fps = calcFPS(e)
+    if(e.count % 5 == 0) FPSIndicator.fps = calcFPS(e)
       DebugHUD.redraw(this)
   }
 
-  def moveCenterOnKeyboardRequest = {
-    changeCenterOnKey match {
+  def handleSlides = {
+    activeSlideAction match {
       case Some(x) => {
         val speedFactor = 0.8
         val now = Date.now()
@@ -115,21 +116,18 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
     }
   }
 
-  def moveCenterOnDragRequest = {
-    changeCenterOnDrag match {
+  def handleDrags = {
+    activeDragAction match {
       case Some(x) => {
-        val eventPoint = new Point(x.event.clientX, x.event.clientY)
+        val eventPoint = x.eventPoint
         val vector = x.initialMouseCoordinates.subtract(eventPoint.subtract(x.initialViewCenter.subtract(view.center)))
 //        console.log("vector on drag", vector)
         val newCenter = SimplePanAndZoom.changeCenter(x.initialViewCenter,  vector.x, vector.y * -1, 1 / view.zoom) // down
-        //val zoomAndOffset = StableZoom.changeZoom(view.zoom, 1, view.center, new Point(vector.x, vector.y * -1))
 
 
         if(!view.center.equals(newCenter)) {
           view.center = newCenter
-          console.log("move center to", newCenter)
-          //view.center = view.center add
-          // set._2
+          //console.log("move center to", newCenter)
           x.initialMouseCoordinates = eventPoint
           x.initialViewCenter = newCenter
 
@@ -142,10 +140,10 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
 
 
-  def zoomOnScrollwheel() = {
+  def handleZoom() = {
     // TODO: only works for viewer at the moment, drawer can't zoom. must be implemented
     if(jQuery("#canvas").length > 0) {
-      changeZoomOnScroll match {
+      activeZoomAction match {
         case Some(x) => {
           val topLeftCorner = jQuery("#canvas").offset().asInstanceOf[Dynamic]
           val cTop = topLeftCorner.selectDynamic("top").asInstanceOf[Double]
@@ -157,7 +155,7 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
           val startZoomAndOffset = System.nanoTime()
           val zoomAndOffset = StableZoom.changeZoom(view.zoom, x.delta, view.center, mousePosition)
-          changeZoomOnScroll = None
+          activeZoomAction = None
           reportDuration("zoom and offset calc", startZoomAndOffset)
 
           val startZoomView = System.nanoTime()
@@ -214,6 +212,7 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
       view.viewSize = new Size(
         window.innerWidth,
         window.innerHeight
+
       )
     }
 
@@ -221,6 +220,8 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
     scaleFactor = calculateScaleFactor
 
     playground.onScale
+
+    TouchEventDistributor.reRegisterObservers(this)
   }
 
   def cornerTopLeft() = new Point(view.bounds.left, view.bounds.top)
@@ -228,16 +229,18 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
   def cornerBottomLeft() = new Point(view.bounds.left, view.bounds.top + view.bounds.width)
   def cornerBottomRight() = new Point(view.bounds.left + view.bounds.width, view.bounds.top + view.bounds.height)
 
-  def onMouseMove(event: ToolEvent) = {}
 
   override def onRealMouseDrag(event: MouseEvent) = {
+    onDrag(new Point(event.clientX, event.clientY))
+  }
 
+  override def onDrag(eventPoint: Point) = {
+//    console.log("drag on: ", eventPoint)
     if(allowPanAndZoom) {
-      if(changeCenterOnDrag.isEmpty) {
-        changeCenterOnDrag = Some(DragAction(event, new Point(event.clientX, event.clientY), view.center))
+      if(activeDragAction.isEmpty) {
+        activeDragAction = Some(DragAction(eventPoint, eventPoint, view.center))
       } else {
-        changeCenterOnDrag.get.event = event
-        console.log("drag event at point", new Point(event.clientX, event.clientY))
+        activeDragAction.get.eventPoint = eventPoint
       }
     }
   }
@@ -247,20 +250,28 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
   override def onMouseScrollFirefox(deltaY: Double) = {
     if(allowPanAndZoom) {
-      if(changeZoomOnScroll.isEmpty) {
-        changeZoomOnScroll = Some(ZoomAction(deltaY, MouseEventDistributor.currentMousePosition))
+      if(activeZoomAction.isEmpty) {
+        activeZoomAction = Some(ZoomAction(deltaY, MouseEventDistributor.currentMousePosition))
       } else {
-        changeZoomOnScroll.get.delta += deltaY
+        activeZoomAction.get.delta += deltaY
       }
     }
   }
 
-  def onMouseDrag(event: ToolEvent) = {}
+  override def onZoom(delta: Double, touchCenter: Point) = {
+    if(allowPanAndZoom) {
+      if(activeZoomAction.isEmpty) {
+        activeZoomAction = Some(ZoomAction(delta, MouseEventDistributor.currentMousePosition))
+      } else {
+          activeZoomAction.get.delta += delta
+      }
+    }
+  }
 
 
-  def onMouseDown(event: ToolEvent) = {}
-  def onMouseUp(event: ToolEvent) = {
-    changeCenterOnDrag = None
+
+  override def onMouseUp(event: ToolEvent) = {
+    activeDragAction = None
   }
 
   def calcFPS(event: FrameEvent) = {

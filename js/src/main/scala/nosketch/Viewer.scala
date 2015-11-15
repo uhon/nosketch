@@ -4,7 +4,7 @@ import java.awt.event.MouseWheelEvent
 
 import nosketch.components._
 import nosketch.hud.DebugHUD
-import nosketch.hud.elements.debug.{FPSIndicator, MouseIndicator, TextIndicator}
+import nosketch.hud.elements.debug.{FPSIndicator, MouseIndicator, TextIndicator, TouchIndicator}
 import nosketch.util.Profiler._
 import nosketch.viewport.ViewPort
 import paperjs.Paper._
@@ -58,6 +58,7 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
     DebugHUD.addElement(new TextIndicator(() => "visibleHexagons: " + this.visibleHexagons.size))
     DebugHUD.addElement(new TextIndicator(() => "layers: " + project.layers.size))
     DebugHUD.addElement(new MouseIndicator(viewPort))
+    DebugHUD.addElement(new TouchIndicator(viewPort))
     DebugHUD.addElement(FPSIndicator)
 
     //clusterList ::= new Cluster(viewPort.center, viewPort.scaleFactor)
@@ -67,7 +68,6 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
     initHexagons
     Paper.view.draw()
 
-    removeEverythingPeriodically
   }
 
 
@@ -194,15 +194,6 @@ object Viewer extends scala.scalajs.js.JSApp with ViewportSubscriber {
       updateView(forceRedrawVisible = true)
 
     }
-  }
-
-  def removeEverythingPeriodically = {
-    //testing method
-//    setInterval(() => {
-//      project.activeLayer.removeChildren()
-//      initHexagons
-//      updateView()
-//    }, 1000)
   }
 
 }

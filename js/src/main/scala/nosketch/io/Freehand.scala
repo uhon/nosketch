@@ -4,7 +4,7 @@ import java.awt.event.MouseEvent
 
 import nosketch.components.Hexagon
 import nosketch.controls.ControlHandler
-import nosketch.util.{MouseEventListener, MouseEventDistributor}
+import nosketch.io.MouseEventListener
 import org.scalajs.dom._
 import paperjs.Basic.Point
 import paperjs.Items.{Group, Item}
@@ -77,10 +77,6 @@ class Freehand(hexagon: Hexagon, var scaleFactor: Double) extends MouseEventList
       }
     }
   }
-
-  override def onMouseMove(event: ToolEvent) = {}
-
-  override def onMouseScroll(event: WheelEvent) = {}
 
   def finishShape(): Unit = {
     dragActive = false
