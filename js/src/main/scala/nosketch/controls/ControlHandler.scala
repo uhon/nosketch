@@ -2,7 +2,7 @@ package nosketch.controls
 
 import nosketch.io.Freehand
 import org.scalajs.dom.console
-import org.scalajs.jquery._
+import org.querki.jquery._
 
 
 object ControlHandler {
@@ -15,15 +15,15 @@ object ControlHandler {
 
   def setStrokeWith(event: JQueryEventObject, size: Int): Unit = {
     // console.log("New StrokeWidth is:", size.toString.toInt)
-    jQuery("#controlBar .control") removeClass "active"
-    jQuery(event.target) addClass "active"
+    $("#controlBar .control") removeClass "active"
+    $(event.target) addClass "active"
     freehand.currentStrokeWidth = size.toString.toInt
   }
 
   def apply(freehand: Freehand): Unit = {
     this.freehand = freehand
-    jQuery("#strokeWidthSmall").click((e: JQueryEventObject) => setStrokeWith(e, StrokeWidth.Small))
-    jQuery("#strokeWidthMedium").click((e: JQueryEventObject) => setStrokeWith(e, StrokeWidth.Medium))
-    jQuery("#strokeWidthLarge").click((e: JQueryEventObject) => setStrokeWith(e, StrokeWidth.Large))
+    $("#strokeWidthSmall").click((e: JQueryEventObject) => setStrokeWith(e, StrokeWidth.Small))
+    $("#strokeWidthMedium").click((e: JQueryEventObject) => setStrokeWith(e, StrokeWidth.Medium))
+    $("#strokeWidthLarge").click((e: JQueryEventObject) => setStrokeWith(e, StrokeWidth.Large))
   }
 }

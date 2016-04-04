@@ -1,3 +1,6 @@
 [submodule "paper-scala-js"]
 	path = paper-scala-js
 	url = git@github.com:uhon/paper-scala-js.git
+[submodule "von-grid-scala-js"]
+	path = von-grid-scala-js
+	url = git@github.com:uhon/von-grid-scala-js.git

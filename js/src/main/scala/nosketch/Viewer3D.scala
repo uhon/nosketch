@@ -7,18 +7,35 @@ import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.{FPSIndicator, MouseIndicator, TextIndicator, TouchIndicator}
 import nosketch.util.Profiler._
 import nosketch.viewport.ViewPort
+import org.denigma.threejs.extensions.controls.CameraControls
+import org.denigma.threejs.extras.HtmlSprite
+import org.denigma.threejs._
+import org.denigma.threejs.extensions.Container3D
+import org.scalajs.dom
+import org.scalajs.dom.raw.HTMLElement
 import paperjs.Paper._
+
 import scala.collection.mutable
 import org.scalajs.dom._
 import paperjs.Basic.Point
-import paperjs.{PaperScope, Paper}
+import paperjs.{Paper, PaperScope}
 
+import scala.scalajs.js
 import scala.scalajs.js.Any
 import scala.scalajs.js.annotation.JSExport
 import org.scalajs.dom._
+import org.querki.jquery._
+import vongrid._
+import vongrid.lib._
+import vongrid.config._
+import vongrid.utils.{MC, MouseCaster, Scene}
+
+import js.Dynamic.{global => g}
+import js.Dynamic.{literal => l}
+import scala.util.Random
 
 @JSExport
-object Viewer /*extends scala.scalajs.js.JSApp*/ extends ViewportSubscriber {
+object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
   var visibleHexagons: mutable.Map[Point, VisibleHexagon] = mutable.Map()
 
@@ -31,44 +48,110 @@ object Viewer /*extends scala.scalajs.js.JSApp*/ extends ViewportSubscriber {
    * Main Entry-Point when not triggered by Script-Tag in Html-Head
    */
   @JSExport
-  def moin() = {
-    startViewer(document.getElementById("canvas").asInstanceOf[html.Canvas])
+  def main() = {
+    $("document").ready(() => startViewer(document.getElementById("magicContainer")) )
+
   }
 
   /**
    * starts the Viewer by creating and initalizing ViewPort, initHexagons, adding HUD and rezising the View (to the window size)
-   * @param canvas
+    *
+    * @param element
    */
   @JSExport
-  def startViewer(canvas: html.Canvas): Unit = {
-    if(canvas == null) { return }
+  def startViewer(element: Element): Unit = {
+    console.log("starting viewer")
+    //if(canvas == null) { return }
 
-    viewPort = new ViewPort(canvas, this)
 
 
+    //console.log("created viewport")
     // Initialize the ViewPort
-    viewPort.init
 
+    activate(element)
 
-    // enable Debug HUD and add Content to it
-    DebugHUD.enabled = true
-    DebugHUD.addElement(new TextIndicator(() => "scale: " + viewPort.scaleFactor.toString))
-    DebugHUD.addElement(new TextIndicator(() => "zoom: " + viewPort.getView.zoom.toString))
-    DebugHUD.addElement(new TextIndicator(() => "delta-c: " + viewPort.getOffsetVector))
-    DebugHUD.addElement(new TextIndicator(() => "visibleHexagons: " + this.visibleHexagons.size))
-    DebugHUD.addElement(new TextIndicator(() => "layers: " + project.layers.size))
-    DebugHUD.addElement(new MouseIndicator(viewPort))
-    DebugHUD.addElement(new TouchIndicator(viewPort))
-    DebugHUD.addElement(FPSIndicator)
-
-    //clusterList ::= new Cluster(viewPort.center, viewPort.scaleFactor)
-
-
-    viewPort.resizeWindow // triggers on scale
-    initHexagons
-    Paper.view.draw()
+    //viewPort = new ViewPort($("#magicContainer canvas").get(0).asInstanceOf[dom.html.Canvas], this)
+    //viewPort.init
 
   }
+
+  def activate(element: Element): Unit = {
+    console.log("activate")
+
+
+
+    element.asInstanceOf[HTMLElement].style.backgroundColor = "green"
+    val scene = new Scene(
+      l(
+        "element" -> element,
+        "cameraPosition" -> new Vector3(0, 150, 150),
+        "fog" -> new Fog(0xFFFFFF, 200, 400)
+      ).asInstanceOf[SceneConfig],
+      true)
+
+    scene.render()
+
+    console.log("print properties")
+    console.log(scene)
+
+    // this constructs the cells in grid coordinate space
+    val grid = new HexGrid(l(
+        "cellSize" -> 11,
+        "cameraPosition" -> new Vector3(0, 0, 150),
+        "fog" -> new Fog(0xFFFFFF, 200, 400)
+      ).asInstanceOf[HexGridConfig]
+    )
+
+    grid.generate(l("size" -> 5).asInstanceOf[SimpleTileGenConfig])
+
+    val mouse = new MouseCaster(scene.container, scene.camera);
+    var board = new Board(grid)
+
+    // this will generate extruded hexagonal tiles
+    board.generateTilemap(l(
+        "tileScale" -> 0.91f // you might have to scale the tile so the extruded geometry fits the cell size perfectly
+      ).asInstanceOf[TileGenConfig]
+    )
+
+
+
+    scene.add(board.group)
+    scene.focusOn(board.group)
+
+    mouse.signal.add((evt: String, tile: js.Object) => {
+      if (evt == MC.CLICK) {
+        // tile.toggle();
+        // or we can use the mouse's raw coordinates to access the cell directly, just for fun:
+        var cell = board.grid.pixelToCell(mouse.position)
+        if(cell.isDefined) {
+          val t = board.getTileAtCell(cell.get)
+          if (t.isDefined) t.get.toggle();
+        }
+      }
+    }, this.asInstanceOf[js.Object])
+
+
+//    mouse.signal.add(function(evt, tile) {
+//      if (evt === vg.MouseCaster.CLICK) {
+//        // tile.toggle();
+//        // or we can use the mouse's raw coordinates to access the cell directly, just for fun:
+//        var cell = board.grid.pixelToCell(mouse.position);
+//        var t = board.getTileAtCell(cell);
+//        if (t) t.toggle();
+//      }
+//    }, this);
+
+    update
+
+    def update {
+      //console.log("repaint")
+        mouse.update
+        scene.render
+        g.requestAnimationFrame(() => update)
+    }
+  }
+
+
 
 
   def initHexagons = {
@@ -104,7 +187,8 @@ object Viewer /*extends scala.scalajs.js.JSApp*/ extends ViewportSubscriber {
   /**
    * Searches for Hexagons among the visibleHexagons map by key as roundedCenter
    * if one was found, it gets retruned, otherwise a new Hexagon is created and drawn immediately
-   * @param center the center position of the new Hexagon
+    *
+    * @param center the center position of the new Hexagon
    * @param radius radius of the new Hexagon
    * @param scaleFactor scale Factor to Scale the whole thing
    * @return
@@ -150,7 +234,8 @@ object Viewer /*extends scala.scalajs.js.JSApp*/ extends ViewportSubscriber {
 
   /**
    * Updates the view and redraws all Hexagon which will newly appear on screen
-   * @param forceRedrawVisible
+    *
+    * @param forceRedrawVisible
    */
   def updateView(forceRedrawVisible: Boolean = false) = {
     val startTime = System.nanoTime

@@ -28,12 +28,12 @@ lazy val nosketch = crossProject.
     persistLauncher         := true,
     persistLauncher in Test := false,
     bootSnippet             := """
-                                 |nosketch.Viewer.main();
+                                 |nosketch.Viewer3D.main();
                                """.trim.stripMargin,
     testFrameworks          += new TestFramework("utest.runner.Framework"),
     libraryDependencies    ++= Seq(
       "org.scalaz"                %%  "scalaz-core" % "7.1.0",
-      "org.scala-js"              %%% "scalajs-dom" % "0.8.1",
+      "org.scala-js"              %%% "scalajs-dom" % "0.9.0",
       "com.lihaoyi"               %%% "utest"       % "0.3.0" % "test",
       "com.github.japgolly.nyaya" %%% "nyaya-test"  % "0.5.3" % "test"
     ),
@@ -56,29 +56,54 @@ lazy val nosketchJVM = (project in file("jvm")).settings(
   .aggregate(clients.map(projectToRef): _*)
   .dependsOn(nosketchSharedJvm)
 
+lazy val vonGridScalaJs = (project in file("von-grid-scala-js")).settings(
+  scalaVersion := scalaV,
+  persistLauncher := true,
+  //refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile),
+  persistLauncher in Test := false,
+  resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"),
+  resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+  libraryDependencies ++= Seq(
+    "org.scala-js" %%% "scalajs-dom" % "0.9.0",
+    "org.scala-js" %%% "scalajs-tools" % "0.6.6",
+    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6"
+  ),
+  jsDependencies ++= Seq(
+    RuntimeDOM,
+    "org.webjars" % "three.js" % "r74" / "three.js"
+  ),
+  persistLauncher in Compile := true,
+  skip in packageJSDependencies := false
+
+).enablePlugins(ScalaJSPlugin)
+
 lazy val nosketchJS = (project in file("js")).settings(
   scalaVersion := scalaV,
   persistLauncher := true,
   //refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile),
   persistLauncher in Test := false,
   sourceMapsDirectories += nosketchSharedJs.base / "..",
+  resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"),
   resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
   libraryDependencies ++= Seq(
-    "org.scala-js" %%% "scalajs-dom" % "0.8.1",
-    "org.scala-js" %%% "scalajs-tools" % "0.6.0",
-    "be.doeraene" %%% "scalajs-jquery" % "0.8.0",
-    "com.lihaoyi" %%% "scalarx" % "0.2.8"
+    "org.scala-js" %%% "scalajs-dom" % "0.9.0",
+    "org.scala-js" %%% "scalajs-tools" % "0.6.6",
+    "org.querki" %%% "jquery-facade" % "1.0-RC2", //scalajs facade for jQuery + jQuery extensions
+    "com.lihaoyi" %%% "scalarx" % "0.2.8",
+    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6"
   ),
   jsDependencies ++= Seq(
     RuntimeDOM,
-    "org.webjars" % "jquery" % "2.1.4" / "jquery.js",
-    "org.webjars" % "bootstrap" % "3.3.5" / "bootstrap.js"
+    "org.webjars" % "jquery" % "2.2.1" / "jquery.js",
+    "org.webjars" % "bootstrap" % "3.3.5" / "bootstrap.js",
+    "org.webjars" % "three.js" % "r74" / "three.js"
   ),
   persistLauncher in Compile := true,
   skip in packageJSDependencies := false
 
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay)
   .dependsOn(nosketchSharedJs)
+  .dependsOn(vonGridScalaJs)
   .dependsOn(paperScalaJs)
 
 lazy val paperScalaJs = (project in file("paper-scala-js")).settings(
@@ -86,8 +111,8 @@ lazy val paperScalaJs = (project in file("paper-scala-js")).settings(
   persistLauncher := true,
   persistLauncher in Test := false,
   libraryDependencies ++= Seq(
-    "org.scala-js" %%% "scalajs-dom" % "0.8.1" withJavadoc(),
-    "org.scala-js" %%% "scalajs-tools" % "0.6.5" withJavadoc()
+    "org.scala-js" %%% "scalajs-dom" % "0.9.0" withJavadoc(),
+    "org.scala-js" %%% "scalajs-tools" % "0.6.6" withJavadoc()
   ),
 //  jsDependencies ++= Seq(
 //    "org.webjars" % "paperjs" % "0.9.24" / "paper-full.min.js" commonJSName "paper"

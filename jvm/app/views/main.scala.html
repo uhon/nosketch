@@ -10,13 +10,18 @@
     <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
     <link href='https://fonts.googleapis.com/css?family=Tillana:400,800' rel='stylesheet' type='text/css'>
     <!-- for live-reload -->
+    @playscalajs.html.scripts("nosketchJS")
+    <script type="text/javascript" src="/assets/js/CSS3DRenderer.js"></script>
+    <script type="text/javascript" src="/assets/js/OrbitControls.js"></script>
     <script type="text/javascript" src="/assets/js/paper-full.js"></script>
+    <script type="text/javascript" src="/assets/js/von-grid.min.js"></script>
     <script type="text/javascript" src="//localhost:12345/workbench.js"></script>
   </head>
+
   <body>
     @navigation()
     @content
-    @playscalajs.html.scripts("nosketchJS")
     @onLoadScript
+
   </body>
 </html>

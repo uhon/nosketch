@@ -2,22 +2,22 @@
 
 @script = {
     <script type="text/javascript">
-        document.onreadystatechange = function () {
-            if (document.readyState == "complete") {
-                // Get a re ference to the canvas object
-                // var canvas = document.getElementById('canvas');
-                // Call the scalajs app entry point
-                nosketch.Viewer.main();
-            }
-        };
+//        document.onreadystatechange = function () {
+//            if (document.readyState == "complete") {
+//                // Get a re ference to the canvas object
+//                // var canvas = document.getElementById('canvas');
+//                // Call the scalajs app entry point
+//                nosketch.Viewer3D.main();
+//            }
+//        };
     </script>
 }
 
 @main(title, script) {
     <p><a href="@routes.Application.draw()">you might want to start drawing...</a></p>
 
-    <div>
-        <canvas style="display: block" id="canvas" width="700" height="700"></canvas>
-    </div>
+    <div id="magicContainer">
+
+    </div
 }
 

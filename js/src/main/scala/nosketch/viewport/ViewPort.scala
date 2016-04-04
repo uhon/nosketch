@@ -18,7 +18,7 @@ import paperjs._
 import paperjs.Paper._
 
 import scala.scalajs.js._
-import org.scalajs.jquery._
+import org.querki.jquery._
 
 
 class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean = false, allowPanAndZoom: Boolean = true) extends MouseEventListener with TouchEventListener {
@@ -142,10 +142,10 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
   def handleZoom() = {
     // TODO: only works for viewer at the moment, drawer can't zoom. must be implemented
-    if(jQuery("#canvas").length > 0) {
+    if($("#canvas").length > 0) {
       activeZoomAction match {
         case Some(x) => {
-          val topLeftCorner = jQuery("#canvas").offset().asInstanceOf[Dynamic]
+          val topLeftCorner = $("#canvas").offset().asInstanceOf[Dynamic]
           val cTop = topLeftCorner.selectDynamic("top").asInstanceOf[Double]
           val cLeft = topLeftCorner.selectDynamic("left").asInstanceOf[Double]
 
@@ -212,9 +212,10 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
       view.viewSize = new Size(
         window.innerWidth,
         window.innerHeight
-
       )
     }
+
+
 
 
     scaleFactor = calculateScaleFactor
