@@ -53,29 +53,29 @@ class Freehand(hexagon: Hexagon, var scaleFactor: Double) extends MouseEventList
 
 
   override def onMouseDrag(event: ToolEvent): Unit = {
-    if (dragActive) {
-      // Every drag event, add a point to the path at the current
-      // position of the mouse:
-      val x1 = event.point.x
-      val y1 = event.point.y
-      val x0 = Paper.view.center.x
-      val y0 = Paper.view.center.y
-
-      val distanceToCenter = Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0))
-
-      if (distanceToCenter < hexagon.getCircleCanvas.getRadius / 2 * scaleFactor) {
-        currentPath.add(event.point)
-
-//        if (hexagon.connectors != null) {
-//          for (con <- hexagon.connectors) {
-//            var test = con.getPath.hitTest(event.point, Dynamic.literal())
+//    if (dragActive) {
+//      // Every drag event, add a point to the path at the current
+//      // position of the mouse:
+//      val x1 = event.point.x
+//      val y1 = event.point.y
+//      val x0 = Paper.view.center.x
+//      val y0 = Paper.view.center.y
 //
-//            // TODO: ifHit
-//            finishShape()
-//          }
-//        }
-      }
-    }
+//      val distanceToCenter = Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0))
+//
+//      if (distanceToCenter < hexagon.getCircleCanvas.getRadius / 2 * scaleFactor) {
+//        currentPath.add(event.point)
+//
+////        if (hexagon.connectors != null) {
+////          for (con <- hexagon.connectors) {
+////            var test = con.getPath.hitTest(event.point, Dynamic.literal())
+////
+////            // TODO: ifHit
+////            finishShape()
+////          }
+////        }
+//      }
+//    }
   }
 
   def finishShape(): Unit = {

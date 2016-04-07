@@ -1,20 +1,23 @@
 package nosketch.components
 
-import nosketch.util.HexConstants
-import paperjs.Basic.Point
+import org.denigma.threejs.Vector3
+import vongrid.{ACell, Cell}
+import org.scalajs.dom._
+
+import scala.scalajs.js.annotation.ScalaJSDefined
+;
 
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-object PhantomHexagon extends AbstractHexagon{
+@ScalaJSDefined
+object PhantomHexagon extends Cell(q=0,r=0,s=0,h=0) {
 
-  def getCenter(neighbour: VisibleHexagon, side: Int): Point = {
-//    neighbours.find(_.isInstanceOf[VisibleHexagon]) match {
-//      case None => new Point(0)
-//      case x: VisibleHexagon => x.getCenter *
-    val neighboursSide = HexConstants.sideMappings(side)
-    val vectorFromNeighbour = new Point(CircleCanvas.getRadiusForInnerCircle(neighbour.getRadius),0)
-    vectorFromNeighbour.angle = 30 + HexConstants.angleToHexagonOnSide(side)
-    neighbour.getCenter.add(vectorFromNeighbour)
+  def calculateCenter(neighbour: VisibleHexagon, side: vongrid.Cell): Vector3 = {
+    val centerCell = new Cell(0,0,0)
+    centerCell.copy(neighbour)
+    centerCell.add(side)
+
+    new Vector3(centerCell.q, centerCell.r, centerCell.s)
   }
 }

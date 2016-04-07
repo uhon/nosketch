@@ -4,7 +4,7 @@ import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.{FPSIndicator, MouseIndicator}
 import nosketch.io.{TouchEventListener, TouchEventDistributor, MouseEventListener, MouseEventDistributor}
 import nosketch.util.Profiler._
-import nosketch.{Viewer, SimplePanAndZoom, ViewportSubscriber}
+import nosketch.{Viewer3D, SimplePanAndZoom, ViewportSubscriber}
 import org.scalajs.dom._
 import org.scalajs.dom.html.Canvas
 import paperjs.Basic._

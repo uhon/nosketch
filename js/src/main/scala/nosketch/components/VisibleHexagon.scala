@@ -1,75 +1,47 @@
 package nosketch.components
 
-import nosketch.Viewer
+import nosketch.Viewer3D
 import org.scalajs.dom.console
 import nosketch.components.PhantomHexagon
 import nosketch.components.EmptyHexagon
 import nosketch.util.HexConstants
+import org.denigma.threejs.Vector3
 import paperjs.Basic.Point
 import paperjs.Paths.Path
 import paperjs.Styling.Color
 import paperjs.Items.{Item, Layer}
+import vongrid.{AbstractCell, Cell}
+
+import scala.collection.mutable
 import scala.scalajs.js
+import scala.scalajs.js.annotation.ScalaJSDefined
 
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double, showInnerCircle: Boolean = false) extends AbstractHexagon {
-  val layer = new Layer(new js.Array[Item](0))
+@ScalaJSDefined
+abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = 0f) extends Cell(q, r, s, h) {
 
-  var neighbours: Array[_ >: AbstractHexagon] =  Array[AbstractHexagon](PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon)
+  var neighbours: js.Array[_ >: Cell] = js.Array[Cell](PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon)
 
-  var hex: Path = null
 
-  val color = Color(Math.random(), Math.random(), Math.random(), 0.3)
-
+  def getCenter = new Vector3(q, r, s)
   def destroy: Any = {
-    //layer.removeChildren()
-    layer.remove()
-    if(hex != null) {
-      hex.remove
-      hex = null
-    }
+    // TODO: REMOVE DATA
 
     for (i <- 0 to 5) {
       neighbours(i) match {
         case x: VisibleHexagon => x.neighbours(HexConstants.sideMappings(i)) = PhantomHexagon
-        case x: AbstractHexagon => {}
+        case PhantomHexagon =>
       }
     }
   }
 
 
-
-
-
-
-  def getRadius: Double = radius
-
-  def getCenter: Point = center
-
-  def getPath: Path = hex
-
-
-  def redraw(scaleFactor: Double) = {
-    //console.log("redraw")
-    layer.activate()
-    //console log "draw hexagon with center at: " + center
-    if (hex != null) hex remove()
-
-    val c = center.multiply(scaleFactor)
-    hex = Path RegularPolygon(c, 6, radius * scaleFactor)
-    hex rotate 30
-
-    //hex.fillColor = Color(Math.random(), Math.random(), Math.random(), 1)
-    hex fillColor = color
-    hex strokeColor = Color("#3c3f41")
-    hex strokeWidth = 1
-  }
-
   /**
    * Assign new hexagons as neighbour if they fit into the bounds of the current view
    * newly on screen
+ *
    * @return
    */
   def assignNeighbours: Any = {
@@ -79,9 +51,11 @@ abstract class VisibleHexagon(center: Point, radius: Double, scaleFactor: Double
       //console.log("=== checking neighbour " + i)
       neighbours(i) match {
         case PhantomHexagon => {
-          val center = PhantomHexagon.getCenter(this, HexConstants.sideMappings(i))
+          val neighbourCenter = PhantomHexagon.calculateCenter(this, grid.getDirection(i))
+//          console.log("Neighbour is a Phantom, calculate its center is", neighbourCenter)
           //console.log("creating new Hexagon at Pos", center.toString())
-          val hexTuple = Viewer.findOrCreateHexagon(center, radius, scaleFactor)
+          // TODO: calc position of new hex by adding directions-cell
+          val hexTuple = Viewer3D.findOrCreateHexagon(neighbourCenter)
           neighbours(i) = hexTuple._1
           hexTuple match {
             case (v: VisibleHexagon, r:Boolean) =>

@@ -1,4 +1,5 @@
 import sbt.Project.projectToRef
+import com.lihaoyi.workbench.Plugin._
 
 name := """nosketch"""
 
@@ -75,7 +76,8 @@ lazy val vonGridScalaJs = (project in file("von-grid-scala-js")).settings(
   persistLauncher in Compile := true,
   skip in packageJSDependencies := false
 
-).enablePlugins(ScalaJSPlugin)
+).dependsOn(nosketchSharedJs)
+  .enablePlugins(ScalaJSPlugin)
 
 lazy val nosketchJS = (project in file("js")).settings(
   scalaVersion := scalaV,
@@ -138,9 +140,12 @@ resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositor
 
 
 // Scala-Js Workbench (Live-Reload and such things)
-//workbenchSettings
+workbenchSettings
 
-//bootSnippet := "nosketch.Viewer.startViewer(document.getElementById('canvas'));"
+
+//updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile)
+
+bootSnippet := "nosketch.Viewer3D.startViewer(document.getElementById('canvas'));"
 
 scalaJSStage in Global := FastOptStage
 
