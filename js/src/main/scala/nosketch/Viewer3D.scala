@@ -29,6 +29,7 @@ import vongrid._
 import vongrid.lib._
 import vongrid.config._
 import vongrid.utils.{MC, MouseCaster, Scene}
+import scala.scalajs.js.timers._
 
 import js.Dynamic.{global => g}
 import js.Dynamic.{literal => l}
@@ -39,6 +40,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
   var viewPort: ViewPort = null
   var grid: NSGrid = null
+  var board: NSBoard = null
   var scene: Scene = null
 
 //  var clusterList: List[Cluster] = List()
@@ -75,17 +77,19 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
   }
 
+  var lastFrustum: Long = System.currentTimeMillis()
+
   def activate(element: Element): Unit = {
     console.log("activate")
 
 
 
-    element.asInstanceOf[HTMLElement].style.backgroundColor = "green"
+    element.asInstanceOf[HTMLElement].style.backgroundColor = "#DDFFDD"
     scene = new Scene(
       l(
         "element" -> element,
-        "cameraPosition" -> new Vector3(0, 150, 150),
-        "fog" -> new Fog(0xFFFFFF, 200, 400)
+        "cameraPosition" -> new Vector3(0, 150, 150)
+        //"fog" -> new Fog(0x003300, 340, 370)
       ).asInstanceOf[SceneConfig],
       true
     )
@@ -101,28 +105,45 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     )
 
     //grid.generate(l("size" -> 5).asInstanceOf[SimpleTileGenConfig])
-    initHexagons
 
-    val mouse = new MouseCaster(scene.container, scene.camera);
-    var board = new NSBoard(grid, js.undefined)
+
+    val mouse = new NSMouseCaster(scene.container, scene.camera);
+    board = new NSBoard(grid, js.undefined)
 
     // this will generate extruded hexagonal tiles
     board.generateTilemap(l(
-        "tileScale" -> 0.91f // you might have to scale the tile so the extruded geometry fits the cell size perfectly
+        "tileScale" -> 0.97f // you might have to scale the tile so the extruded geometry fits the cell size perfectly
       ).asInstanceOf[TileGenConfig]
     )
 
 
+    initHexagons
 
     scene.add(board.group)
     scene.focusOn(board.group)
 
     mouse.signal.add((evt: String, tile: js.Object) => {
+      if (evt == MC.OVER) {
+        if(System.currentTimeMillis() - lastFrustum > 10) {
+          frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
+          updateView(true)
+          lastFrustum = System.currentTimeMillis()
+        }
+
+      }
+      if (evt == MC.WHEEL) {
+        if(System.currentTimeMillis() - lastFrustum > 10) {
+          frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
+          updateView(true)
+          lastFrustum = System.currentTimeMillis()
+        }
+
+      }
       if (evt == MC.CLICK) {
-        //updateView(true)
+
         // tile.toggle();
         // or we can use the mouse's raw coordinates to access the cell directly, just for fun:
-        var cell = board.getGrid.pixelToCell(mouse.position)
+        var cell = board.getGrid.getCellAt(mouse.position)
         val visualHex = cell.asInstanceOf[VisibleHexagon]
 
         if(cell.isDefined) {
@@ -131,8 +152,8 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
             t.get.toggle()
             console.log("cell:", cell)
             console.log("neighbours", cell.asInstanceOf[VisibleHexagon].neighbours)
-            cell.asInstanceOf[VisibleHexagon].neighbours.foreach {
-              case c: VisibleHexagon => board.getTileAtCell(c).toOption.get.toggle()
+            cell.asInstanceOf[VisibleHexagon].neighbours.zipWithIndex.foreach {
+              case (c: VisibleHexagon, i: Int) => setTimeout(i*100) { board.getTileAtCell(c).toOption.get.toggle() }
             }
 
           }
@@ -167,9 +188,14 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
   def initHexagons = {
     val startTime = System.nanoTime
-    val initialHex = new ImageHexagon(grid)
+//
+//    grid.generate(l("size" -> 0).asInstanceOf[SimpleTileGenConfig])
+
+   val initialHex = new ImageHexagon(grid)
+    //grid.generateTiles
     grid.add(initialHex)
-    initialHex.assignNeighbours
+    grid.generateTile(initialHex, 0.97d)
+    grid.getVisibleCells.foreach(_._2.assignNeighbours)
     //reportDuration("Viewer::initHexagons", startTime)
     updateView()
     //setTimeout(() => updateView(), 2000)
@@ -177,16 +203,13 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
   val frustum: Frustum = new Frustum()
 
-  def isOutOfScope(position: Vector3) = {
-    // TODO: Do this only on real camera changes. Not for every element!
-    scene.camera.updateMatrix(); // make sure camera's local matrix is updated
-    scene.camera.updateMatrixWorld()
-    frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
+  def isOutOfScope(pos: Vector3) = {
 
-    // position should come as pos already! or then as cell!
-    val pos = grid.cellToPixel(new Cell(position.x, position.y, position.z))
+
 //    console.log("distance to cammera", scene.camera.position.distanceTo(pos) )
-    /*scene.camera.position.distanceTo(pos) > 200.09 || */!frustum.containsPoint(pos)
+    /* || */
+
+    scene.camera.position.distanceTo(pos) > 400 || !frustum.intersectsSphere(new Sphere(pos, 11))
 
     //    false
 
@@ -212,17 +235,18 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
 
 //      console.log("Find cell at", center, grid.getCellAt(center).getOrElse("no cell found"))
-      grid.getCellAt(center) match {
+      grid.getCellAt(center).toOption match {
         case Some(c: Cell) => console.log("found hexagon"); (c.asInstanceOf[VisibleHexagon], false)
         case None => {
           // TODO: call cluster logic from here to create hexagons with sketches
           // for now just test-shapes and Hexagons Types shown
           console.log("No hexagon present, draw a new")
-          var newHex:VisibleHexagon = null
-//            if((Math.random() * 10).toInt % 9 == 0) {
-          newHex = new ImageHexagon(grid, center.x, center.y, center.z, 1)
+          val tmpCell = grid.pixelToCell(center)
+          val newHex = new ImageHexagon(grid, tmpCell.q, tmpCell.r, tmpCell.s, 1)
           grid.add(newHex)
-          newHex.assignNeighbours
+
+          setTimeout(400 * Math.random()) { board.addTile(grid.generateTile(newHex, 0.97d)) }
+          //setTimeout(10) { newHex.assignNeighbours }
 
 //            } else if((Math.random() * 5).toInt % 4 == 0) {
 //              newHex = new EmptyHexagon(center, radius, scaleFactor)
@@ -249,34 +273,44 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     * @param forceRedrawVisible
    */
   def updateView(forceRedrawVisible: Boolean = false) = {
+    console.log("updating view...")
     val startTime = System.nanoTime
     //console.log("update viewPort with Bounds:" + viewPort.getView.bounds.right, viewPort.getView.bounds.top, viewPort.getView.bounds.left, viewPort.getView.bounds.bottom)
     //console.log("SIZE OF VISIBLE HEXAGONS: ", visibleHexagons.size, printCoordinates(visibleHexagons))
 
 
-    console.log("visible Hexagons", grid.getVisibleCells)
+    console.log("visible Hexagons #", grid.getVisibleCells.size)
     // Remove invisible hexagons
     grid.getVisibleCells.foreach((t: Tuple2[String,VisibleHexagon]) => {
+      console.log("check if out of scope", t._2.getCenter)
       if(isOutOfScope(t._2.getCenter)) {
-        console.log("became out of scope");
+        console.log("became out of scope")
+        board.removeTile(t._2.tile)
         t._2.destroy
         grid.remove(t._2)
       }
     })
     reportDuration("Viewer::remove invisible", startTime)
+    console.log("visible Hexagons after cleanup #", grid.getVisibleCells.size)
 
     // Assign new hexagons and redraw them when appear
     val assignNeighboursTime = System.nanoTime
-    console.log("visible Hexagons", grid.getVisibleCells)
+
+
     grid.getVisibleCells.foreach(_._2.assignNeighbours)
+
+
+    console.log("visible Hexagons after expanding #", grid.getVisibleCells.size)
     reportDuration("Viewer::remove invisible", assignNeighboursTime)
 
+    //scene.render()
 //    if(forceRedrawVisible) {
 //      console.log("forced redraw of all hexagons")
 //      grid.cells.foreach(_._2.redraw(viewPort.scaleFactor))
 //    }
     // We don't redraw all Hexagons here (meight not be necessary)
     reportDuration("Viewer::updateView", startTime)
+    //scene.render()
   }
 
   override def onZoom = {

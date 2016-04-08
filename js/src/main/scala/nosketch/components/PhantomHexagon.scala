@@ -13,11 +13,11 @@ import scala.scalajs.js.annotation.ScalaJSDefined
 @ScalaJSDefined
 object PhantomHexagon extends Cell(q=0,r=0,s=0,h=0) {
 
-  def calculateCenter(neighbour: VisibleHexagon, side: vongrid.Cell): Vector3 = {
+  def calculateCellAtCenter(neighbour: VisibleHexagon, side: vongrid.Cell): Cell = {
     val centerCell = new Cell(0,0,0)
     centerCell.copy(neighbour)
     centerCell.add(side)
 
-    new Vector3(centerCell.q, centerCell.r, centerCell.s)
+    centerCell
   }
 }

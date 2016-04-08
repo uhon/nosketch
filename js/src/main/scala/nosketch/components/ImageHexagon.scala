@@ -1,9 +1,12 @@
 package nosketch.components
 
 import org.scalajs.dom
+
+import scalajs.js.timers.setTimeout
 import org.scalajs.dom.raw.{Event, HTMLImageElement}
 import paperjs.Basic.{Point, Rect, Size}
 import paperjs.Items.Raster
+import vongrid.Cell
 
 import scala.scalajs.js.annotation.ScalaJSDefined
 

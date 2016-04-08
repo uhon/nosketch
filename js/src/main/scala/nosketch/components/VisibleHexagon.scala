@@ -11,6 +11,7 @@ import paperjs.Paths.Path
 import paperjs.Styling.Color
 import paperjs.Items.{Item, Layer}
 import vongrid.{AbstractCell, Cell}
+import scala.scalajs.js.timers._
 
 import scala.collection.mutable
 import scala.scalajs.js
@@ -20,12 +21,12 @@ import scala.scalajs.js.annotation.ScalaJSDefined
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
 @ScalaJSDefined
-abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = 0f) extends Cell(q, r, s, h) {
+abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = 0d) extends Cell(q, r, s, h) {
 
   var neighbours: js.Array[_ >: Cell] = js.Array[Cell](PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon)
 
 
-  def getCenter = new Vector3(q, r, s)
+  def getCenter = grid.cellToPixel(this)
   def destroy: Any = {
     // TODO: REMOVE DATA
 
@@ -51,11 +52,14 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
       //console.log("=== checking neighbour " + i)
       neighbours(i) match {
         case PhantomHexagon => {
-          val neighbourCenter = PhantomHexagon.calculateCenter(this, grid.getDirection(i))
-//          console.log("Neighbour is a Phantom, calculate its center is", neighbourCenter)
+          val neighbourCenter = PhantomHexagon.calculateCellAtCenter(this, grid.getDirection(i))
+          console.log("Neighbour is a Phantom  with center", neighbourCenter)
           //console.log("creating new Hexagon at Pos", center.toString())
           // TODO: calc position of new hex by adding directions-cell
-          val hexTuple = Viewer3D.findOrCreateHexagon(neighbourCenter)
+          val hexTuple = Viewer3D.findOrCreateHexagon(grid.cellToPixel(neighbourCenter))
+
+          console.log("hexTUPLE", hexTuple.toString())
+
           neighbours(i) = hexTuple._1
           hexTuple match {
             case (v: VisibleHexagon, r:Boolean) =>

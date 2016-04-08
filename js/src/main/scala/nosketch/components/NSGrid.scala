@@ -17,13 +17,14 @@ import js.Dynamic.{literal => l}
 class NSGrid(config: HexGridConfig) extends HexGrid(config) {
 
   val _directions = js.Array[Cell](
-    new Cell(+1d, -1d, 0d),
+
     new Cell(+1d, 0d, -1d),
     new Cell(0d, +1d, -1d),
     new Cell(-1d, +1d, 0d),
     new Cell(-1d, 0d, +1d),
-    new Cell(0d, -1d, +1d)
-  )
+    new Cell(0d, -1d, +1d),
+    new Cell(+1d, -1d, 0d)
+  ).reverse
 
   def getDirection(i: Int): Cell = _directions(i)
 
@@ -47,11 +48,4 @@ class NSGrid(config: HexGridConfig) extends HexGrid(config) {
     val angle = vongrid.TAU / 6 * i
     new Vector3(this.cellSize * Math.cos(angle), this.cellSize * Math.sin(angle), 0)
   }
-
-  override def getCellAt(pos: Vector3): Option[Cell] = {
-    val cell = new Cell(q = pos.x, r = pos.y, s = pos.z)
-    val result = getVisibleCells.get(cellToHash(cell))
-    result
-  }
-
 }
