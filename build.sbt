@@ -49,7 +49,7 @@ lazy val nosketchJVM = (project in file("jvm")).settings(
   pipelineStages := Seq(scalaJSProd, gzip),
   resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
   libraryDependencies ++= Seq(
-    "com.vmunier" %% "play-scalajs-scripts" % "0.3.0",
+    "com.vmunier" %% "play-scalajs-scripts" % "0.4.0",
     "org.webjars" % "bootstrap" % "3.3.5",
     "org.webjars" % "font-awesome" % "4.4.0"
   )
@@ -67,11 +67,11 @@ lazy val vonGridScalaJs = (project in file("von-grid-scala-js")).settings(
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.0",
     "org.scala-js" %%% "scalajs-tools" % "0.6.6",
-    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6"
+    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.7" //add dependency
   ),
   jsDependencies ++= Seq(
     RuntimeDOM,
-    "org.webjars" % "three.js" % "r74" / "three.js"
+    "org.webjars" % "three.js" % "r77" / "three.js"
   ),
   persistLauncher in Compile := true,
   skip in packageJSDependencies := false
@@ -92,13 +92,15 @@ lazy val nosketchJS = (project in file("js")).settings(
     "org.scala-js" %%% "scalajs-tools" % "0.6.6",
     "org.querki" %%% "jquery-facade" % "1.0-RC2", //scalajs facade for jQuery + jQuery extensions
     "com.lihaoyi" %%% "scalarx" % "0.2.8",
-    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6"
+    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.7",
+    "org.querki" %%% "querki-jsext" % "0.7"
   ),
   jsDependencies ++= Seq(
     RuntimeDOM,
     "org.webjars" % "jquery" % "2.2.1" / "jquery.js",
     "org.webjars" % "bootstrap" % "3.3.5" / "bootstrap.js",
-    "org.webjars" % "three.js" % "r74" / "three.js"
+    "org.webjars" % "three.js" % "r77" / "three.js"
+
   ),
   persistLauncher in Compile := true,
   skip in packageJSDependencies := false

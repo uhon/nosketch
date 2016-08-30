@@ -1,6 +1,6 @@
 package nosketch.components
 
-import vongrid.{Board, Cell, HexGrid}
+import vongrid.{Board, Cell, HexGrid, Tile}
 import vongrid.config.{AStarFinderConfig, HexGridConfig}
 
 import scala.scalajs.js
@@ -24,7 +24,11 @@ class NSBoard(grid: NSGrid, finderConfig: js.UndefOr[AStarFinderConfig] = js.und
     setTimeout(5d) {
       if(cell.h > 1) {
         cell.h = cell.h - 10d
-        removeTile(cell.tile)
+        cell match {
+          case v: VisibleHexagon => v.getTile.map(removeTile)
+          case _ =>
+        }
+
         addTile(grid.generateTile(cell, 0.97d))
         fadeIn(cell)
       }

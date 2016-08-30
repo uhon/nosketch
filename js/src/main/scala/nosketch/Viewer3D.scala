@@ -5,11 +5,11 @@ import java.awt.event.MouseWheelEvent
 import components._
 import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.{FPSIndicator, MouseIndicator, TextIndicator, TouchIndicator}
+import nosketch.io.{ImageUrls, NSSprite}
 import nosketch.util.Profiler._
 import nosketch.viewport.ViewPort
-import org.denigma.threejs.extensions.controls.CameraControls
+import org.denigma.threejs.{Texture, _}
 import org.denigma.threejs.extras.HtmlSprite
-import org.denigma.threejs._
 import org.denigma.threejs.extensions.Container3D
 import org.scalajs.dom
 import org.scalajs.dom.raw.HTMLElement
@@ -28,9 +28,10 @@ import org.querki.jquery._
 import vongrid._
 import vongrid.lib._
 import vongrid.config._
+import org.denigma.threejs._
 import vongrid.utils.{MC, MouseCaster, Scene}
-import scala.scalajs.js.timers._
 
+import scala.scalajs.js.timers._
 import js.Dynamic.{global => g}
 import js.Dynamic.{literal => l}
 import scala.util.Random
@@ -86,12 +87,11 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
     element.asInstanceOf[HTMLElement].style.backgroundColor = "#DDFFDD"
     scene = new Scene(
-      l(
-        "element" -> element,
-        "cameraPosition" -> new Vector3(0, 150, 150)
-        //"fog" -> new Fog(0x003300, 340, 370)
-      ).asInstanceOf[SceneConfig],
-      true
+      SceneConfig.element(element.asInstanceOf[HTMLElement])
+        .cameraPosition(new Vector3(0, 150, 150))
+        .fog(new Fog(0x003300, 340, 370))
+      ,
+      ControlConfig.maxDistance(100).minDistance(1)
     )
 
     scene.render()
@@ -111,10 +111,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     board = new NSBoard(grid, js.undefined)
 
     // this will generate extruded hexagonal tiles
-    board.generateTilemap(l(
-        "tileScale" -> 0.97f // you might have to scale the tile so the extruded geometry fits the cell size perfectly
-      ).asInstanceOf[TileGenConfig]
-    )
+    board.generateTilemap(TileGenConfig.tileScale(0.97f))
 
 
     initHexagons
@@ -126,7 +123,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
       if (evt == MC.OVER) {
         if(System.currentTimeMillis() - lastFrustum > 10) {
           frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
-          updateView(true)
+          requestViewUpdate(true)
           lastFrustum = System.currentTimeMillis()
         }
 
@@ -134,11 +131,12 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
       if (evt == MC.WHEEL) {
         if(System.currentTimeMillis() - lastFrustum > 10) {
           frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
-          updateView(true)
+          requestViewUpdate(true)
           lastFrustum = System.currentTimeMillis()
         }
 
       }
+
       if (evt == MC.CLICK) {
 
         // tile.toggle();
@@ -149,10 +147,11 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
         if(cell.isDefined) {
           val t = board.getTileAtCell(cell.get)
           if (t.isDefined) {
-            t.get.toggle()
-            console.log("cell:", cell)
-            console.log("neighbours", cell.asInstanceOf[VisibleHexagon].neighbours)
-            cell.asInstanceOf[VisibleHexagon].neighbours.zipWithIndex.foreach {
+            //t.get.toggle()
+
+//            console.log("cell:", cell)
+//            console.log("neighbours", cell.asInstanceOf[VisibleHexagon].neighbours)
+            cell.get.asInstanceOf[VisibleHexagon].neighbours.zipWithIndex.foreach {
               case (c: VisibleHexagon, i: Int) => setTimeout(i*100) { board.getTileAtCell(c).toOption.get.toggle() }
             }
 
@@ -195,9 +194,9 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     //grid.generateTiles
     grid.add(initialHex)
     grid.generateTile(initialHex, 0.97d)
-    grid.getVisibleCells.foreach(_._2.assignNeighbours)
+//    grid.getVisibleCells.foreach(_._2.assignNeighbours)
     //reportDuration("Viewer::initHexagons", startTime)
-    updateView()
+    requestViewUpdate()
     //setTimeout(() => updateView(), 2000)
   }
 
@@ -219,12 +218,13 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
   /**
    * Searches for Hexagons among the visibleHexagons
-   * if one was found, it gets retruned, otherwise a new Hexagon is created and drawn immediately
+   * if one was found, it gets returned, otherwise a new Hexagon is created and drawn immediately
     *
     * @param center the center position of the new Hexagon
    * @return
    */
   def findOrCreateHexagon(center: Vector3): (Cell, Boolean) = {
+
 //    console.log("find or create hexagon at position", center)
     val startTime = System.nanoTime
     try {
@@ -236,16 +236,28 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
 //      console.log("Find cell at", center, grid.getCellAt(center).getOrElse("no cell found"))
       grid.getCellAt(center).toOption match {
-        case Some(c: Cell) => console.log("found hexagon"); (c.asInstanceOf[VisibleHexagon], false)
+        case Some(c: Cell) => {
+//          console.log("found hexagon")
+          (c.asInstanceOf[VisibleHexagon], false)
+        }
         case None => {
           // TODO: call cluster logic from here to create hexagons with sketches
           // for now just test-shapes and Hexagons Types shown
-          console.log("No hexagon present, draw a new")
+//          console.log("No hexagon present, draw a new")
           val tmpCell = grid.pixelToCell(center)
           val newHex = new ImageHexagon(grid, tmpCell.q, tmpCell.r, tmpCell.s, 1)
-          grid.add(newHex)
+// TODO: Hier liegt der hund begraben, Zeile verhindert laden der seite, vermutlich weil zu oft
+//            console.log(s"loading at tile: ${newHex.tile.cell.h}, ${newHex.tile.cell.q}, ${newHex.tile.cell.r}" )
 
-          setTimeout(400 * Math.random()) { board.addTile(grid.generateTile(newHex, 0.97d)) }
+
+//          setTimeout(400 * Math.random()) {
+            val newTile = grid.generateTile(newHex, 0.97d)
+          grid.add(newHex)
+          board.setEntityOnTile(new NSSprite(board, newTile, ImageUrls.randomSVGShape), newTile)
+          board.addTile(newTile)
+
+
+//          }
           //setTimeout(10) { newHex.assignNeighbours }
 
 //            } else if((Math.random() * 5).toInt % 4 == 0) {
@@ -279,13 +291,19 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     //console.log("SIZE OF VISIBLE HEXAGONS: ", visibleHexagons.size, printCoordinates(visibleHexagons))
 
 
-    console.log("visible Hexagons #", grid.getVisibleCells.size)
+
+
+//    console.log("visible Hexagons #", grid.getVisibleCells.size)
     // Remove invisible hexagons
     grid.getVisibleCells.foreach((t: Tuple2[String,VisibleHexagon]) => {
-      console.log("check if out of scope", t._2.getCenter)
+      console.log(t._2)
+//      console.log("check if out of scope", t._2.getCenter)
       if(isOutOfScope(t._2.getCenter)) {
-        console.log("became out of scope")
-        board.removeTile(t._2.tile)
+//        console.log("became out of scope")
+        t._2.getTile match {
+          case v: VisibleHexagon => v.getTile.map(board.removeTile(_))
+          case _ =>
+        }
         t._2.destroy
         grid.remove(t._2)
       }
@@ -313,10 +331,21 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     //scene.render()
   }
 
+
+  var updateInProgress = false
+
+  def requestViewUpdate(forceRedrawVisible: Boolean = false): Unit = {
+    if(!updateInProgress) {
+      updateInProgress = true
+      updateView()
+      updateInProgress = false
+    }
+  }
   override def onZoom = {
+
     if (viewPort != null) {
       //DebugHUD.redraw(viewPort)
-      updateView()
+      requestViewUpdate()
     }
   }
 
@@ -324,7 +353,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     if (viewPort != null) {
       //DebugHUD.redraw(viewPort)
       //this.clusterList.foreach(_.redraw(viewPort.scaleFactor))
-      updateView(forceRedrawVisible = true)
+      requestViewUpdate()
 
     }
   }

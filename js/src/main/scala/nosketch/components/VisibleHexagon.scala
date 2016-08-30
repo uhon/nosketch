@@ -5,14 +5,14 @@ import org.scalajs.dom.console
 import nosketch.components.PhantomHexagon
 import nosketch.components.EmptyHexagon
 import nosketch.util.HexConstants
-import org.denigma.threejs.Vector3
+import org.denigma.threejs.{Object3D, Vector3}
 import paperjs.Basic.Point
 import paperjs.Paths.Path
 import paperjs.Styling.Color
 import paperjs.Items.{Item, Layer}
-import vongrid.{AbstractCell, Cell}
-import scala.scalajs.js.timers._
+import vongrid.{AbstractCell, Cell, Tile}
 
+import scala.scalajs.js.timers._
 import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.annotation.ScalaJSDefined
@@ -25,10 +25,21 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
 
   var neighbours: js.Array[_ >: Cell] = js.Array[Cell](PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon)
 
+  var hud = new Object3D
+
+  def getTile: Option[Tile] = {
+    if(js.UndefOr.any2undefOrA(tile).isDefined) Option(tile) else None
+  }
+
+  def setTile(tile: Option[Tile]) = tile.orNull
 
   def getCenter = grid.cellToPixel(this)
   def destroy: Any = {
     // TODO: REMOVE DATA
+    if(tile != null) {
+      tile.buttons = null
+      tile.dispose()
+    }
 
     for (i <- 0 to 5) {
       neighbours(i) match {
@@ -37,6 +48,8 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
       }
     }
   }
+
+
 
 
   /**
@@ -53,12 +66,12 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
       neighbours(i) match {
         case PhantomHexagon => {
           val neighbourCenter = PhantomHexagon.calculateCellAtCenter(this, grid.getDirection(i))
-          console.log("Neighbour is a Phantom  with center", neighbourCenter)
+//          console.log("Neighbour is a Phantom  with center", neighbourCenter)
           //console.log("creating new Hexagon at Pos", center.toString())
           // TODO: calc position of new hex by adding directions-cell
           val hexTuple = Viewer3D.findOrCreateHexagon(grid.cellToPixel(neighbourCenter))
 
-          console.log("hexTUPLE", hexTuple.toString())
+//          console.log("hexTUPLE", hexTuple.toString())
 
           neighbours(i) = hexTuple._1
           hexTuple match {
@@ -72,7 +85,10 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
             case _ =>
           }
         }
-        case x: VisibleHexagon  => { x.neighbours(HexConstants.sideMappings(i)) = this /*console.log("Neighbour " + i + " is a visible Hexagon")*/ }
+        case x: VisibleHexagon  => {
+          x.neighbours(HexConstants.sideMappings(i)) = this
+          /*console.log("Neighbour " + i + " is a visible Hexagon")*/
+        }
       }
     }
   }

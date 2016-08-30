@@ -29,11 +29,9 @@ class NSGrid(config: HexGridConfig) extends HexGrid(config) {
   def getDirection(i: Int): Cell = _directions(i)
 
 
-  def this() = this(l(
-      "cellSize" -> 11,
-      "cameraPosition" -> new Vector3(0, 0, 150),
-      "fog" -> new Fog(0xFFFFFF, 200, 400)
-    ).asInstanceOf[HexGridConfig]
+  def this() = this(HexGridConfig.cellSize(11)
+        .cameraPosition(new Vector3(0, 0, 150))
+        .fog(new Fog(0xFFFFFF, 200, 400))
   )
 
   def getVisibleCells = cells.asInstanceOf[js.Dictionary[VisibleHexagon]]
