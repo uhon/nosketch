@@ -1,7 +1,7 @@
 package nosketch.viewport
 
 import nosketch.hud.DebugHUD
-import nosketch.hud.elements.debug.{FPSIndicator, MouseIndicator}
+import nosketch.hud.elements.debug.{MouseIndicator}
 import nosketch.io.{TouchEventListener, TouchEventDistributor, MouseEventListener, MouseEventDistributor}
 import nosketch.util.Profiler._
 import nosketch.{Viewer3D, SimplePanAndZoom, ViewportSubscriber}
@@ -77,19 +77,12 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
         activeSlideAction = None
       }
     }
-
-    // TODO: this might be an option for performance improvement. use views onFrame method
-    view.onFrame = (v: View, e: FrameEvent) => onFrameEvent(v, e)
-
   }
 
   def onFrameEvent(v: View, e: FrameEvent) = {
     handleSlides
     handleDrags
     handleZoom
-
-    if(e.count % 5 == 0) FPSIndicator.fps = calcFPS(e)
-      DebugHUD.redraw(this)
   }
 
   def handleSlides = {

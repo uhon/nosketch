@@ -15,32 +15,11 @@ import org.scalajs.dom._
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-class TouchIndicator(viewPort: ViewPort) extends DebugHUDElement with TouchEventListener {
-
-  var text: PointText = null
-  var touchPosition = new Point(0)
-
-  override var position: Point = _
-
-
-  TouchEventDistributor.registerTouchListener(document.getElementsByTagName("canvas").item(0).asInstanceOf[Canvas], this, viewPort)
+class TouchIndicator(key: String) extends DebugHUDElement with TouchEventListener {
 
   override def onDrag(eventPoint: Point): Unit = {
-    touchPosition = eventPoint
-    redraw(viewPort)
+    setValue(eventPoint.toString())
   }
 
-  override def redraw(viewPort: ViewPort) = {
-    // TODO: Reregister
-    layer.activate
-    layer.removeChildren()
-
-    text = new PointText(position)
-    text.fillColor = Color(255, 255, 255, 0.9)
-    text.content = "touch-center: " + touchPosition.toString
-    text.fontSize = 12 / viewPort.getView.zoom * viewPort.scaleFactor
-    layer.bringToFront()
-
-  }
-
+  override def update: Unit = {}
 }

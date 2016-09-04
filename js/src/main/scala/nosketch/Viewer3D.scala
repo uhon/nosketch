@@ -4,7 +4,7 @@ import java.awt.event.MouseWheelEvent
 
 import components._
 import nosketch.hud.DebugHUD
-import nosketch.hud.elements.debug.{FPSIndicator, MouseIndicator, TextIndicator, TouchIndicator}
+import nosketch.hud.elements.debug.{MouseIndicator, TextIndicator, TouchIndicator}
 import nosketch.io.{ImageUrls, NSSprite}
 import nosketch.util.Profiler._
 import nosketch.viewport.ViewPort
@@ -83,15 +83,13 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
   def activate(element: Element): Unit = {
     console.log("activate")
 
-
-
     element.asInstanceOf[HTMLElement].style.backgroundColor = "#DDFFDD"
     scene = new Scene(
       SceneConfig.element(element.asInstanceOf[HTMLElement])
         .cameraPosition(new Vector3(0, 150, 150))
         .fog(new Fog(0x003300, 340, 370))
       ,
-      ControlConfig.maxDistance(100).minDistance(1)
+      ControlConfig.maxDistance(10000).minDistance(1)
     )
 
     scene.render()
@@ -149,8 +147,8 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
           if (t.isDefined) {
             //t.get.toggle()
 
-//            console.log("cell:", cell)
-//            console.log("neighbours", cell.asInstanceOf[VisibleHexagon].neighbours)
+            //            console.log("cell:", cell)
+            //            console.log("neighbours", cell.asInstanceOf[VisibleHexagon].neighbours)
             cell.get.asInstanceOf[VisibleHexagon].neighbours.zipWithIndex.foreach {
               case (c: VisibleHexagon, i: Int) => setTimeout(i*100) { board.getTileAtCell(c).toOption.get.toggle() }
             }
@@ -162,23 +160,27 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     }, this.asInstanceOf[js.Object])
 
 
-//    mouse.signal.add(function(evt, tile) {
-//      if (evt === vg.MouseCaster.CLICK) {
-//        // tile.toggle();
-//        // or we can use the mouse's raw coordinates to access the cell directly, just for fun:
-//        var cell = board.grid.pixelToCell(mouse.position);
-//        var t = board.getTileAtCell(cell);
-//        if (t) t.toggle();
-//      }
-//    }, this);
+    //    mouse.signal.add(function(evt, tile) {
+    //      if (evt === vg.MouseCaster.CLICK) {
+    //        // tile.toggle();
+    //        // or we can use the mouse's raw coordinates to access the cell directly, just for fun:
+    //        var cell = board.grid.pixelToCell(mouse.position);
+    //        var t = board.getTileAtCell(cell);
+    //        if (t) t.toggle();
+    //      }
+    //    }, this);
 
     update
 
+    DebugHUD.addElement(new TextIndicator("number of visible Hexagons", () => grid.getVisibleCells.size.toString))
     def update {
+      g.requestAnimationFrame(() => update)
+
       //console.log("repaint")
-        mouse.update
-        scene.render
-        g.requestAnimationFrame(() => update)
+      mouse.update
+      DebugHUD.update
+      scene.render
+      //
     }
   }
 
@@ -193,7 +195,8 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
    val initialHex = new ImageHexagon(grid)
     //grid.generateTiles
     grid.add(initialHex)
-    grid.generateTile(initialHex, 0.97d)
+      val  tile = grid.generateTile(initialHex, 0.97d)
+    board.addTile(tile)
 //    grid.getVisibleCells.foreach(_._2.assignNeighbours)
     //reportDuration("Viewer::initHexagons", startTime)
     requestViewUpdate()

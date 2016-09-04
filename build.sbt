@@ -93,7 +93,8 @@ lazy val nosketchJS = (project in file("js")).settings(
     "org.querki" %%% "jquery-facade" % "1.0-RC2", //scalajs facade for jQuery + jQuery extensions
     "com.lihaoyi" %%% "scalarx" % "0.2.8",
     "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.7",
-    "org.querki" %%% "querki-jsext" % "0.7"
+    "org.querki" %%% "querki-jsext" % "0.7",
+    "com.lihaoyi" %%% "scalatags" % "0.6.0"
   ),
   jsDependencies ++= Seq(
     RuntimeDOM,
