@@ -1,5 +1,8 @@
 package nosketch.components
 
+import java.time.LocalDate
+import java.util.Date
+
 import nosketch.Viewer3D
 import org.scalajs.dom.console
 import nosketch.components.PhantomHexagon
@@ -23,6 +26,8 @@ import scala.scalajs.js.annotation.ScalaJSDefined
 @ScalaJSDefined
 abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = 0d) extends Cell(q, r, s, h) {
 
+  val created = new Date()
+
   var neighbours: js.Array[_ >: Cell] = js.Array[Cell](PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon)
 
   var hud = new Object3D
@@ -31,7 +36,7 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
     if(js.UndefOr.any2undefOrA(tile).isDefined) Option(tile) else None
   }
 
-  def setTile(tile: Option[Tile]) = tile.orNull
+  def setTile(tile: Tile) = this.tile = tile
 
   def getCenter = grid.cellToPixel(this)
   def destroy: Any = {

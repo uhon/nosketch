@@ -33,7 +33,7 @@ class NSGrid(config: HexGridConfig) extends HexGrid(config) {
 
   def this() = this(HexGridConfig.cellSize(11)
         .cameraPosition(new Vector3(0, 0, 150))
-        .fog(new Fog(0xFFFFFF, 200, 400))
+        .fog(new Fog(0x000000, 200, 400))
   )
 
   def getVisibleCells = cells.asInstanceOf[js.Dictionary[VisibleHexagon]]
@@ -81,4 +81,5 @@ class NSGrid(config: HexGridConfig) extends HexGrid(config) {
 //
 //    tile
 //  }
+
 }
