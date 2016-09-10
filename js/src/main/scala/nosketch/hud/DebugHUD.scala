@@ -5,10 +5,12 @@ import paperjs.Basic.Point
 import paperjs.Basic.Rect
 import paperjs.Basic.Size
 import nosketch.components.ZoomAwareObject
-import paperjs.Items.{Layer, Item, Group, Shape}
+import nosketch.hud.elements.debug.{IncrementalIndicator, TextIndicator}
+import paperjs.Items.{Group, Item, Layer, Shape}
 import paperjs.Items.Shape.Rectangle
 import paperjs.Styling.Color
 import org.querki.jquery._
+
 import scalatags.Text.all._
 import scala.scalajs.js
 import scala.scalajs.js.Object
@@ -42,6 +44,18 @@ object DebugHUD {
     render
   }
 
+  // Default indicators
+  val tileCreations = new IncrementalIndicator("created tiles")
+  val tileDisposes = new IncrementalIndicator("disposed tiles")
+  val cellCreations = new IncrementalIndicator("created cells")
+  val cellDisposes = new IncrementalIndicator("disposed cells")
+  val spriteDisposes = new IncrementalIndicator("disposed sprites")
+
+  addElement(tileCreations)
+  addElement(tileDisposes)
+  addElement(cellCreations)
+  addElement(cellDisposes)
+  addElement(spriteDisposes)
 
   def render = {
     $("#debugHUD").remove()

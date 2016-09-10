@@ -1,0 +1,58 @@
+package nosketch.components
+
+import nosketch.hud.DebugHUD
+import nosketch.io.NSSprite
+import nosketch.util.NSTools
+import org.denigma.threejs.{MeshPhongMaterial, MeshPhongMaterialParameters, Object3D}
+import paperjs.Paths.Path
+import vongrid.Tile
+import vongrid.config.TileConfig
+import vongrid.utils.Tools
+
+import scala.scalajs.js
+import scala.scalajs.js.annotation.ScalaJSDefined
+import scala.scalajs.js.timers._
+import js.Dynamic.{global => g}
+import js.Dynamic.{literal => l}
+import org.scalajs.dom._
+
+/**
+ * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
+ */
+@ScalaJSDefined
+class NSTile(config: TileConfig) extends Tile(config) {
+  DebugHUD.tileCreations.increment
+  val sprites: Object3D = new Object3D
+
+  def getCell: Option[VisibleHexagon] = {
+    cell match {
+      case v:VisibleHexagon => Option(v)
+      case _ => Option.empty // If its null, or not a VisibleHexagon, we just give an empty Option
+    }
+  }
+
+  def setCell(cell: VisibleHexagon) = {
+    this.cell = cell
+  }
+
+  override def dispose(): js.Any = {
+    DebugHUD.tileDisposes.increment
+    sprites.children.foreach((s) => {
+      s match {
+        case s:NSSprite => s.dispose
+        case _ => console.log("Invalid sprite detected! Something weird happened, there should be no other Object3D but NSSprites on this tile")
+      }
+    })
+    super.dispose()
+  }
+}
+
+object NSTileMaterialFactory {
+  def default = {
+    val materialSettings = l.asInstanceOf[MeshPhongMaterialParameters]
+    materialSettings.color = NSTools.randomizeRGBDouble(10, 30, 90, 13)
+    new MeshPhongMaterial(materialSettings)
+  }
+}
+
+

@@ -1,6 +1,7 @@
 package nosketch.hud
 
 import nosketch.components.ZoomAwareObject
+import nosketch.util.NSTools
 import paperjs.Basic.Point
 import paperjs.Items.{Item, Layer}
 import vongrid.utils.Tools
@@ -16,13 +17,13 @@ trait DebugHUDElement {
   protected val key = ""
   protected var value = ""
 
-  private val uid = Tools.generateID()
+  private val uid = NSTools.generateID()
 
 
   def render = {
-    div (id := uid, `class` := "indicator") (
-      div (`class` := "key") (key),
-      div (`class` := "value") (value)
+    div (id := uid, `class` := "row indicator") (
+      div (`class` := "key col-xs-9") (key),
+      div (`class` := "value col-xs-3") (value)
     )
 }
 

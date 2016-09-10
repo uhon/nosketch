@@ -4,3 +4,9 @@
 [submodule "von-grid-scala-js"]
 	path = von-grid-scala-js
 	url = git@github.com:uhon/von-grid-scala-js.git
+[submodule "jvm/resources/font-awesome"]
+	path = jvm/resources/font-awesome
+	url = git@github.com:encharm/Font-Awesome-SVG-PNG.git
+[submodule "jvm/public/font-awesome"]
+	path = jvm/public/font-awesome
+	url = git@github.com:encharm/Font-Awesome-SVG-PNG.git

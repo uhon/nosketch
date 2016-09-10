@@ -25,7 +25,6 @@ import org.scalajs.dom._
 class TextIndicator(override val key: String, contentProducer: () => String) extends DebugHUDElement {
 
   override def render: TypedTag[String] = {
-    console.log("cp..............." + contentProducer())
     setValue(contentProducer())
     super.render
   }

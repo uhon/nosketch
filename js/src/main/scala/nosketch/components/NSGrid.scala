@@ -1,11 +1,13 @@
 package nosketch.components
 
+import nosketch.util.NSTools
 import org.denigma.threejs.{ExtrudeGeometry, Fog, MeshPhongMaterial, THREE, Vector3}
 import vongrid.{Cell, HexGrid}
-import vongrid.config.{HexGridConfig, TileConfig}
+import vongrid.config.{ExtrudeSettings, HexGridConfig, TileConfig}
 
 import scala.scalajs.js
 import org.scalajs.dom._
+import vongrid.utils.Tools
 
 import scala.scalajs.js.Dynamic.literal
 import scala.scalajs.js.annotation.{JSExport, ScalaJSDefined}
@@ -49,37 +51,41 @@ class NSGrid(config: HexGridConfig) extends HexGrid(config) {
     new Vector3(this.cellSize * Math.cos(angle), this.cellSize * Math.sin(angle), 0)
   }
 
-//  override def generateTile(cell: VisibleHexagon, scale: Double, material: MeshPhongMaterial = null) {
-//    var height = Math.abs(cell.h)
-//    if (height < 1) height = 1
-//
-//    var geo = _geoCache.apply(height)
-//    if (UndefOr.any2undefOrA(geo).isEmpty) {
-//      extrudeSettings.amount(height)
-//      geo = new THREE.ExtrudeGeometry(this.cellShape, this.extrudeSettings);
-//      this._geoCache(height) = geo
-//    }
-//
-//    /*mat = this._matCache[c.matConfig.mat_cache_id];
-//    if (!mat) { // MaterialLoader? we currently only support basic stuff though. maybe later
-//      mat.map = Loader.loadTexture(c.matConfig.imgURL);
-//      delete c.matConfig.imgURL;
-//      mat = new THREE[c.matConfig.type](c.matConfig);
-//      this._matCache[c.matConfig.mat_cache_id] = mat;
-//    }*/
-//
-//    val tile = new NSTile(
-//      TileConfig
-//        .size(cellSize)
-//        .scale(scale)
-//        .cell(cell)
-//        .geometry(geo)
-//        .material(material)
-//    )
-//
-//    cell.setTile(tile)
-//
-//    tile
-//  }
+
+
+
+  def generateNSTile(cell: VisibleHexagon, scale: Double): NSTile = {
+    var height = Math.abs(cell.h).toInt
+    if (height < 1) height = 1
+
+    var geo = _geoCache(height)
+    if (UndefOr.any2undefOrA(geo).isEmpty) {
+      ExtrudeSettings.amount(height)
+      geo = new ExtrudeGeometry(this.cellShape, this.extrudeSettings);
+      this._geoCache(height) = geo
+    }
+
+    /*mat = this._matCache[c.matConfig.mat_cache_id];
+    if (!mat) { // MaterialLoader? we currently only support basic stuff though. maybe later
+      mat.map = Loader.loadTexture(c.matConfig.imgURL);
+      delete c.matConfig.imgURL;
+      mat = new THREE[c.matConfig.type](c.matConfig);
+      this._matCache[c.matConfig.mat_cache_id] = mat;
+    }*/
+
+    val tile = new NSTile(
+      TileConfig
+        .size(cellSize)
+        .scale(scale)
+        .cell(cell)
+        .geometry(geo)
+        .material(NSTileMaterialFactory.default)
+    )
+
+
+    cell.setTile(tile)
+
+    tile
+  }
 
 }

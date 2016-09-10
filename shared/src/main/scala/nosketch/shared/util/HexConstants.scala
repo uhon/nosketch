@@ -1,7 +1,4 @@
-package nosketch.util
-
-import nosketch.components.VisibleHexagon
-import paperjs.Basic.Point
+package nosketch.shared.util
 
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;

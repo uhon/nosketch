@@ -19,7 +19,7 @@ class ImageHexagon(var grid: NSGrid, q: Double, r: Double, s: Double, h: Double 
   def this(grid: NSGrid) = this(grid, 0, 0, 0, 0)
   val bgImage = dom.document.createElement("img").asInstanceOf[HTMLImageElement]
   //bgImage.src = "/assets/images/hex.png"
-  bgImage.src = "/assets/shapes/" + (Math.random() * 15).round + ".svg"
+  bgImage.src = nosketch.io.ImageUrls.randomPngShape
   bgImage.addEventListener("load", { e: Event => draw })
 
   def draw = {

@@ -82,11 +82,10 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
   def activate(element: Element): Unit = {
     console.log("activate")
 
-    element.asInstanceOf[HTMLElement].style.backgroundColor = "#DDFFDD"
     scene = new Scene(
       SceneConfig.element(element.asInstanceOf[HTMLElement])
-        .cameraPosition(new Vector3(0, 150, 150))
-        .fog(new Fog(0x003300, 340, 370))
+        .cameraPosition(new Vector3(0, 50, 50))
+        .fog(new Fog(0x000000, 300, 400))
       ,
       ControlConfig.maxDistance(10000).minDistance(1)
     )
@@ -111,7 +110,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     board.generateTilemap(TileGenConfig.tileScale(0.97f))
 
 
-    initHexagons
+
 
     scene.add(board.group)
     scene.focusOn(board.group)
@@ -119,21 +118,10 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     mouse.signal.add((evt: String, tile: js.Object) => {
       if (evt == MC.OVER) {
         requestViewUpdate
-//          if(System.currentTimeMillis() - lastFrustum > 10) {
-//            frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
-//            requestViewUpdate
-//            lastFrustum = System.currentTimeMillis()
-//          }
 
       }
       if (evt == MC.OUT) {
         requestViewUpdate
-        //          if(System.currentTimeMillis() - lastFrustum > 10) {
-        //            frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
-        //            requestViewUpdate
-        //            lastFrustum = System.currentTimeMillis()
-        //          }
-
       }
       if (evt == MC.WHEEL) {
         requestViewUpdate
@@ -144,8 +132,8 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
         // tile.toggle();
         // or we can use the mouse's raw coordinates to access the cell directly, just for fun:
         var cell = board.getGrid.getCellAt(mouse.position)
-        console.log("mouse.position", mouse.position)
-        console.log("cell", cell)
+//        console.log("mouse.position", mouse.position)
+//        console.log("cell", cell)
         val visualHex = cell.asInstanceOf[VisibleHexagon]
 
         if(cell.isDefined) {
@@ -177,17 +165,19 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     //    }, this);
 
     DebugHUD.addElement(new TextIndicator("number of visible Hexagons", () => grid.getVisibleCells.size.toString))
-    DebugHUD.addElement(new TextIndicator("mousePosition", () => s"${Math.round(mouse.position.x * 100) / 100}, ${Math.round(mouse.position.y * 100) / 100}, ${Math.round(mouse.position.z * 100) / 100}}"))
+    DebugHUD.addElement(new TextIndicator("mousePosition", () => s"${Math.round(mouse.position.x * 100) / 100},${Math.round(mouse.position.y * 100) / 100},${Math.round(mouse.position.z * 100) / 100}"))
+
+    initHexagons
     update
 
     def update {
 
       mouse.update
       DebugHUD.update
-      if(needsUpdate && !updateInProgress) {
-        frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
+      if(updateRequested && !updateInProgress) {
         updateInProgress = true
-        needsUpdate = false
+        updateRequested = false
+        frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
 
 
         updateView
@@ -213,10 +203,10 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
    val initialHex = new ImageHexagon(grid)
     //grid.generateTiles
     grid.add(initialHex)
-      val  tile = grid.generateTile(initialHex, 0.97d)
+    val  tile = grid.generateNSTile(initialHex, 0.97d)
     board.addTile(tile)
     tile.selected
-    grid.getVisibleCells.foreach(_._2.assignNeighbours)
+    //grid.getVisibleCells.foreach(_._2.assignNeighbours)
     //reportDuration("Viewer::initHexagons", startTime)
 //    requestViewUpdate
     //setTimeout(() => updateView(), 2000)
@@ -250,18 +240,17 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 //    console.log("find or create hexagon at position", center)
     val startTime = System.nanoTime
     try {
+      val possibleCell = grid.getCellAt(center).toOption
+
       if (isOutOfScope(center)) {
         //console.log("Not creating Hexagon at Pos", center.toString())
+        possibleCell.map((c) => c.asInstanceOf[VisibleHexagon].destroy)
         return (PhantomHexagon, false)
       }
 
-
 //      console.log("Find cell at", center, grid.getCellAt(center).getOrElse("no cell found"))
-      grid.getCellAt(center).toOption match {
-        case Some(c: Cell) => {
-//          console.log("found hexagon")
-          (c.asInstanceOf[VisibleHexagon], false)
-        }
+      possibleCell match {
+        case Some(c: VisibleHexagon) => (c, false)
         case None => {
           // TODO: call cluster logic from here to create hexagons with sketches
           // for now just test-shapes and Hexagons Types shown
@@ -273,11 +262,12 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
 
 //          setTimeout(400 * Math.random()) {
-            val newTile = grid.generateTile(newHex, 0.97d)
+          val newTile = grid.generateNSTile(newHex, 0.97d)
+          board.group.add(newTile.sprites)
           grid.add(newHex)
-          board.setEntityOnTile(new NSSprite(board, newTile, ImageUrls.randomSVGShape), newTile)
           board.addTile(newTile)
-//          board.generateDroppingTile(newHex)
+          board.setEntityOnTile(new NSSprite(board, newTile, ImageUrls.randomPngShape), newTile)
+          //          board.generateDroppingTile(newHex)
 
 
 //          }
@@ -337,14 +327,16 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
 
     grid.getVisibleCells.foreach(_._2.assignNeighbours)
+
+    reportDuration("Viewer::assign Neighbours", assignNeighboursTime)
   }
 
 
-  var needsUpdate = false
+  var updateRequested = false
   var updateInProgress = false
 
   def requestViewUpdate: Unit = {
-    needsUpdate = true
+    updateRequested = true
   }
 
   override def onZoom = {

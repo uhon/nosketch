@@ -21,7 +21,7 @@ class MouseIndicator(key: String) extends DebugHUDElement with MouseEventListene
   MouseEventDistributor.registerToMouseEvents(this)
 
   override def onMouseMove(event: ToolEvent): Unit = {
-    setValue(event.point.toString())
+    setValue(s"${event.point.x},${event.point.y}")
   }
 
   override def update: Unit = {}

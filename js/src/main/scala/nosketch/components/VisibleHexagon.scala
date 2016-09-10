@@ -7,7 +7,8 @@ import nosketch.Viewer3D
 import org.scalajs.dom.console
 import nosketch.components.PhantomHexagon
 import nosketch.components.EmptyHexagon
-import nosketch.util.HexConstants
+import nosketch.hud.DebugHUD
+import nosketch.shared.util.HexConstants
 import org.denigma.threejs.{Object3D, Vector3}
 import paperjs.Basic.Point
 import paperjs.Paths.Path
@@ -25,26 +26,28 @@ import scala.scalajs.js.annotation.ScalaJSDefined
  */
 @ScalaJSDefined
 abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = 0d) extends Cell(q, r, s, h) {
-
+  DebugHUD.cellCreations.increment
   val created = new Date()
 
   var neighbours: js.Array[_ >: Cell] = js.Array[Cell](PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon)
 
   var hud = new Object3D
 
-  def getTile: Option[Tile] = {
-    if(js.UndefOr.any2undefOrA(tile).isDefined) Option(tile) else None
+  def getTile: Option[NSTile] = {
+    tile match {
+      case t:NSTile => Option(t)
+      case _ => console.log("weird, there should only be NSTiles present"); Option.empty // If its null, or not a NSTile, we just give an empty Option
+    }
   }
 
-  def setTile(tile: Tile) = this.tile = tile
+  def setTile(tile: NSTile) = this.tile = tile
 
   def getCenter = grid.cellToPixel(this)
+
   def destroy: Any = {
+    DebugHUD.cellDisposes.increment
     // TODO: REMOVE DATA
-    if(tile != null) {
-      tile.buttons = null
-      tile.dispose()
-    }
+    getTile.map(_.dispose())
 
     for (i <- 0 to 5) {
       neighbours(i) match {

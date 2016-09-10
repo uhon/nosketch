@@ -1,7 +1,6 @@
 package nosketch.util
 
 import org.scalajs.dom._
-
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
