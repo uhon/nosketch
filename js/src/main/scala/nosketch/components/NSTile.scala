@@ -1,7 +1,9 @@
 package nosketch.components
 
+import nosketch.Viewer3D
 import nosketch.hud.DebugHUD
-import nosketch.io.NSSprite
+import nosketch.io.{ImageUrls, NSSprite}
+import nosketch.shared.util.FA
 import nosketch.util.NSTools
 import org.denigma.threejs.{MeshPhongMaterial, MeshPhongMaterialParameters, Object3D}
 import paperjs.Paths.Path
@@ -20,9 +22,11 @@ import org.scalajs.dom._
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
 @ScalaJSDefined
-class NSTile(config: TileConfig) extends Tile(config) {
+class NSTile(board: NSBoard, config: TileConfig) extends Tile(config) {
   DebugHUD.tileCreations.increment
   val sprites: Object3D = new Object3D
+
+  var controlsHidden = true
 
   def getCell: Option[VisibleHexagon] = {
     cell match {
@@ -31,19 +35,51 @@ class NSTile(config: TileConfig) extends Tile(config) {
     }
   }
 
+  def showControls = {
+
+    getCell.map((c) => {
+      controlsHidden = false
+
+      val tex = Viewer3D.predefinedTextures.get(FA.instagram)
+      console.log("tex:", tex.get.toString)
+      if(tex.isDefined) {
+        new NSSprite(board, this, tex.get, "", (sprite: NSSprite) => {
+          if (!controlsHidden) {
+            DebugHUD.spriteShowCtrl.increment
+            sprite.activate(0, 0, 2)
+          } else {
+            sprite.dispose
+          }
+        })
+      }
+    })
+  }
+
+  def hideControls = {
+    DebugHUD.spriteHideCtrl.increment
+    disposeSprites
+    controlsHidden = true
+  }
+
   def setCell(cell: VisibleHexagon) = {
     this.cell = cell
   }
 
   override def dispose(): js.Any = {
     DebugHUD.tileDisposes.increment
+    board.group.remove(sprites)
+    disposeSprites
+    super.dispose()
+  }
+
+  def disposeSprites: Unit = {
     sprites.children.foreach((s) => {
       s match {
         case s:NSSprite => s.dispose
         case _ => console.log("Invalid sprite detected! Something weird happened, there should be no other Object3D but NSSprites on this tile")
       }
     })
-    super.dispose()
+
   }
 }
 
@@ -54,5 +90,7 @@ object NSTileMaterialFactory {
     new MeshPhongMaterial(materialSettings)
   }
 }
+
+
 
 

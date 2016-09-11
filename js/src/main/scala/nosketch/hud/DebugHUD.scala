@@ -50,12 +50,16 @@ object DebugHUD {
   val cellCreations = new IncrementalIndicator("created cells")
   val cellDisposes = new IncrementalIndicator("disposed cells")
   val spriteDisposes = new IncrementalIndicator("disposed sprites")
+  val spriteShowCtrl = new IncrementalIndicator("show controls")
+  val spriteHideCtrl = new IncrementalIndicator("hide controls")
 
   addElement(tileCreations)
   addElement(tileDisposes)
   addElement(cellCreations)
   addElement(cellDisposes)
   addElement(spriteDisposes)
+  addElement(spriteShowCtrl)
+  addElement(spriteHideCtrl)
 
   def render = {
     $("#debugHUD").remove()

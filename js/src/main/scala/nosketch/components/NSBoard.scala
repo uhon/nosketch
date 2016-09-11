@@ -18,6 +18,7 @@ import scala.scalajs.js.timers._
   */
 @ScalaJSDefined
 class NSBoard(grid: NSGrid, finderConfig: js.UndefOr[AStarFinderConfig] = js.undefined) extends Board(grid, finderConfig) {
+    grid.board = this
   // TODO: Fade in Tiles (crappy implementation!)
 //  def generateDroppingTile(cell: VisibleHexagon, duration:Double = 300d, initialHeight: Double = 10): Unit = {
 //
@@ -52,6 +53,6 @@ class NSBoard(grid: NSGrid, finderConfig: js.UndefOr[AStarFinderConfig] = js.und
 //  def this(grid: NSGrid) = this(grid, ???)
   //def this(grid: NSGrid, finderConfig: AStarFinderConfig) = this(grid, finderConfig)
 
-  def getGrid = this.grid
+  def getGrid = grid
 
 }

@@ -40,6 +40,8 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
     }
   }
 
+  def getGrid = grid
+
   def setTile(tile: NSTile) = this.tile = tile
 
   def getCenter = grid.cellToPixel(this)

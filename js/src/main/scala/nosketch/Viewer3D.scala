@@ -6,6 +6,9 @@ import components._
 import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.{MouseIndicator, TextIndicator, TouchIndicator}
 import nosketch.io.{ImageUrls, NSSprite}
+import nosketch.loading.NSTextureLoader
+import nosketch.shared.util.FA
+import nosketch.shared.util.FA.FA
 import nosketch.util.Profiler._
 import nosketch.viewport.ViewPort
 import org.denigma.threejs.{Texture, _}
@@ -43,6 +46,8 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
   var grid: NSGrid = null
   var board: NSBoard = null
   var scene: Scene = null
+  var mouseAtTile: Option[NSTile] = None
+  var predefinedTextures: Map[FA, Texture] = Map()
 
 //  var clusterList: List[Cluster] = List()
 
@@ -115,14 +120,38 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     scene.add(board.group)
     scene.focusOn(board.group)
 
+    def showControls(evt: String, obj: js.Object) = this.synchronized {
+      val previousTile = mouseAtTile
+      val currentTile = obj match {
+        case t:NSTile => Option(t)
+        case s:NSSprite => Option(s.tile.asInstanceOf[NSTile])
+        case _ => previousTile
+      }
+
+      (currentTile, previousTile) match {
+        case (Some(c), Some(p)) if c.uniqueID != p.uniqueID => {
+          c.showControls
+          p.hideControls
+        }
+        case (Some(c), None) => c.showControls
+        case (None, Some(p)) => p.hideControls
+        case _ =>
+      }
+      mouseAtTile = currentTile
+    }
+
     mouse.signal.add((evt: String, tile: js.Object) => {
       if (evt == MC.OVER) {
+        showControls(evt, tile)
+
         requestViewUpdate
 
       }
+
       if (evt == MC.OUT) {
         requestViewUpdate
       }
+
       if (evt == MC.WHEEL) {
         requestViewUpdate
       }
@@ -134,7 +163,6 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
         var cell = board.getGrid.getCellAt(mouse.position)
 //        console.log("mouse.position", mouse.position)
 //        console.log("cell", cell)
-        val visualHex = cell.asInstanceOf[VisibleHexagon]
 
         if(cell.isDefined) {
           val t = board.getTileAtCell(cell.get)
@@ -143,7 +171,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
             //            console.log("cell:", cell)
             //            console.log("neighbours", cell.asInstanceOf[VisibleHexagon].neighbours)
-            cell.get.asInstanceOf[VisibleHexagon].neighbours.zipWithIndex.foreach {
+            cell.asInstanceOf[VisibleHexagon].neighbours.zipWithIndex.foreach {
               case (c: VisibleHexagon, i: Int) => setTimeout(i*100) { board.getTileAtCell(c).toOption.get.toggle() }
             }
 
@@ -167,8 +195,12 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     DebugHUD.addElement(new TextIndicator("number of visible Hexagons", () => grid.getVisibleCells.size.toString))
     DebugHUD.addElement(new TextIndicator("mousePosition", () => s"${Math.round(mouse.position.x * 100) / 100},${Math.round(mouse.position.y * 100) / 100},${Math.round(mouse.position.z * 100) / 100}"))
 
-    initHexagons
-    update
+    NSTextureLoader.load((map: Map[FA, Texture]) => {
+
+      predefinedTextures = map
+      createFirstHexagon
+      update
+    })
 
     def update {
 
@@ -195,7 +227,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
 
 
-  def initHexagons = {
+  def createFirstHexagon = {
     val startTime = System.nanoTime
 //
 //    grid.generate(l("size" -> 0).asInstanceOf[SimpleTileGenConfig])
@@ -257,8 +289,6 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 //          console.log("No hexagon present, draw a new")
           val tmpCell = grid.pixelToCell(center)
           val newHex = new ImageHexagon(grid, tmpCell.q, tmpCell.r, tmpCell.s, 10)
-// TODO: Hier liegt der hund begraben, Zeile verhindert laden der seite, vermutlich weil zu oft
-//            console.log(s"loading at tile: ${newHex.tile.cell.h}, ${newHex.tile.cell.q}, ${newHex.tile.cell.r}" )
 
 
 //          setTimeout(400 * Math.random()) {
@@ -266,7 +296,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
           board.group.add(newTile.sprites)
           grid.add(newHex)
           board.addTile(newTile)
-          board.setEntityOnTile(new NSSprite(board, newTile, ImageUrls.randomPngShape), newTile)
+
           //          board.generateDroppingTile(newHex)
 
 

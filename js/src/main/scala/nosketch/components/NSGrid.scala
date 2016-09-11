@@ -19,6 +19,8 @@ import scala.scalajs.js.UndefOr
 
 @ScalaJSDefined
 class NSGrid(config: HexGridConfig) extends HexGrid(config) {
+  // Is set by Board once it is created
+  var board:NSBoard = null
 
   val _directions = js.Array[Cell](
 
@@ -74,6 +76,7 @@ class NSGrid(config: HexGridConfig) extends HexGrid(config) {
     }*/
 
     val tile = new NSTile(
+      board,
       TileConfig
         .size(cellSize)
         .scale(scale)

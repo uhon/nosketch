@@ -19,14 +19,16 @@ import scala.scalajs.js.Dynamic.{literal => l}
 
 object ImageUrls {
   val notFound = "/assets/shapes/notFound.png"
-  def randomPngShape = {
-    s"/assets/font-awesome/white/png/256/${FA(scala.util.Random.nextInt(FA.maxId))}.png"
-  }
+
+  def randomFA = FA(scala.util.Random.nextInt(FA.maxId)).toString
+  def pngShape(name: String) = s"/assets/font-awesome/white/png/256/$name.png"
+
+  def svgShape(name: String) = s"/assets/font-awesome/white/svg/$name.svg"
+
+  def randomPngShape = pngShape(randomFA)
 
   // Attention, SVG freezes system wen load as sprites in masses!
-  def randomSvgShape = {
-    s"/assets/font-awesome/white/svg/${FA(scala.util.Random.nextInt(FA.maxId))}.svg"
-  }
+  def randomSvgShape = svgShape(randomFA)
 }
 
 object Materials {
@@ -46,8 +48,9 @@ object Materials {
 class NSSprite(
           b: Board,
           var nsTile: NSTile,
+          var preloadedTexture: Texture = null,
           var url: String = ImageUrls.notFound,
-          var autoActivate:Boolean = true,
+          callback: (NSSprite) => Unit = (s: NSSprite) => { console.log("auto update"); s.activate(0, 0, 0) },
           var mat: SpriteMaterial = Materials.default
 ) extends BoardSprite {
 
@@ -78,37 +81,36 @@ class NSSprite(
 
   visible = false
 
-  val tl = new TextureLoader()
-  tl.load(url, (tex:Texture) => {
-      if(disposed) {
+  container = nsTile.sprites
+  // TODO: extract this
+  highlight = new Color(33, 11, 428)
+  heightOffset = 2
+
+  if(preloadedTexture == null) {
+    val tl = new TextureLoader()
+    tl.load(url, (tex: Texture) => {
+      if (disposed) {
         tex.dispose()
       } else {
         material.map = tex
-        container = nsTile.sprites
-
-        // TODO: extract this
-        highlight = new Color(33, 11, 428)
-        heightOffset = 2
-
-        // sprite.select
-        if (autoActivate) {
-          activate(0, 0, 2)
-        }
       }
-  })
-
-  setTile(tile)
-
-
-  def setTile(tile: Tile): Unit = {
-    board.setEntityOnTile(this, tile)
+      callback.apply(this)
+    })
+  } else {
+      material.map = preloadedTexture
+      callback.apply(this)
   }
+
+
+
+
 
   def activate(x: Double = 0, y: Double = 0, z: Double = 0) = {
     active = true
     visible = true
     position.add(new Vector3(x, y, z))
     container.add(this)
+    board.setEntityOnTile(this, tile)
   }
 
   def disable = {
