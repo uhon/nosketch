@@ -8,3 +8,8 @@ object HexConstants {
   val sideMappings = Array(3, 4, 5, 0, 1, 2) // maps sides of attached hexagon. A hexagon with a neighbour at side x is itself neighbour of the other on sideMappings(x)
 
 }
+
+object GridConstants {
+  val tileScaleFactor = 0.97d
+  val tileInitialHeight = 1
+}

@@ -67,7 +67,11 @@ lazy val vonGridScalaJs = (project in file("von-grid-scala-js")).settings(
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.0",
     "org.scala-js" %%% "scalajs-tools" % "0.6.6",
-    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.7" //add dependency
+    "org.querki" %%% "jquery-facade" % "1.0-RC2", //scalajs facade for jQuery + jQuery extensions
+    "com.lihaoyi" %%% "scalarx" % "0.2.8",
+    //    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6",
+    "org.querki" %%% "querki-jsext" % "0.7"
+//    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6" //add dependency
   ),
   jsDependencies ++= Seq(
     RuntimeDOM,
@@ -77,6 +81,7 @@ lazy val vonGridScalaJs = (project in file("von-grid-scala-js")).settings(
   skip in packageJSDependencies := false
 
 ).dependsOn(nosketchSharedJs)
+  .dependsOn(threejsFacade)
   .enablePlugins(ScalaJSPlugin)
 
 lazy val nosketchJS = (project in file("js")).settings(
@@ -92,7 +97,7 @@ lazy val nosketchJS = (project in file("js")).settings(
     "org.scala-js" %%% "scalajs-tools" % "0.6.6",
     "org.querki" %%% "jquery-facade" % "1.0-RC2", //scalajs facade for jQuery + jQuery extensions
     "com.lihaoyi" %%% "scalarx" % "0.2.8",
-    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.7",
+//    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6",
     "org.querki" %%% "querki-jsext" % "0.7",
     "com.lihaoyi" %%% "scalatags" % "0.6.0"
   ),
@@ -110,6 +115,7 @@ lazy val nosketchJS = (project in file("js")).settings(
   .dependsOn(nosketchSharedJs)
   .dependsOn(vonGridScalaJs)
   .dependsOn(paperScalaJs)
+  .dependsOn(threejsFacade)
 
 lazy val paperScalaJs = (project in file("paper-scala-js")).settings(
   scalaVersion := scalaV,
@@ -122,6 +128,22 @@ lazy val paperScalaJs = (project in file("paper-scala-js")).settings(
 //  jsDependencies ++= Seq(
 //    "org.webjars" % "paperjs" % "0.9.24" / "paper-full.min.js" commonJSName "paper"
 //  ),
+  persistLauncher in Compile := false,
+  skip in packageJSDependencies := false
+)
+  .enablePlugins(ScalaJSPlugin)
+
+lazy val threejsFacade = (project in file("threejs-facade/facade")).settings(
+  scalaVersion := scalaV,
+  persistLauncher := true,
+  persistLauncher in Test := false,
+  libraryDependencies ++= Seq(
+    "org.scala-js" %%% "scalajs-dom" % "0.9.0" withJavadoc()
+//    "org.scala-js" %%% "scalajs-tools" % "0.6.6" withJavadoc()
+  ),
+  //  jsDependencies ++= Seq(
+  //    "org.webjars" % "paperjs" % "0.9.24" / "paper-full.min.js" commonJSName "paper"
+  //  ),
   persistLauncher in Compile := false,
   skip in packageJSDependencies := false
 )
@@ -145,6 +167,9 @@ resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositor
 // Scala-Js Workbench (Live-Reload and such things)
 workbenchSettings
 
+
+// Resolve only newly added dependencies
+updateOptions := updateOptions.value.withCachedResolution(true)
 
 //updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile)
 

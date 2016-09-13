@@ -33,7 +33,7 @@ object ImageUrls {
 
 object Materials {
   def default = new SpriteMaterial(l(
-    "color" -> 0xffffff,
+    "color" -> 0x00FFFF,
     "fog" -> true
   ).asInstanceOf[SpriteMaterialParameters])
 }
@@ -50,7 +50,7 @@ class NSSprite(
           var nsTile: NSTile,
           var preloadedTexture: Texture = null,
           var url: String = ImageUrls.notFound,
-          callback: (NSSprite) => Unit = (s: NSSprite) => { console.log("auto update"); s.activate(0, 0, 0) },
+          callback: (NSSprite) => Unit = (s: NSSprite) => { s.activate(0, 0, 2) },
           var mat: SpriteMaterial = Materials.default
 ) extends BoardSprite {
 
@@ -84,7 +84,7 @@ class NSSprite(
   container = nsTile.sprites
   // TODO: extract this
   highlight = new Color(33, 11, 428)
-  heightOffset = 2
+  heightOffset = 1
 
   if(preloadedTexture == null) {
     val tl = new TextureLoader()
@@ -109,6 +109,7 @@ class NSSprite(
     active = true
     visible = true
     position.add(new Vector3(x, y, z))
+    heightOffset = 5
     container.add(this)
     board.setEntityOnTile(this, tile)
   }

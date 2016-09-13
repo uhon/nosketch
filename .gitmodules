@@ -10,3 +10,6 @@
 [submodule "jvm/public/font-awesome"]
 	path = jvm/public/font-awesome
 	url = git@github.com:encharm/Font-Awesome-SVG-PNG.git
+[submodule "threejs-facade"]
+	path = threejs-facade
+	url = git@github.com:antonkulaga/threejs-facade.git

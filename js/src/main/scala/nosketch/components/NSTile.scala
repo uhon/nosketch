@@ -41,12 +41,12 @@ class NSTile(board: NSBoard, config: TileConfig) extends Tile(config) {
       controlsHidden = false
 
       val tex = Viewer3D.predefinedTextures.get(FA.instagram)
-      console.log("tex:", tex.get.toString)
+//      console.log("tex:", tex.get.toString)
       if(tex.isDefined) {
         new NSSprite(board, this, tex.get, "", (sprite: NSSprite) => {
           if (!controlsHidden) {
             DebugHUD.spriteShowCtrl.increment
-            sprite.activate(0, 0, 2)
+            sprite.activate(10, 10, 10)
           } else {
             sprite.dispose
           }
@@ -86,7 +86,7 @@ class NSTile(board: NSBoard, config: TileConfig) extends Tile(config) {
 object NSTileMaterialFactory {
   def default = {
     val materialSettings = l.asInstanceOf[MeshPhongMaterialParameters]
-    materialSettings.color = NSTools.randomizeRGBDouble(10, 30, 90, 13)
+    materialSettings.color = NSTools.randomizeRGBDouble(10, 30, 90, 0)
     new MeshPhongMaterial(materialSettings)
   }
 }

@@ -35,7 +35,7 @@ class NSBoard(grid: NSGrid, finderConfig: js.UndefOr[AStarFinderConfig] = js.und
 //
 //      cell.getTile.map(removeTile)
 //      if(!Viewer3D.isOutOfScope(cell.getCenter)) {
-//        val newTile = grid.generateTile(cell, 0.97d)
+//        val newTile = grid.generateTile(cell, GridConstants.tileScaleFactor)
 //        // TODO: This is weird! why setting an option via setter
 //        cell.setTile(newTile)
 //        addTile(newTile)

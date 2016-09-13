@@ -7,7 +7,7 @@ import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.{MouseIndicator, TextIndicator, TouchIndicator}
 import nosketch.io.{ImageUrls, NSSprite}
 import nosketch.loading.NSTextureLoader
-import nosketch.shared.util.FA
+import nosketch.shared.util.{FA, GridConstants}
 import nosketch.shared.util.FA.FA
 import nosketch.util.Profiler._
 import nosketch.viewport.ViewPort
@@ -89,10 +89,10 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
     scene = new Scene(
       SceneConfig.element(element.asInstanceOf[HTMLElement])
-        .cameraPosition(new Vector3(0, 50, 50))
+        .cameraPosition(new Vector3(0, 70, -70))
         .fog(new Fog(0x000000, 300, 400))
       ,
-      ControlConfig.maxDistance(10000).minDistance(1)
+      ControlConfig.maxDistance(200).minDistance(20)
     )
 
     scene.render()
@@ -216,8 +216,9 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
         updateInProgress = false
         //console.log("repaint")
         //
+        scene.render
       }
-      scene.render
+
 
       g.requestAnimationFrame(() => update)
 
@@ -235,7 +236,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
    val initialHex = new ImageHexagon(grid)
     //grid.generateTiles
     grid.add(initialHex)
-    val  tile = grid.generateNSTile(initialHex, 0.97d)
+    val  tile = grid.generateNSTile(initialHex, GridConstants.tileScaleFactor)
     board.addTile(tile)
     tile.selected
     //grid.getVisibleCells.foreach(_._2.assignNeighbours)
@@ -288,11 +289,11 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
           // for now just test-shapes and Hexagons Types shown
 //          console.log("No hexagon present, draw a new")
           val tmpCell = grid.pixelToCell(center)
-          val newHex = new ImageHexagon(grid, tmpCell.q, tmpCell.r, tmpCell.s, 10)
+          val newHex = new ImageHexagon(grid, tmpCell.q, tmpCell.r, tmpCell.s, GridConstants.tileInitialHeight)
 
 
 //          setTimeout(400 * Math.random()) {
-          val newTile = grid.generateNSTile(newHex, 0.97d)
+          val newTile = grid.generateNSTile(newHex, GridConstants.tileScaleFactor)
           board.group.add(newTile.sprites)
           grid.add(newHex)
           board.addTile(newTile)
@@ -327,7 +328,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     *
    */
   def updateView = {
-    console.log("updating view...")
+//    console.log("updating view...")
     val startTime = System.nanoTime
     //console.log("update viewPort with Bounds:" + viewPort.getView.bounds.right, viewPort.getView.bounds.top, viewPort.getView.bounds.left, viewPort.getView.bounds.bottom)
     //console.log("SIZE OF VISIBLE HEXAGONS: ", visibleHexagons.size, printCoordinates(visibleHexagons))
