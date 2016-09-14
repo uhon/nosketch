@@ -52,6 +52,8 @@ object DebugHUD {
   val spriteDisposes = new IncrementalIndicator("disposed sprites")
   val spriteShowCtrl = new IncrementalIndicator("show controls")
   val spriteHideCtrl = new IncrementalIndicator("hide controls")
+  val texturesLoaded = new IncrementalIndicator("Texture loaded")
+  val texturesCached = new IncrementalIndicator("Texture from cache")
 
   addElement(tileCreations)
   addElement(tileDisposes)
@@ -60,6 +62,8 @@ object DebugHUD {
   addElement(spriteDisposes)
   addElement(spriteShowCtrl)
   addElement(spriteHideCtrl)
+  addElement(texturesLoaded)
+  addElement(texturesCached)
 
   def render = {
     $("#debugHUD").remove()

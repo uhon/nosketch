@@ -57,8 +57,14 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
    */
   @JSExport
   def main() = {
+    // TODO: Enable again if run without workbench
     $("document").ready(() => startViewer(document.getElementById("magicContainer")) )
+  }
 
+  @JSExport
+  def reset() = {
+    grid.getVisibleCells.foreach((t: Tuple2[String,VisibleHexagon]) => t._2.destroy)
+    startViewer(document.getElementById("magicContainer"))
   }
 
   /**
@@ -68,7 +74,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
    */
   @JSExport
   def startViewer(element: Element): Unit = {
-    console.log("starting viewer")
+    console.log("starting the viewer")
     //if(canvas == null) { return }
 
 
@@ -195,7 +201,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     DebugHUD.addElement(new TextIndicator("number of visible Hexagons", () => grid.getVisibleCells.size.toString))
     DebugHUD.addElement(new TextIndicator("mousePosition", () => s"${Math.round(mouse.position.x * 100) / 100},${Math.round(mouse.position.y * 100) / 100},${Math.round(mouse.position.z * 100) / 100}"))
 
-    NSTextureLoader.load((map: Map[FA, Texture]) => {
+    NSTextureLoader.loadFA((map: Map[FA, Texture]) => {
 
       predefinedTextures = map
       createFirstHexagon

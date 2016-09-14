@@ -1,5 +1,6 @@
 import sbt.Project.projectToRef
 import com.lihaoyi.workbench.Plugin._
+import sbt.Keys._
 
 name := """nosketch"""
 
@@ -23,14 +24,14 @@ lazy val nosketch = crossProject.
                                     |doodle.jvm.quit()
                                   """.trim.stripMargin
   ).jsSettings(
-    workbenchSettings : _*
+//    workbenchSettings : _*
 
   ).jsSettings(
     persistLauncher         := true,
     persistLauncher in Test := false,
-    bootSnippet             := """
-                                 |nosketch.Viewer3D.main();
-                               """.trim.stripMargin,
+//    bootSnippet             := """
+//                                 |nosketch.Viewer3D.main();
+//                               """.trim.stripMargin,
     testFrameworks          += new TestFramework("utest.runner.Framework"),
     libraryDependencies    ++= Seq(
       "org.scalaz"                %%  "scalaz-core" % "7.1.0",
@@ -38,7 +39,7 @@ lazy val nosketch = crossProject.
       "com.lihaoyi"               %%% "utest"       % "0.3.0" % "test",
       "com.github.japgolly.nyaya" %%% "nyaya-test"  % "0.5.3" % "test"
     ),
-    refreshBrowsers <<= refreshBrowsers.triggeredBy(packageJSDependencies in Compile)
+//    refreshBrowsers <<= refreshBrowsers.triggeredBy(packageJSDependencies in Compile)
   )
 
 
@@ -84,7 +85,9 @@ lazy val vonGridScalaJs = (project in file("von-grid-scala-js")).settings(
   .dependsOn(threejsFacade)
   .enablePlugins(ScalaJSPlugin)
 
-lazy val nosketchJS = (project in file("js")).settings(
+lazy val nosketchJS = (project in file("js"))
+  .settings(workbenchSettings: _*)
+  .settings(
   scalaVersion := scalaV,
   persistLauncher := true,
   //refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile),
@@ -109,8 +112,9 @@ lazy val nosketchJS = (project in file("js")).settings(
 
   ),
   persistLauncher in Compile := true,
-  skip in packageJSDependencies := false
-
+  // Scala-Js Workbench (Live-Reload and such things)
+  bootSnippet := "Viewer3D.reset();",
+  updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile)
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay)
   .dependsOn(nosketchSharedJs)
   .dependsOn(vonGridScalaJs)
@@ -164,8 +168,10 @@ lazy val nosketchSharedJs = nosketchShared.js
 resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 
-// Scala-Js Workbench (Live-Reload and such things)
-workbenchSettings
+
+
+skip in packageJSDependencies := false
+
 
 
 // Resolve only newly added dependencies
@@ -173,7 +179,7 @@ updateOptions := updateOptions.value.withCachedResolution(true)
 
 //updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile)
 
-bootSnippet := "nosketch.Viewer3D.startViewer(document.getElementById('canvas'));"
+
 
 scalaJSStage in Global := FastOptStage
 

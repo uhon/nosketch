@@ -2,6 +2,8 @@ package nosketch.components
 
 import javafx.scene.image.PixelFormat
 
+import nosketch.Viewer3D
+import nosketch.loading.NSTextureLoader
 import nosketch.shared.util.GridConstants
 import nosketch.shared.util.GridConstants.tileInitialHeight
 import nosketch.util.NSTools
@@ -83,12 +85,12 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = ti
         t.mesh.material = meshFaceMaterial
         meshContainer.remove(oldMesh)
         meshContainer.add(t.mesh)
+        Viewer3D.scene.render()
       })
     }
 
 
-    val tl = new TextureLoader()
-    tl.load(nosketch.io.ImageUrls.randomPngShape, (tex: Texture) => onceLoaded(tex))
+    NSTextureLoader.load(nosketch.io.ImageUrls.randomPngShape, (tex: Texture) => onceLoaded(tex))
   }
 
   override def destroy: Unit = {
