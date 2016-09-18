@@ -19,11 +19,12 @@ import scala.scalajs.js.Dynamic.{literal, _}
 object NSTextureLoader {
 
 
+  val lm = new LoadingManager()
+  val tl = new TextureLoader(lm)
   var textureCache = mutable.Map[String, Texture]()
 
   def loadFA(callback: (Map[FA, Texture]) => Unit) = {
-    val lm = new LoadingManager()
-    val tl = new TextureLoader(lm)
+
 
     var fontAwesome = FA.values.zipWithIndex.toList
 
@@ -45,25 +46,32 @@ object NSTextureLoader {
     }
 
     incLoad(0, Map(), callback)
+//    val map = Map[FA, Texture]()
+//    callback(map)
   }
 
   def load(url: String, callback: (Texture) => Unit): Unit = {
-    if(textureCache.contains(url)) {
-      DebugHUD.texturesCached.increment
-      callback(textureCache(url))
-    }
-
     val lm = new LoadingManager()
     val tl = new TextureLoader(lm)
+    if(textureCache.contains(url)) {
 
-    DebugHUD.texturesLoaded.increment
-    tl.load(url, (t: Texture) => {
-//      textureCache += url -> t
-      callback(t)
-    })
-    lm.onError = () => {
-      if(url == ImageUrls.notFound) callback(new Texture())
-      else load(ImageUrls.notFound, callback)
+      DebugHUD.texturesCached.increment
+      callback(textureCache(url))
+
+    } else {
+
+
+
+      DebugHUD.texturesLoaded.increment
+      tl.load(url, (t: Texture) => {
+        textureCache += url -> t
+        callback(textureCache(url))
+      })
+      lm.onError = () => {
+
+        if (url == ImageUrls.notFound) callback(new Texture())
+        else load(ImageUrls.notFound, callback)
+      }
     }
 
   }

@@ -45,16 +45,18 @@ object DebugHUD {
   }
 
   // Default indicators
+  val updateView = new IncrementalIndicator("update view")
   val tileCreations = new IncrementalIndicator("created tiles")
-  val tileDisposes = new IncrementalIndicator("disposed tiles")
+  val tileDisposes = new IncrementalIndicator("disposedasfdsfasf tiles")
   val cellCreations = new IncrementalIndicator("created cells")
-  val cellDisposes = new IncrementalIndicator("disposed cells")
+  val cellDisposes = new IncrementalIndicator("dissddfdsfposed cells")
   val spriteDisposes = new IncrementalIndicator("disposed sprites")
   val spriteShowCtrl = new IncrementalIndicator("show controls")
   val spriteHideCtrl = new IncrementalIndicator("hide controls")
   val texturesLoaded = new IncrementalIndicator("Texture loaded")
   val texturesCached = new IncrementalIndicator("Texture from cache")
 
+  addElement(updateView)
   addElement(tileCreations)
   addElement(tileDisposes)
   addElement(cellCreations)

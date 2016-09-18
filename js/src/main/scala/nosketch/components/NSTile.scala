@@ -85,12 +85,13 @@ class NSTile(board: NSBoard, config: TileConfig) extends Tile(config) {
 
 object NSTileMaterialFactory {
   def default = {
-    val materialSettings = l.asInstanceOf[MeshPhongMaterialParameters]
-    materialSettings.color = NSTools.randomizeRGBDouble(10, 30, 90, 0)
-    new MeshPhongMaterial(materialSettings)
+    new MeshPhongMaterial(defaultMeshPhongParams)
   }
 }
 
+object defaultMeshPhongParams extends MeshPhongMaterialParameters {
+  color = NSTools.randomizeRGBDouble(10, 30, 90, 0)
+}
 
 
 

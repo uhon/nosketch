@@ -1,6 +1,4 @@
 import sbt.Project.projectToRef
-import com.lihaoyi.workbench.Plugin._
-import sbt.Keys._
 
 name := """nosketch"""
 
@@ -23,14 +21,14 @@ lazy val nosketch = crossProject.
     cleanupCommands in console := """
                                     |doodle.jvm.quit()
                                   """.trim.stripMargin
-  ).jsSettings(
+//  ).jsSettings(
 //    workbenchSettings : _*
 
   ).jsSettings(
     persistLauncher         := true,
     persistLauncher in Test := false,
 //    bootSnippet             := """
-//                                 |nosketch.Viewer3D.main();
+//                                 |nosketch.Viewer3D().reset();
 //                               """.trim.stripMargin,
     testFrameworks          += new TestFramework("utest.runner.Framework"),
     libraryDependencies    ++= Seq(
@@ -38,8 +36,8 @@ lazy val nosketch = crossProject.
       "org.scala-js"              %%% "scalajs-dom" % "0.9.0",
       "com.lihaoyi"               %%% "utest"       % "0.3.0" % "test",
       "com.github.japgolly.nyaya" %%% "nyaya-test"  % "0.5.3" % "test"
-    ),
-//    refreshBrowsers <<= refreshBrowsers.triggeredBy(packageJSDependencies in Compile)
+    )
+//    updateBrowsers <<= updateBrowsers.triggeredBy(packageJSDependencies in Compile)
   )
 
 
@@ -49,10 +47,12 @@ lazy val nosketchJVM = (project in file("jvm")).settings(
   scalaJSProjects := clients,
   pipelineStages := Seq(scalaJSProd, gzip),
   resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases",
-  libraryDependencies ++= Seq(
+  routesGenerator := InjectedRoutesGenerator,
+    libraryDependencies ++= Seq(
     "com.vmunier" %% "play-scalajs-scripts" % "0.4.0",
     "org.webjars" % "bootstrap" % "3.3.5",
-    "org.webjars" % "font-awesome" % "4.4.0"
+    "org.webjars" % "font-awesome" % "4.4.0",
+    filters
   )
 ).enablePlugins(PlayScala)
   .aggregate(clients.map(projectToRef): _*)
@@ -75,8 +75,9 @@ lazy val vonGridScalaJs = (project in file("von-grid-scala-js")).settings(
 //    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6" //add dependency
   ),
   jsDependencies ++= Seq(
-    RuntimeDOM,
-    "org.webjars" % "three.js" % "r77" / "three.js"
+    RuntimeDOM
+//    "org.webjars" % "three.js" % "r77" / "three.js"
+//    "org.webjars.npm" % "three-orbit-controls" % "69.0.5" / "index.js"
   ),
   persistLauncher in Compile := true,
   skip in packageJSDependencies := false
@@ -107,13 +108,14 @@ lazy val nosketchJS = (project in file("js"))
   jsDependencies ++= Seq(
     RuntimeDOM,
     "org.webjars" % "jquery" % "2.2.1" / "jquery.js",
-    "org.webjars" % "bootstrap" % "3.3.5" / "bootstrap.js",
-    "org.webjars" % "three.js" % "r77" / "three.js"
-
+    "org.webjars" % "bootstrap" % "3.3.5" / "bootstrap.js"
+//    "org.webjars" % "three.js" % "r77" / "three.js"
+//    "org.webjars.npm" % "three-orbit-controls" % "69.0.5" / "index.js"
   ),
   persistLauncher in Compile := true,
   // Scala-Js Workbench (Live-Reload and such things)
-  bootSnippet := "Viewer3D.reset();",
+  bootSnippet := "nosketch.Viewer3D().reset();",
+  localUrl := ("127.0.0.1", 12345),
   updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile)
 ).enablePlugins(ScalaJSPlugin, ScalaJSPlay)
   .dependsOn(nosketchSharedJs)
@@ -180,8 +182,8 @@ updateOptions := updateOptions.value.withCachedResolution(true)
 //updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile)
 
 
-
-scalaJSStage in Global := FastOptStage
+//
+//scalaJSStage in Global := FastOptStage
 
 
 persistLauncher in Compile := false

@@ -36,7 +36,9 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
   def getTile: Option[NSTile] = {
     tile match {
       case t:NSTile => Option(t)
-      case _ => console.log("weird, there should only be NSTiles present"); Option.empty // If its null, or not a NSTile, we just give an empty Option
+      case null => console.log("no tile present"); Option.empty // If its null, or not a NSTile, we just give an empty Option
+      case t:js.Any => console.log("weird, there should only be NSTiles present", t); Option.empty // If its null, or not a NSTile, we just give an empty Option
+      case _ => console.log("weird, something else caught"); Option.empty // If its null, or not a NSTile, we just give an empty Option
     }
   }
 

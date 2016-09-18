@@ -11,5 +11,5 @@ object HexConstants {
 
 object GridConstants {
   val tileScaleFactor = 0.97d
-  val tileInitialHeight = 1
+  val tileInitialHeight = 2
 }

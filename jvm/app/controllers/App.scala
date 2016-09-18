@@ -3,13 +3,13 @@ package controllers
 import play.api.mvc._
 import nosketch.SharedMessages
 
-object Application extends Controller {
+class App extends Controller {
 
-  def index = Action {
+  def index = Action { request =>
     Ok(views.html.index(SharedMessages.itWorks))
   }
 
-  def draw = Action {
+  def draw = Action { request =>
     Ok(views.html.draw.render("Draw your Sketch now!"))
   }
 

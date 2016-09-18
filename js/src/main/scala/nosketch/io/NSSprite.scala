@@ -32,10 +32,7 @@ object ImageUrls {
 }
 
 object Materials {
-  def default = new SpriteMaterial(l(
-    "color" -> 0x00FFFF,
-    "fog" -> true
-  ).asInstanceOf[SpriteMaterialParameters])
+  def default = new SpriteMaterial()
 }
 
 /**

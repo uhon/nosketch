@@ -6,16 +6,19 @@
 <html>
   <head>
     <title>nosketch.com - @title</title>
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
-    <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
     @*<link href='https://fonts.googleapis.com/css?family=Tillana:400,800' rel='stylesheet' type='text/css'>*@
     <!-- for live-reload -->
-    <script type="text/javascript" src="/assets/js/von-grid.min.js"></script>
-    @playscalajs.html.scripts("nosketchJS")
-
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r77/three.min.js"></script>
     <script type="text/javascript" src="/assets/js/CSS3DRenderer.js"></script>
-    <script type="text/javascript" src="/assets/js/OrbitControls.js"></script>
+    <script type="text/javascript" src="/assets/js/von-grid.min.js"></script>
+
+
+
+    @playscalajs.html.scripts("nosketchJS")
     <script type="text/javascript" src="/assets/js/paper-full.js"></script>
+
 
     <script type="text/javascript" src="//localhost:12345/workbench.js"></script>
   </head>

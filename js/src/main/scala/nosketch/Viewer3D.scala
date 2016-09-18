@@ -12,9 +12,8 @@ import nosketch.shared.util.FA.FA
 import nosketch.util.Profiler._
 import nosketch.viewport.ViewPort
 import org.denigma.threejs.{Texture, _}
-import org.denigma.threejs.extras.HtmlSprite
+import org.denigma.threejs.extras.{HtmlSprite, OrbitControls}
 import org.denigma.threejs.extensions.Container3D
-import org.scalajs.dom
 import org.scalajs.dom.raw.HTMLElement
 import paperjs.Paper._
 
@@ -25,13 +24,14 @@ import paperjs.{Paper, PaperScope}
 
 import scala.scalajs.js
 import scala.scalajs.js.Any
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.{JSExport, JSName}
 import org.scalajs.dom._
 import org.querki.jquery._
 import vongrid._
 import vongrid.lib._
 import vongrid.config._
 import org.denigma.threejs._
+import vongrid.controls.{Mouse, MouseButtons, OrbitControlsPort}
 import vongrid.utils.{MC, MouseCaster, Scene}
 
 import scala.scalajs.js.timers._
@@ -40,6 +40,7 @@ import js.Dynamic.{literal => l}
 import scala.util.Random
 
 @JSExport
+@JSName("nosketch.Viewer3D")
 object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
   var viewPort: ViewPort = null
@@ -48,6 +49,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
   var scene: Scene = null
   var mouseAtTile: Option[NSTile] = None
   var predefinedTextures: Map[FA, Texture] = Map()
+  var mouse: MouseCaster = null
 
 //  var clusterList: List[Cluster] = List()
 
@@ -62,9 +64,13 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
   }
 
   @JSExport
+  @JSName("reset")
   def reset() = {
-    grid.getVisibleCells.foreach((t: Tuple2[String,VisibleHexagon]) => t._2.destroy)
-    startViewer(document.getElementById("magicContainer"))
+    console.log("reseting and restarting  CURENTLY DEACTIVATED")
+//    if(grid != null) {
+//      grid.getVisibleCells.foreach((t: Tuple2[String,VisibleHexagon]) => t._2.destroy)
+//    }
+//    startViewer(document.getElementById("magicContainer"))
   }
 
   /**
@@ -96,12 +102,41 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     scene = new Scene(
       SceneConfig.element(element.asInstanceOf[HTMLElement])
         .cameraPosition(new Vector3(0, 70, -70))
-        .fog(new Fog(0x000000, 300, 400))
-      ,
-      ControlConfig.maxDistance(200).minDistance(20)
+        .fog(new Fog(0x000000, 300, 400)),
+      false
     )
 
-    scene.render()
+    object mouseButtons extends MouseButtons {
+      ORBIT = Mouse.RIGHT
+      PAN = Mouse.LEFT
+    }
+
+    scene.controls = new OrbitControlsPort(scene.camera, scene.renderer.domElement.asInstanceOf[HTMLElement], mouseButtons)
+
+//    scene.controls.mouseButtons = l(ORBIT = 2, ZOOM = 1, PAN = 0)
+//    scene.controls.keys = l(LEFT = 37, UP = 38, RIGHT = 39, BOTTOM = 40)
+    scene.controls.enableKeys = true
+    scene.controls.enableDamping = true
+    scene.controls.enableRotate = true
+    scene.controls.enableZoom = true
+    scene.controls.zoomSpeed = 2
+
+//        scene.controls.autoRotate = true
+//        scene.controls.autoRotateSpeed = 20
+    scene.controls.minDistance = 30
+    scene.controls.maxDistance = 350
+
+
+//    scene.controls.maxAzimuthAngle = Math.PI/2
+//    scene.controls.minAzimuthAngle = -Math.PI/2
+//
+    scene.controlled = false
+
+//    console.log("controls", scene.controls)
+
+
+
+
 
     // this constructs the cells in grid coordinate space
     grid = new NSGrid(/*l(
@@ -114,7 +149,9 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     //grid.generate(l("size" -> 5).asInstanceOf[SimpleTileGenConfig])
 
 
-    val mouse = new NSMouseCaster(scene.container, scene.camera);
+    mouse = new NSMouseCaster(scene.container, scene.camera)
+
+
     board = new NSBoard(grid, js.undefined)
 
     // this will generate extruded hexagonal tiles
@@ -126,40 +163,69 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     scene.add(board.group)
     scene.focusOn(board.group)
 
-    def showControls(evt: String, obj: js.Object) = this.synchronized {
-      val previousTile = mouseAtTile
-      val currentTile = obj match {
-        case t:NSTile => Option(t)
-        case s:NSSprite => Option(s.tile.asInstanceOf[NSTile])
-        case _ => previousTile
-      }
+    initMouseEvents
 
-      (currentTile, previousTile) match {
-        case (Some(c), Some(p)) if c.uniqueID != p.uniqueID => {
-          c.showControls
-          p.hideControls
-        }
-        case (Some(c), None) => c.showControls
-        case (None, Some(p)) => p.hideControls
-        case _ =>
-      }
-      mouseAtTile = currentTile
+
+
+
+
+    //    mouse.signal.add(function(evt, tile) {
+    //      if (evt === vg.MouseCaster.CLICK) {
+    //        // tile.toggle();
+    //        // or we can use the mouse's raw coordinates to access the cell directly, just for fun:
+    //        var cell = board.grid.pixelToCell(mouse.position);
+    //        var t = board.getTileAtCell(cell);
+    //        if (t) t.toggle();
+    //      }
+    //    },
+    DebugHUD.addElement(new TextIndicator("number of visible Hexagons", () => grid.getVisibleCells.size.toString))
+    DebugHUD.addElement(new TextIndicator("mousePosition", () => s"${Math.round(mouse.position.x * 100) / 100},${Math.round(mouse.position.y * 100) / 100},${Math.round(mouse.position.z * 100) / 100}"))
+
+    NSTextureLoader.loadFA((map: Map[FA, Texture]) => {
+
+      predefinedTextures = map
+      scene.render()
+      createFirstHexagon
+      update
+    })
+
+
+  }
+
+
+  def showControls(evt: String, obj: js.Object) = this.synchronized {
+    val previousTile = mouseAtTile
+    val currentTile = obj match {
+      case t:NSTile => Option(t)
+      case s:NSSprite => Option(s.tile.asInstanceOf[NSTile])
+      case _ => previousTile
     }
 
+    (currentTile, previousTile) match {
+      case (Some(c), Some(p)) if c.uniqueID != p.uniqueID => {
+        c.showControls
+        p.hideControls
+      }
+      case (Some(c), None) => c.showControls
+      case (None, Some(p)) => p.hideControls
+      case _ =>
+    }
+    mouseAtTile = currentTile
+  }
+
+  def initMouseEvents: Unit = {
     mouse.signal.add((evt: String, tile: js.Object) => {
       if (evt == MC.OVER) {
         showControls(evt, tile)
-
-        requestViewUpdate
-
+//        requestViewUpdate
       }
 
       if (evt == MC.OUT) {
-        requestViewUpdate
+//        requestViewUpdate
       }
 
       if (evt == MC.WHEEL) {
-        requestViewUpdate
+//        requestViewUpdate
       }
 
       if (evt == MC.CLICK) {
@@ -167,8 +233,8 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
         // tile.toggle();
         // or we can use the mouse's raw coordinates to access the cell directly, just for fun:
         var cell = board.getGrid.getCellAt(mouse.position)
-//        console.log("mouse.position", mouse.position)
-//        console.log("cell", cell)
+        //        console.log("mouse.position", mouse.position)
+        //        console.log("cell", cell)
 
         if(cell.isDefined) {
           val t = board.getTileAtCell(cell.get)
@@ -186,49 +252,30 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
         }
       }
     }, this.asInstanceOf[js.Object])
+  }
 
 
-    //    mouse.signal.add(function(evt, tile) {
-    //      if (evt === vg.MouseCaster.CLICK) {
-    //        // tile.toggle();
-    //        // or we can use the mouse's raw coordinates to access the cell directly, just for fun:
-    //        var cell = board.grid.pixelToCell(mouse.position);
-    //        var t = board.getTileAtCell(cell);
-    //        if (t) t.toggle();
-    //      }
-    //    }, this);
+  def update {
 
-    DebugHUD.addElement(new TextIndicator("number of visible Hexagons", () => grid.getVisibleCells.size.toString))
-    DebugHUD.addElement(new TextIndicator("mousePosition", () => s"${Math.round(mouse.position.x * 100) / 100},${Math.round(mouse.position.y * 100) / 100},${Math.round(mouse.position.z * 100) / 100}"))
+    mouse.update
+    DebugHUD.update
+    scene.controls.update.apply()
+    if(updateRequested && !updateInProgress) {
+      updateInProgress = true
+      updateRequested = false
+      frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
 
-    NSTextureLoader.loadFA((map: Map[FA, Texture]) => {
+      updateView
 
-      predefinedTextures = map
-      createFirstHexagon
-      update
-    })
-
-    def update {
-
-      mouse.update
-      DebugHUD.update
-      if(updateRequested && !updateInProgress) {
-        updateInProgress = true
-        updateRequested = false
-        frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
-
-
-        updateView
-        updateInProgress = false
-        //console.log("repaint")
-        //
-        scene.render
-      }
-
-
-      g.requestAnimationFrame(() => update)
-
+      scene.render
+      updateInProgress = false
+      //console.log("repaint")
+      //
     }
+
+
+    g.requestAnimationFrame(() => update)
+
   }
 
 
@@ -244,6 +291,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     grid.add(initialHex)
     val  tile = grid.generateNSTile(initialHex, GridConstants.tileScaleFactor)
     board.addTile(tile)
+//    initialHex.draw
     tile.selected
     //grid.getVisibleCells.foreach(_._2.assignNeighbours)
     //reportDuration("Viewer::initHexagons", startTime)
@@ -300,6 +348,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
 //          setTimeout(400 * Math.random()) {
           val newTile = grid.generateNSTile(newHex, GridConstants.tileScaleFactor)
+          newHex.draw
           board.group.add(newTile.sprites)
           grid.add(newHex)
           board.addTile(newTile)
@@ -334,6 +383,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     *
    */
   def updateView = {
+    DebugHUD.updateView.increment
 //    console.log("updating view...")
     val startTime = System.nanoTime
     //console.log("update viewPort with Bounds:" + viewPort.getView.bounds.right, viewPort.getView.bounds.top, viewPort.getView.bounds.left, viewPort.getView.bounds.bottom)
@@ -350,7 +400,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
       if(isOutOfScope(t._2.getCenter)) {
         //console.log("became out of scope")
         t._2.getTile match {
-          case v: VisibleHexagon => v.getTile.map(board.removeTile(_))
+          case t: NSTile => t.map(board.removeTile(_))
           case _ =>
         }
         t._2.destroy
