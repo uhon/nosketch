@@ -23,7 +23,7 @@ import paperjs.Basic.Point
 import paperjs.{Paper, PaperScope}
 
 import scala.scalajs.js
-import scala.scalajs.js.Any
+import scala.scalajs.js.{Any, JSApp}
 import scala.scalajs.js.annotation.{JSExport, JSName}
 import org.scalajs.dom._
 import org.querki.jquery._
@@ -41,7 +41,7 @@ import scala.util.Random
 
 @JSExport
 @JSName("nosketch.Viewer3D")
-object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
+object Viewer3D extends JSApp with ViewportSubscriber {
 
   var viewPort: ViewPort = null
   var grid: NSGrid = null
@@ -50,6 +50,9 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
   var mouseAtTile: Option[NSTile] = None
   var predefinedTextures: Map[FA, Texture] = Map()
   var mouse: MouseCaster = null
+
+
+  var stats: Stats = null
 
 //  var clusterList: List[Cluster] = List()
 
@@ -111,12 +114,19 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
       PAN = Mouse.LEFT
     }
 
+
+
     scene.controls = new OrbitControlsPort(scene.camera, scene.renderer.domElement.asInstanceOf[HTMLElement], mouseButtons)
+    scene.controls.addEventListener("change", (a:js.Any) => requestViewUpdate)
+    scene.controls.addEventListener("start", (a:js.Any) => requestViewUpdate)
+    scene.controls.addEventListener("end", (a:js.Any) => requestViewUpdate)
 
 //    scene.controls.mouseButtons = l(ORBIT = 2, ZOOM = 1, PAN = 0)
 //    scene.controls.keys = l(LEFT = 37, UP = 38, RIGHT = 39, BOTTOM = 40)
     scene.controls.enableKeys = true
     scene.controls.enableDamping = true
+    scene.controls.dampingFactor = 0.1
+    scene.controls.keyPanSpeed = 10
     scene.controls.enableRotate = true
     scene.controls.enableZoom = true
     scene.controls.zoomSpeed = 2
@@ -181,11 +191,17 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     DebugHUD.addElement(new TextIndicator("number of visible Hexagons", () => grid.getVisibleCells.size.toString))
     DebugHUD.addElement(new TextIndicator("mousePosition", () => s"${Math.round(mouse.position.x * 100) / 100},${Math.round(mouse.position.y * 100) / 100},${Math.round(mouse.position.z * 100) / 100}"))
 
+    stats = new Stats()
+    stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    console.log(stats.dom)
+    $("body").append(stats.dom)
+
     NSTextureLoader.loadFA((map: Map[FA, Texture]) => {
 
       predefinedTextures = map
       scene.render()
       createFirstHexagon
+      requestViewUpdate
       update
     })
 
@@ -217,7 +233,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
     mouse.signal.add((evt: String, tile: js.Object) => {
       if (evt == MC.OVER) {
         showControls(evt, tile)
-//        requestViewUpdate
+        requestViewUpdate
       }
 
       if (evt == MC.OUT) {
@@ -256,24 +272,26 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
 
 
   def update {
-
+    stats.begin()
     mouse.update
     DebugHUD.update
     scene.controls.update.apply()
+
+
     if(updateRequested && !updateInProgress) {
       updateInProgress = true
       updateRequested = false
       frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
 
       updateView
-
       scene.render
+
       updateInProgress = false
       //console.log("repaint")
       //
     }
 
-
+    stats.end()
     g.requestAnimationFrame(() => update)
 
   }
@@ -423,6 +441,7 @@ object Viewer3D extends scala.scalajs.js.JSApp with ViewportSubscriber {
   var updateInProgress = false
 
   def requestViewUpdate: Unit = {
+    DebugHUD.requestForUpdate.increment
     updateRequested = true
   }
 

@@ -19,7 +19,7 @@ class NSMouseCaster(group: Object3D, camera: Camera, element: UndefOr[HTMLElemen
 
   override def _onDocumentMouseMove(evt: MouseEvent): js.Any = {
 
-    Viewer3D.requestViewUpdate
+//    Viewer3D.requestViewUpdate
 //    if(down) {
 //      console.log("mouse drages")
 //      signal.dispatch(MC.DRAG,  this.pickedObject)

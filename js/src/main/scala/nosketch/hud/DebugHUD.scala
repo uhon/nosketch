@@ -46,6 +46,7 @@ object DebugHUD {
 
   // Default indicators
   val updateView = new IncrementalIndicator("update view")
+  val requestForUpdate = new IncrementalIndicator("request view update")
   val tileCreations = new IncrementalIndicator("created tiles")
   val tileDisposes = new IncrementalIndicator("disposedasfdsfasf tiles")
   val cellCreations = new IncrementalIndicator("created cells")
@@ -57,6 +58,7 @@ object DebugHUD {
   val texturesCached = new IncrementalIndicator("Texture from cache")
 
   addElement(updateView)
+  addElement(requestForUpdate)
   addElement(tileCreations)
   addElement(tileDisposes)
   addElement(cellCreations)
