@@ -3,6 +3,9 @@ logs
 project/project/*
 !project/project/plugins.scala
 project/target
+project/.boot
+project/.sbtboot
+project/.ivy
 project/activator*
 target
 test-reports
