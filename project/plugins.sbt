@@ -24,7 +24,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-mocha" % "1.0.0")
 // The Play plugin
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.7")
 
-addSbtPlugin("com.vmunier" % "sbt-play-scalajs" % "0.2.7")
+addSbtPlugin("com.vmunier" % "sbt-web-scalajs" % "1.0.1")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-gzip" % "1.0.0")
 

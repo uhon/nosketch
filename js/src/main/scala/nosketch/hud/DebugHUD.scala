@@ -57,17 +57,22 @@ object DebugHUD {
   val texturesLoaded = new IncrementalIndicator("Texture loaded")
   val texturesCached = new IncrementalIndicator("Texture from cache")
 
-  addElement(updateView)
-  addElement(requestForUpdate)
-  addElement(tileCreations)
-  addElement(tileDisposes)
-  addElement(cellCreations)
-  addElement(cellDisposes)
-  addElement(spriteDisposes)
-  addElement(spriteShowCtrl)
-  addElement(spriteHideCtrl)
-  addElement(texturesLoaded)
-  addElement(texturesCached)
+  addDefaultElements
+
+  def addDefaultElements = {
+    addElement(updateView)
+    addElement(requestForUpdate)
+    addElement(tileCreations)
+    addElement(tileDisposes)
+    addElement(cellCreations)
+    addElement(cellDisposes)
+    addElement(spriteDisposes)
+    addElement(spriteShowCtrl)
+    addElement(spriteHideCtrl)
+    addElement(texturesLoaded)
+    addElement(texturesCached)
+  }
+
 
   def render = {
     $("#debugHUD").remove()
@@ -77,5 +82,10 @@ object DebugHUD {
         elements.map(_.render)
       ).toString()
     )
+  }
+
+  def reset: Unit = {
+    elements = List()
+    addDefaultElements
   }
 }

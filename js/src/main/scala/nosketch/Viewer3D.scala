@@ -3,6 +3,7 @@ package nosketch
 import java.awt.event.MouseWheelEvent
 
 import components._
+import nosketch.controls.camera.NSOrbitControls
 import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.{MouseIndicator, TextIndicator, TouchIndicator}
 import nosketch.io.{ImageUrls, NSSprite}
@@ -64,16 +65,40 @@ object Viewer3D extends JSApp with ViewportSubscriber {
   def main() = {
     // TODO: Enable again if run without workbench
     $("document").ready(() => startViewer(document.getElementById("magicContainer")) )
+//    reset
   }
+
+  var resetInProgress = false
 
   @JSExport
   @JSName("reset")
   def reset() = {
-    console.log("reseting and restarting  CURENTLY DEACTIVATED")
-//    if(grid != null) {
-//      grid.getVisibleCells.foreach((t: Tuple2[String,VisibleHexagon]) => t._2.destroy)
-//    }
-//    startViewer(document.getElementById("magicContainer"))
+    if(resetInProgress) {
+      console.log("reset avoided its in progress")
+    } else {
+      resetInProgress = true
+      console.log("reseting and restarting")
+      if (grid != null) {
+        console.log("grid", grid)
+        console.log("grid is there")
+        console.log("grid is there")
+        grid.getVisibleCells.foreach((t: Tuple2[String, VisibleHexagon]) => t._2.destroy)
+
+        //      scene = null
+        //      grid.dispose()
+        //      mouse = null
+        //      board
+
+      }
+      activate(document.getElementById("magicContainer")).apply
+      //    startViewer(document.getElementById("magicContainer"))
+      //    DebugHUD.reset
+      //    scene.render()
+      //    createFirstHexagon
+      //    requestViewUpdate
+      //    update
+      resetInProgress = false
+    }
   }
 
   /**
@@ -91,7 +116,8 @@ object Viewer3D extends JSApp with ViewportSubscriber {
     //console.log("created viewport")
     // Initialize the ViewPort
 
-    activate(element)
+    var takeOff = activate(element)
+    preload(takeOff)
 
     //viewPort = new ViewPort($("#magicContainer canvas").get(0).asInstanceOf[dom.html.Canvas], this)
     //viewPort.init
@@ -99,73 +125,84 @@ object Viewer3D extends JSApp with ViewportSubscriber {
   }
 
 
-  def activate(element: Element): Unit = {
+  def activate(element: Element): () => Unit = {
     console.log("activate")
 
-    scene = new Scene(
-      SceneConfig.element(element.asInstanceOf[HTMLElement])
-        .cameraPosition(new Vector3(0, 70, -70))
-        .fog(new Fog(0x000000, 300, 400)),
-      false
-    )
+    if(scene == null) {
+      console.log("creating scene")
+      scene = new Scene(
+        SceneConfig.element(element.asInstanceOf[HTMLElement])
+          .cameraPosition(new Vector3(0, 70, -70))
+          .fog(new Fog(0x000000, 300, 400)),
+        false
+      )
 
-    object mouseButtons extends MouseButtons {
-      ORBIT = Mouse.RIGHT
-      PAN = Mouse.LEFT
+      object mouseButtons extends MouseButtons {
+        ORBIT = Mouse.RIGHT
+        PAN = Mouse.LEFT
+      }
+
+
+
+      scene.controls = new NSOrbitControls(scene.camera, scene.renderer.domElement.asInstanceOf[HTMLElement], mouseButtons)
+      scene.controls.addEventListener("change", (a: js.Any) => requestViewUpdate)
+      scene.controls.addEventListener("start", (a: js.Any) => requestViewUpdate)
+      scene.controls.addEventListener("end", (a: js.Any) => requestViewUpdate)
+
+      //    scene.controls.mouseButtons = l(ORBIT = 2, ZOOM = 1, PAN = 0)
+      //    scene.controls.keys = l(LEFT = 37, UP = 38, RIGHT = 39, BOTTOM = 40)
+      scene.controls.enableKeys = true
+      scene.controls.enableDamping = true
+      scene.controls.dampingFactor = 0.1
+      scene.controls.keyPanSpeed = 10
+      scene.controls.enableRotate = true
+      scene.controls.enableZoom = true
+      scene.controls.zoomSpeed = 2
+      scene.controls.maxAzimuthAngle = 40 // TODO: find out why!
+
+      //        scene.controls.autoRotate = true
+      //        scene.controls.autoRotateSpeed = 20
+      scene.controls.minDistance = 30
+      scene.controls.maxDistance = 350
+
+
+      //    scene.controls.maxAzimuthAngle = Math.PI/2
+      //    scene.controls.minAzimuthAngle = -Math.PI/2
+      //
+      scene.controlled = false
+
+      //    console.log("controls", scene.controls)
+
     }
 
 
-
-    scene.controls = new OrbitControlsPort(scene.camera, scene.renderer.domElement.asInstanceOf[HTMLElement], mouseButtons)
-    scene.controls.addEventListener("change", (a:js.Any) => requestViewUpdate)
-    scene.controls.addEventListener("start", (a:js.Any) => requestViewUpdate)
-    scene.controls.addEventListener("end", (a:js.Any) => requestViewUpdate)
-
-//    scene.controls.mouseButtons = l(ORBIT = 2, ZOOM = 1, PAN = 0)
-//    scene.controls.keys = l(LEFT = 37, UP = 38, RIGHT = 39, BOTTOM = 40)
-    scene.controls.enableKeys = true
-    scene.controls.enableDamping = true
-    scene.controls.dampingFactor = 0.1
-    scene.controls.keyPanSpeed = 10
-    scene.controls.enableRotate = true
-    scene.controls.enableZoom = true
-    scene.controls.zoomSpeed = 2
-
-//        scene.controls.autoRotate = true
-//        scene.controls.autoRotateSpeed = 20
-    scene.controls.minDistance = 30
-    scene.controls.maxDistance = 350
-
-
-//    scene.controls.maxAzimuthAngle = Math.PI/2
-//    scene.controls.minAzimuthAngle = -Math.PI/2
-//
-    scene.controlled = false
-
-//    console.log("controls", scene.controls)
-
-
-
-
-
-    // this constructs the cells in grid coordinate space
-    grid = new NSGrid(/*l(
-        "cellSize" -> 11,
-        "cameraPosition" -> new Vector3(0, 0, 150),
-        "fog" -> new Fog(0xFFFFFF, 200, 400)
-      ).asInstanceOf[HexGridConfig]*/
-    )
+    if(grid == null) {
+      console.log("creating grid")
+      // this constructs the cells in grid coordinate space
+      grid = new NSGrid(/*l(
+          "cellSize" -> 11,
+          "cameraPosition" -> new Vector3(0, 0, 150),
+          "fog" -> new Fog(0xFFFFFF, 200, 400)
+        ).asInstanceOf[HexGridConfig]*/
+      )
+    }
 
     //grid.generate(l("size" -> 5).asInstanceOf[SimpleTileGenConfig])
 
+    if(mouse == null) {
+      console.log("creating Mousecaster")
+      mouse = new NSMouseCaster(scene.container, scene.camera)
+    }
 
-    mouse = new NSMouseCaster(scene.container, scene.camera)
+
+    if(board == null) {
+      console.log("creating boeard and tilemap")
+      board = new NSBoard(grid, js.undefined)
+      // this will generate extruded hexagonal tiles
+      board.generateTilemap(TileGenConfig.tileScale(0.97f))
+    }
 
 
-    board = new NSBoard(grid, js.undefined)
-
-    // this will generate extruded hexagonal tiles
-    board.generateTilemap(TileGenConfig.tileScale(0.97f))
 
 
 
@@ -193,19 +230,22 @@ object Viewer3D extends JSApp with ViewportSubscriber {
 
     stats = new Stats()
     stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-    console.log(stats.dom)
     $("body").append(stats.dom)
 
-    NSTextureLoader.loadFA((map: Map[FA, Texture]) => {
-
-      predefinedTextures = map
+    () => {
       scene.render()
       createFirstHexagon
       requestViewUpdate
       update
+    }
+  }
+
+  def preload(takeOff: () => Unit) = {
+    NSTextureLoader.loadFA((map: Map[FA, Texture]) => {
+      console.log("textures loaded")
+      predefinedTextures = map
+      takeOff.apply
     })
-
-
   }
 
 
