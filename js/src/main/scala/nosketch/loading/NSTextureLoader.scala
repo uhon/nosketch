@@ -70,7 +70,11 @@ object NSTextureLoader {
       lm.onError = () => {
 
         if (url == ImageUrls.notFound) callback(new Texture())
-        else load(ImageUrls.notFound, callback)
+        else {
+          load(ImageUrls.notFound, callback)
+          // cache not found image ;)
+//          load(ImageUrls.notFound, (t) => textureCache += url -> t)
+        }
       }
     }
 

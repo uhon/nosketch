@@ -3,23 +3,41 @@
   position: absolute;
   top: 100px;
   left: 10px;
-  background-color: green;
-  font-size: large;
+  background-color: darkslategrey;
+  font-size: medium;
   color: white;
-  opacity: 0.5;
-  padding: 10px 0;
+  opacity: 0.98;
+
+  .stats {
+    width: 400px;
+  }
 
   .indicator {
-    clear-side: both;
+    .container {
+      margin-left: 15px;
+      border-bottom: 1px solid orange;
+    }
+
 
     .key {
       float: left;
       float: left;
-
     }
     .value {
       float: left;
       font-weight: bolder;
+      font-family: "Courier New", monospace;
+      text-align: right;
     }
+
+    div.row {
+
+    }
+  }
+  .indicator:last-child {
+    .container {
+      border-bottom: 0px;
+    }
+
   }
 }

@@ -36,7 +36,7 @@ object Profiler {
         DebugHUD.addElement(indicators(task))
       }
 
-      indicators(task).setValue(duration.toString)
+      indicators(task).setValue(duration)
       //console.warn(task + " took: " + formatNumber(duration.toString) + "ns")
     }
   }

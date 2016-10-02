@@ -1,0 +1,28 @@
+version: '2'
+
+services:
+
+  app:
+    extends:
+      file: services.yml
+      service: app
+    environment:
+        SBT_OPTS: "-Dconfig.resource=docker.conf -Dsbt.global.base=project/.sbtboot -Dsbt.boot.directory=project/.boot -Dsbt.ivy.home=project/.ivy -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9999 $SBT_OPTS"
+        WORKDIR_UID: $WORKDIR_UID
+    expose:
+      - 9999
+    ports:
+      - "9999:9999"
+      - "9000:9000"
+    volumes:
+      - app-data:/home/sbt
+  mailhog:
+    extends:
+      file: services.yml
+      service: mailhog
+    ports:
+      - "8025:8025"
+
+volumes:
+  app-data:
+    driver: local

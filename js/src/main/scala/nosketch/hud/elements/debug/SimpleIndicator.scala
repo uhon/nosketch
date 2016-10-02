@@ -7,6 +7,6 @@ import paperjs.Tools.ToolEvent
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-class SimpleIndicator(key: String) extends DebugHUDElement with MouseEventListener {
+class SimpleIndicator(override val key: String) extends DebugHUDElement with MouseEventListener {
   override def update: Unit = {}
 }

@@ -8,7 +8,7 @@ import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.{MouseIndicator, TextIndicator, TouchIndicator}
 import nosketch.io.{ImageUrls, NSSprite}
 import nosketch.loading.NSTextureLoader
-import nosketch.shared.util.{FA, GridConstants}
+import nosketch.shared.util.FA
 import nosketch.shared.util.FA.FA
 import nosketch.util.Profiler._
 import nosketch.viewport.ViewPort
@@ -32,7 +32,7 @@ import vongrid._
 import vongrid.lib._
 import vongrid.config._
 import org.denigma.threejs._
-import vongrid.controls.{Mouse, MouseButtons, OrbitControlsPort}
+import vongrid.controls.{Mouse, MouseControls, OrbitControlsPort}
 import vongrid.utils.{MC, MouseCaster, Scene}
 
 import scala.scalajs.js.timers._
@@ -132,59 +132,27 @@ object Viewer3D extends JSApp with ViewportSubscriber {
       console.log("creating scene")
       scene = new Scene(
         SceneConfig.element(element.asInstanceOf[HTMLElement])
-          .cameraPosition(new Vector3(0, 70, -70))
-          .fog(new Fog(0x000000, 300, 400)),
+          .antialias(false)
+          .cameraPosition(CameraConstants.initialCameraPos)
+          .fog(new Fog(SceneConstants.fogColor, 300, 400)),
         false
       )
 
-      object mouseButtons extends MouseButtons {
-        ORBIT = Mouse.RIGHT
-        PAN = Mouse.LEFT
-      }
 
-
-
-      scene.controls = new NSOrbitControls(scene.camera, scene.renderer.domElement.asInstanceOf[HTMLElement], mouseButtons)
+      scene.controls = new NSOrbitControls(scene.camera, scene.renderer.domElement.asInstanceOf[HTMLElement])
+      OrbitControlsConstants.apply(scene.controls.asInstanceOf[NSOrbitControls])
       scene.controls.addEventListener("change", (a: js.Any) => requestViewUpdate)
       scene.controls.addEventListener("start", (a: js.Any) => requestViewUpdate)
       scene.controls.addEventListener("end", (a: js.Any) => requestViewUpdate)
 
-      //    scene.controls.mouseButtons = l(ORBIT = 2, ZOOM = 1, PAN = 0)
-      //    scene.controls.keys = l(LEFT = 37, UP = 38, RIGHT = 39, BOTTOM = 40)
-      scene.controls.enableKeys = true
-      scene.controls.enableDamping = true
-      scene.controls.dampingFactor = 0.1
-      scene.controls.keyPanSpeed = 10
-      scene.controls.enableRotate = true
-      scene.controls.enableZoom = true
-      scene.controls.zoomSpeed = 2
-      scene.controls.maxAzimuthAngle = 40 // TODO: find out why!
-
-      //        scene.controls.autoRotate = true
-      //        scene.controls.autoRotateSpeed = 20
-      scene.controls.minDistance = 30
-      scene.controls.maxDistance = 350
-
-
-      //    scene.controls.maxAzimuthAngle = Math.PI/2
-      //    scene.controls.minAzimuthAngle = -Math.PI/2
-      //
       scene.controlled = false
-
-      //    console.log("controls", scene.controls)
-
     }
 
 
     if(grid == null) {
       console.log("creating grid")
       // this constructs the cells in grid coordinate space
-      grid = new NSGrid(/*l(
-          "cellSize" -> 11,
-          "cameraPosition" -> new Vector3(0, 0, 150),
-          "fog" -> new Fog(0xFFFFFF, 200, 400)
-        ).asInstanceOf[HexGridConfig]*/
-      )
+      grid = new NSGrid()
     }
 
     //grid.generate(l("size" -> 5).asInstanceOf[SimpleTileGenConfig])
@@ -225,7 +193,7 @@ object Viewer3D extends JSApp with ViewportSubscriber {
     //        if (t) t.toggle();
     //      }
     //    },
-    DebugHUD.addElement(new TextIndicator("number of visible Hexagons", () => grid.getVisibleCells.size.toString))
+    DebugHUD.addElement(new TextIndicator("number of visible Hexagons", () => grid.getVisibleCells.size))
     DebugHUD.addElement(new TextIndicator("mousePosition", () => s"${Math.round(mouse.position.x * 100) / 100},${Math.round(mouse.position.y * 100) / 100},${Math.round(mouse.position.z * 100) / 100}"))
 
     stats = new Stats()
@@ -314,6 +282,10 @@ object Viewer3D extends JSApp with ViewportSubscriber {
   def update {
     stats.begin()
     mouse.update
+
+    DebugHUD.cameraPosition.setValue(scene.camera.position)
+    DebugHUD.cameraRotation.setValue(scene.camera.rotation)
+
     DebugHUD.update
     scene.controls.update.apply()
 
@@ -405,11 +377,8 @@ object Viewer3D extends JSApp with ViewportSubscriber {
 
 
 //          setTimeout(400 * Math.random()) {
-          val newTile = grid.generateNSTile(newHex, GridConstants.tileScaleFactor)
-          newHex.draw
-          board.group.add(newTile.sprites)
           grid.add(newHex)
-          board.addTile(newTile)
+          newHex.draw
 
           //          board.generateDroppingTile(newHex)
 
@@ -428,7 +397,7 @@ object Viewer3D extends JSApp with ViewportSubscriber {
           (newHex, true)
         }
       }
-    } finally reportDuration("Viewer::findOrCreateHexagon", startTime)
+    } finally reportDuration("findOrCreateHexagon", startTime)
   }
 
 
@@ -465,7 +434,7 @@ object Viewer3D extends JSApp with ViewportSubscriber {
         grid.remove(t._2)
       }
     })
-    reportDuration("Viewer::remove invisible", startTime)
+    reportDuration("remove invisible", startTime)
 
     // Assign new hexagons and redraw them when appear
     val assignNeighboursTime = System.nanoTime
@@ -473,7 +442,7 @@ object Viewer3D extends JSApp with ViewportSubscriber {
 
     grid.getVisibleCells.foreach(_._2.assignNeighbours)
 
-    reportDuration("Viewer::assign Neighbours", assignNeighboursTime)
+    reportDuration("assign Neighbours", assignNeighboursTime)
   }
 
 

@@ -22,7 +22,7 @@ import org.scalajs.dom._
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-class TextIndicator(override val key: String, contentProducer: () => String) extends DebugHUDElement {
+class TextIndicator(override val key: String, contentProducer: () => js.Any) extends DebugHUDElement {
 
   override def render: TypedTag[String] = {
     setValue(contentProducer())

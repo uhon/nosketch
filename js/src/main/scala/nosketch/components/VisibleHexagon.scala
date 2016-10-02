@@ -3,12 +3,9 @@ package nosketch.components
 import java.time.LocalDate
 import java.util.Date
 
-import nosketch.Viewer3D
+import nosketch.{HexConstants, Viewer3D}
 import org.scalajs.dom.console
-import nosketch.components.PhantomHexagon
-import nosketch.components.EmptyHexagon
 import nosketch.hud.DebugHUD
-import nosketch.shared.util.HexConstants
 import org.denigma.threejs.{Object3D, Vector3}
 import paperjs.Basic.Point
 import paperjs.Paths.Path
@@ -28,6 +25,8 @@ import scala.scalajs.js.annotation.ScalaJSDefined
 abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = 0d) extends Cell(q, r, s, h) {
   DebugHUD.cellCreations.increment
   val created = new Date()
+
+  var disposed = false
 
   var neighbours: js.Array[_ >: Cell] = js.Array[Cell](PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon, PhantomHexagon)
 
@@ -59,6 +58,7 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
         case PhantomHexagon =>
       }
     }
+    disposed = true
   }
 
 

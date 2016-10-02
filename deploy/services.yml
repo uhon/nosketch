@@ -1,0 +1,49 @@
+version: '2'
+
+services:
+
+  jenkins:
+    build: jenkins
+    ports:
+      - "50000:50000"
+      - "8083:8080"
+
+  app:
+    build: app
+    stdin_open: true
+    environment:
+      DEPLOY_BRANCH: 'local'
+      DEPLOY_BUILDNO: 'SNAPSHOT'
+      MYSQL_ENV_MYSQL_DATABASE: 'nosketch'
+      MYSQL_ENV_MYSQL_USER: 'nosketch'
+      MYSQL_ENV_MYSQL_PASSWORD: 'nosketch'
+      MYSQL_PORT_3306_TCP_ADDR: 'db'
+      SMTP_HOST: 'mailhog'
+    expose:
+      - "9000"
+      - "9999"
+    volumes:
+      - "../:/usr/src/app"
+
+  db:
+    build: db
+    environment:
+      MYSQL_DATABASE: nosketch
+      MYSQL_USER: nosketch
+      MYSQL_PASSWORD: nosketch
+      MYSQL_ROOT_PASSWORD: nosketch
+    expose:
+      - "3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:4.5.3.1-1
+    environment:
+     - PMA_HOST=db
+    expose:
+      - "8080"
+
+  mailhog:
+    build: mailhog
+    expose:
+      - "25"
+      - "8025"

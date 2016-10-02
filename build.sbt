@@ -72,7 +72,7 @@ lazy val vonGridScalaJs = (project in file("von-grid-scala-js")).settings(
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.0",
     "org.scala-js" %%% "scalajs-tools" % "0.6.6",
-    "org.querki" %%% "jquery-facade" % "1.0-RC2", //scalajs facade for jQuery + jQuery extensions
+    "org.querki" %%% "jquery-facade" % "1.0-RC6", //scalajs facade for jQuery + jQuery extensions
     "com.lihaoyi" %%% "scalarx" % "0.2.8",
     //    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6",
     "org.querki" %%% "querki-jsext" % "0.7"
@@ -102,7 +102,7 @@ lazy val nosketchJS = (project in file("js"))
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.0",
     "org.scala-js" %%% "scalajs-tools" % "0.6.6",
-    "org.querki" %%% "jquery-facade" % "1.0-RC2", //scalajs facade for jQuery + jQuery extensions
+    "org.querki" %%% "jquery-facade" % "1.0-RC6", //scalajs facade for jQuery + jQuery extensions
     "com.lihaoyi" %%% "scalarx" % "0.2.8",
 //    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6",
     "org.querki" %%% "querki-jsext" % "0.7",

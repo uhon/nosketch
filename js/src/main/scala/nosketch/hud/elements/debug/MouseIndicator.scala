@@ -16,12 +16,12 @@ import scala.scalajs.js
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-class MouseIndicator(key: String) extends DebugHUDElement with MouseEventListener {
+class MouseIndicator(override val key: String) extends DebugHUDElement with MouseEventListener {
 
   MouseEventDistributor.registerToMouseEvents(this)
 
   override def onMouseMove(event: ToolEvent): Unit = {
-    setValue(s"${event.point.x},${event.point.y}")
+    setValue(event.point)
   }
 
   override def update: Unit = {}

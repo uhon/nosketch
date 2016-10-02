@@ -1,5 +1,7 @@
 package nosketch.components
 
+import nosketch.{CameraConstants, GridConstants, SceneConstants}
+import nosketch.SceneConstants
 import nosketch.util.NSTools
 import org.denigma.threejs.{ExtrudeGeometry, Fog, MeshPhongMaterial, THREE, Vector3}
 import vongrid.{Cell, HexGrid}
@@ -36,8 +38,8 @@ class NSGrid(config: HexGridConfig) extends HexGrid(config) {
 
 
   def this() = this(HexGridConfig.cellSize(11)
-        .cameraPosition(new Vector3(0, 0, 150))
-        .fog(new Fog(0x000000, 200, 400))
+        .cameraPosition(CameraConstants.initialCameraPos)
+        .fog(new Fog(GridConstants.fogColor, 200, 400))
   )
 
   def getVisibleCells = cells.asInstanceOf[js.Dictionary[VisibleHexagon]]

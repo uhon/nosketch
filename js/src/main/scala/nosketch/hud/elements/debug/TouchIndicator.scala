@@ -15,10 +15,10 @@ import org.scalajs.dom._
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-class TouchIndicator(key: String) extends DebugHUDElement with TouchEventListener {
+class TouchIndicator(override val key: String) extends DebugHUDElement with TouchEventListener {
 
   override def onDrag(eventPoint: Point): Unit = {
-    setValue(eventPoint.toString())
+    setValue(eventPoint)
   }
 
   override def update: Unit = {}

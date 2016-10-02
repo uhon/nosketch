@@ -12,6 +12,6 @@ class IncrementalIndicator(override val key: String) extends DebugHUDElement {
   def increment = counter = counter + 1;
 
   override def update: Unit = {
-    setValue(counter.toString)
+    setValue(counter)
   }
 }

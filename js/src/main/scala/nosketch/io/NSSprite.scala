@@ -21,7 +21,7 @@ object ImageUrls {
   val notFound = "/assets/shapes/notFound.png"
 
   def randomFA = FA(scala.util.Random.nextInt(FA.maxId)).toString
-  def pngShape(name: String) = s"/assets/font-awesome/white/png/256/$name.png"
+  def pngShape(name: String) = s"/assets/font-awesome/white/png/256/anchor.png"
 
   def svgShape(name: String) = s"/assets/font-awesome/white/svg/$name.svg"
 

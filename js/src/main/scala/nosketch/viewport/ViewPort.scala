@@ -160,7 +160,7 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
           val startOffsetTime = System.nanoTime()
           view.center = view.center add currentOffset
-          reportDuration("Viewer::offset the PaperJs-View", startOffsetTime)
+          reportDuration("offset PaperJs-View", startOffsetTime)
 
           playground.onZoom
         }
