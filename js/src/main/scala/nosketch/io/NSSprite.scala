@@ -20,10 +20,10 @@ import scala.scalajs.js.Dynamic.{literal => l}
 object ImageUrls {
   val notFound = "/assets/shapes/notFound.png"
 
-  def randomFA = FA(scala.util.Random.nextInt(FA.maxId)).toString
+  def randomFA = FA(scala.util.Random.nextInt(30)).toString
   def pngShape(name: String) = s"/assets/font-awesome/white/png/256/anchor.png"
 
-  def svgShape(name: String) = s"/assets/font-awesome/white/svg/$name.svg"
+  def svgShape(name: String) = s"/assets/font-awesome/black/svg/anchor.svg"
 
   def randomPngShape = pngShape(randomFA)
 

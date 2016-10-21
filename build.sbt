@@ -5,7 +5,7 @@ name := """nosketch"""
 
 version := "1.0-SNAPSHOT"
 
-lazy val clients = Seq(nosketchJS)
+lazy val clients = Seq(nosketchJS, nosketchWebworker)
 lazy val scalaV = "2.11.8"
 
 
@@ -112,11 +112,11 @@ lazy val nosketchJS = (project in file("js"))
     RuntimeDOM,
     "org.webjars" % "jquery" % "2.2.1" / "jquery.js",
     "org.webjars" % "bootstrap" % "3.3.5" / "bootstrap.js"
+//    ProvidedJS / "bundle.js"
 //    "org.webjars" % "three.js" % "r77" / "three.js"
-//    "org.webjars.npm" % "three-orbit-controls" % "69.0.5" / "index.js"
   ),
-  persistLauncher in Compile := true,
   // Scala-Js Workbench (Live-Reload and such things)
+  persistLauncher in Compile := true,
   bootSnippet := "nosketch.Viewer3D().reset();",
   localUrl := ("127.0.0.1", 12345),
   refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile)
@@ -125,6 +125,36 @@ lazy val nosketchJS = (project in file("js"))
   .dependsOn(vonGridScalaJs)
   .dependsOn(paperScalaJs)
   .dependsOn(threejsFacade)
+
+lazy val nosketchWebworker = (project in file("webworker"))
+  .settings(workbenchSettings: _*)
+  .settings(
+    scalaVersion := scalaV,
+    persistLauncher := true,
+    //refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile),
+    persistLauncher in Test := false,
+    resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-tools" % "0.6.6",
+      "org.querki" %%% "querki-jsext" % "0.7"
+    ),
+    jsDependencies ++= Seq(
+//      RuntimeDOM,
+      ProvidedJS / "bundle.js"
+      //    "org.webjars" % "three.js" % "r77" / "three.js"
+    ),
+    scalaJSOutputWrapper := ("", "nosketch.worker.WorkerMain().main();"),
+    // Scala-Js Workbench (Live-Reload and such things)
+    persistLauncher in Compile := true,
+    bootSnippet := "nosketch.Viewer3D().reset();",
+    localUrl := ("127.0.0.1", 12345),
+    refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile)
+  ).enablePlugins(ScalaJSPlugin, ScalaJSWeb)
+  .dependsOn(nosketchSharedJs)
+  .dependsOn(threejsFacade)
+
+
+
 
 lazy val paperScalaJs = (project in file("paper-scala-js")).settings(
   scalaVersion := scalaV,
@@ -157,6 +187,10 @@ lazy val threejsFacade = (project in file("threejs-facade/facade")).settings(
   skip in packageJSDependencies := false
 )
   .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
+
+val bundle = project.in(file("bundle"))
+
+addCommandAlias("bundle", "bundle/bundle")
 
 
 lazy val nosketchShared = (crossProject.crossType(CrossType.Pure) in file("shared"))

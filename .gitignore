@@ -25,6 +25,8 @@ dist
 /*.jar
 /conf/local.conf
 /lib
+/bundle/node_modules
+/webworker/src/main/resources/*
 *~
 *.swp
 *.swo

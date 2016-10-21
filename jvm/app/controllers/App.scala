@@ -1,7 +1,7 @@
 package controllers
 
+import nosketch.shared.SharedMessages
 import play.api.mvc._
-import nosketch.SharedMessages
 
 class App extends Controller {
 

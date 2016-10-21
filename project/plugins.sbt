@@ -30,6 +30,10 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-gzip" % "1.0.0")
 
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.11")
 
+addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.1.1")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-js-engine" % "1.1.3")
+
 //addSbtPlugin("com.lihaoyi" % "workbench" % "0.2.3")
 
 lazy val root = project.in(file(".")).dependsOn(workbenchPlugin)

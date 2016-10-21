@@ -52,8 +52,9 @@ object Viewer3D extends JSApp with ViewportSubscriber {
   var predefinedTextures: Map[FA, Texture] = Map()
   var mouse: MouseCaster = null
 
-
   var stats: Stats = null
+
+
 
 //  var clusterList: List[Cluster] = List()
 
@@ -164,7 +165,7 @@ object Viewer3D extends JSApp with ViewportSubscriber {
 
 
     if(board == null) {
-      console.log("creating boeard and tilemap")
+      console.log("creating board and tilemap")
       board = new NSBoard(grid, js.undefined)
       // this will generate extruded hexagonal tiles
       board.generateTilemap(TileGenConfig.tileScale(0.97f))
@@ -336,8 +337,8 @@ object Viewer3D extends JSApp with ViewportSubscriber {
 
 //    console.log("distance to cammera", scene.camera.position.distanceTo(pos) )
     /* || */
-
-    scene.camera.position.distanceTo(pos) > 400 || !frustum.intersectsSphere(new Sphere(pos, 11))
+                                       // TODO: change before 300                  / TODO: change before 11
+    scene.camera.position.distanceTo(pos) > 100 || !frustum.intersectsSphere(new Sphere(pos, 3))
 
     //    false
 
@@ -426,10 +427,7 @@ object Viewer3D extends JSApp with ViewportSubscriber {
 //      console.log("check if out of scope", t._2.getCenter)
       if(isOutOfScope(t._2.getCenter)) {
         //console.log("became out of scope")
-        t._2.getTile match {
-          case t: NSTile => t.map(board.removeTile(_))
-          case _ =>
-        }
+        t._2.getTile.map(board.removeTile(_))
         t._2.destroy
         grid.remove(t._2)
       }
