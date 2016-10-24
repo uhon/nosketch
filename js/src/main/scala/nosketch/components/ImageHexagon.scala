@@ -5,6 +5,7 @@ import javafx.scene.image.PixelFormat
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import nosketch.io.ImageUrls
+import nosketch.provider.ShapeProvider
 import nosketch.{GridConstants, Viewer3D}
 import nosketch.loading.NSTextureLoader
 import nosketch.util.NSTools
@@ -42,29 +43,6 @@ import scala.scalajs.js.{Any, Function2, UndefOr}
 class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = GridConstants.tileInitialHeight) extends VisibleHexagon(grid, q, r, s, h) {
   def this(grid: NSGrid) = this(grid, 0, 0, 0, GridConstants.tileInitialHeight)
 
-
-  def applySvgGeometry(producer: (Geometry) => Unit) = {
-    val worker = new Worker("/assets/nosketchwebworker-fastopt.js")
-    worker.onmessage = { (reply: js.Any) =>
-      reply match {
-        case r: MessageEvent => {
-          println(s"Received Geometry, applying it")
-          val obj = r.data.asInstanceOf[js.Object]
-//          console.info("loaded object", obj)
-          val geometry = r.data.asInstanceOf[Geometry]
-//          console.info("loaded geometry vertices", geoVertices)
-
-          val newGeo = new Geometry()
-          newGeo.vertices = geometry.vertices
-          newGeo.faces = geometry.faces
-              producer(newGeo)
-              worker.terminate()
-        }
-      }
-    }
-    worker.postMessage("nosketch.worker.svg.SvgWorker().run()")
-    worker.postMessage(ImageUrls.randomSvgShape)
-  }
 
   def renderSvg(svg: SVG, delay: Double = 0d) = {
     console.log("render SVG")
@@ -148,9 +126,13 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
         Viewer3D.board.group.add(getTile.get.sprites)
         Viewer3D.board.addTile(tile)
         applyTexture(tex)
-        applySvgGeometry(producer)
       }
     })
+
+    if (!disposed) {
+      ShapeProvider.gimmeShape(this, producer)
+    }
+
 
 
 

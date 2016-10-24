@@ -8,6 +8,7 @@ import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.{MouseIndicator, TextIndicator, TouchIndicator}
 import nosketch.io.{ImageUrls, NSSprite}
 import nosketch.loading.NSTextureLoader
+import nosketch.provider.ShapeProvider
 import nosketch.shared.util.FA
 import nosketch.shared.util.FA.FA
 import nosketch.util.Profiler._
@@ -35,9 +36,11 @@ import org.denigma.threejs._
 import vongrid.controls.{Mouse, MouseControls, OrbitControlsPort}
 import vongrid.utils.{MC, MouseCaster, Scene}
 
+import scala.concurrent.duration._
 import scala.scalajs.js.timers._
 import js.Dynamic.{global => g}
 import js.Dynamic.{literal => l}
+import scala.language.postfixOps
 import scala.util.Random
 
 @JSExport
@@ -128,6 +131,15 @@ object Viewer3D extends JSApp with ViewportSubscriber {
 
   def activate(element: Element): () => Unit = {
     console.log("activate")
+
+    // TODO: For testing purposes (this value schould come from outside)
+    // TODO: Also implement mechanisms to controll size of the queue
+    ShapeProvider.init
+    setTimeout(1 second) {
+      ShapeProvider.fillQueueWithRandomSVGs(1000)
+    }
+
+
 
     if(scene == null) {
       console.log("creating scene")
@@ -337,8 +349,9 @@ object Viewer3D extends JSApp with ViewportSubscriber {
 
 //    console.log("distance to cammera", scene.camera.position.distanceTo(pos) )
     /* || */
-                                       // TODO: change before 300                  / TODO: change before 11
-    scene.camera.position.distanceTo(pos) > 100 || !frustum.intersectsSphere(new Sphere(pos, 3))
+    scene.camera.position.distanceTo(pos) > 300 || !frustum.intersectsSphere(new Sphere(pos, 11))
+    // if you ever need a small one
+//    scene.camera.position.distanceTo(pos) > 100 || !frustum.intersectsSphere(new Sphere(pos, 3))
 
     //    false
 
@@ -441,6 +454,9 @@ object Viewer3D extends JSApp with ViewportSubscriber {
     grid.getVisibleCells.foreach(_._2.assignNeighbours)
 
     reportDuration("assign Neighbours", assignNeighboursTime)
+
+    // apply Shapes to tiles
+    ShapeProvider.serveRequesters
   }
 
 

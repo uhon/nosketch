@@ -13,6 +13,8 @@ import scalajs.js.Dynamic.{global => g}
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
 object WorkerMain extends JSApp {
+  var delegate: Option[MessageEvent => Unit] = None
+
   @JSExport
   def main(): Unit = {
 
@@ -28,14 +30,15 @@ object WorkerMain extends JSApp {
 
     g.document = jsdomWindow.document
 
-    var delegate: Option[MessageEvent => Unit] = None
+
 
     println("Starting Worker-Main")
     g.onmessage = (event: MessageEvent) => {
       delegate match {
 
-        case Some(delegate) => println("delegate event " + event.data); delegate(event)
-        case None =>  println("create delegate " + event.data); delegate = Some(js.eval(event.data.asInstanceOf[String]).asInstanceOf[MessageEvent => Unit])
+        case x: Some[MessageEvent => Unit] => x.foreach(_.apply(event))
+        case None =>
+          delegate = Some(js.eval(event.data.asInstanceOf[String]).asInstanceOf[MessageEvent => Unit])
       }
     }
   }

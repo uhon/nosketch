@@ -54,6 +54,7 @@ object DebugHUD {
   }
 
 
+
   var elements = List[DebugHUDElement]()
 
   def addElement(element: DebugHUDElement) = {
@@ -125,6 +126,7 @@ object DebugHUD {
     )
 
     $("#debugHUD .toggler").on("click", toggle _)
+    $("#debugHUD .toggler").click()
   }
 
   def reset: Unit = {
