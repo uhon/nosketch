@@ -16,7 +16,7 @@ import scala.concurrent.duration._
 bundle := {
   ( npmNodeModules in Assets ).value
   val inf = (baseDirectory.value / "start.js").getAbsolutePath
-  val res = baseDirectory.value.getParentFile / "webworker" / "src" / "main" / "resources"
+  val res = baseDirectory.value.getParentFile / "js-util" / "src" / "main" / "resources"
   res.mkdirs
   val outf = (res / "bundle.js").getAbsolutePath
   val modules =  (baseDirectory.value / "node_modules").getAbsolutePath

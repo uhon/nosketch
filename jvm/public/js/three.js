@@ -5784,7 +5784,7 @@ THREE.Ray.prototype = {
 		this.direction.copy( v ).sub( this.origin ).normalize();
 
 		return this;
-		
+
 	},
 
 	recast: function () {
@@ -5855,7 +5855,7 @@ THREE.Ray.prototype = {
 
 		return function ( v0, v1, optionalPointOnRay, optionalPointOnSegment ) {
 
-			// from http://www.geometrictools.com/LibMathematics/Distance/Wm5DistRay3Segment3.cpp
+			// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteDistRaySegment.h
 			// It returns the min distance between the ray and the segment
 			// defined by v0 and v1
 			// It can also set two optional targets :
@@ -6176,7 +6176,7 @@ THREE.Ray.prototype = {
 
 		return function ( a, b, c, backfaceCulling, optionalTarget ) {
 
-			// from http://www.geometrictools.com/LibMathematics/Intersection/Wm5IntrRay3Triangle3.cpp
+			// from http://www.geometrictools.com/GTEngine/Include/Mathematics/GteIntrRay3Triangle3.h
 
 			edge1.subVectors( b, a );
 			edge2.subVectors( c, a );
@@ -12954,7 +12954,7 @@ THREE.AnimationAction._new.prototype = {
 					if ( timeScale === 0 ) {
 
 						// motion has halted, pause
-						this.pause = true;
+						this.paused = true;
 
 					} else {
 
@@ -13007,7 +13007,7 @@ THREE.AnimationAction._new.prototype = {
 
 				} else break handle_stop;
 
-				if ( this.clampWhenFinished ) this.pause = true;
+				if ( this.clampWhenFinished ) this.paused = true;
 				else this.enabled = false;
 
 				this._mixer.dispatchEvent( {
@@ -21985,6 +21985,26 @@ THREE.Texture.prototype = {
 
 	toJSON: function ( meta ) {
 
+		// TODO: WAIT FOR PR, uhon
+		if ( meta === undefined ) {
+			
+			meta = {};
+
+		}
+
+		if ( meta.textures === undefined ) {
+			
+			meta.textures = [];
+
+		}
+			
+		if ( meta.images === undefined ) {
+			
+			meta.images = [];
+
+		}
+
+		
 		if ( meta.textures[ this.uuid ] !== undefined ) {
 
 			return meta.textures[ this.uuid ];
@@ -28597,6 +28617,7 @@ THREE.WebGLExtensions = function ( gl ) {
 
 			case 'WEBGL_depth_texture':
 				extension = gl.getExtension( 'WEBGL_depth_texture' ) || gl.getExtension( 'MOZ_WEBGL_depth_texture' ) || gl.getExtension( 'WEBKIT_WEBGL_depth_texture' );
+				break;
 
 			case 'EXT_texture_filter_anisotropic':
 				extension = gl.getExtension( 'EXT_texture_filter_anisotropic' ) || gl.getExtension( 'MOZ_EXT_texture_filter_anisotropic' ) || gl.getExtension( 'WEBKIT_EXT_texture_filter_anisotropic' );
@@ -28669,7 +28690,7 @@ THREE.WebGLCapabilities = function ( gl, extensions, parameters ) {
 
 	this.getMaxPrecision = getMaxPrecision;
 
-	this.precision = parameters.precision !== undefined ? parameters.precision : 'highp',
+	this.precision = parameters.precision !== undefined ? parameters.precision : 'highp';
 	this.logarithmicDepthBuffer = parameters.logarithmicDepthBuffer !== undefined ? parameters.logarithmicDepthBuffer : false;
 
 	this.maxTextures = gl.getParameter( gl.MAX_TEXTURE_IMAGE_UNITS );

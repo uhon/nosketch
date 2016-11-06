@@ -4,10 +4,10 @@ import javafx.scene.image.PixelFormat
 
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-import nosketch.io.ImageUrls
-import nosketch.provider.ShapeProvider
+import nosketch.provider.{ShapeGeometryProvider, ShapeTextureProvider}
+import nosketch.util.io.ImageUrls
 import nosketch.{GridConstants, Viewer3D}
-import nosketch.loading.NSTextureLoader
+import nosketch.util.loading.NSTextureLoader
 import nosketch.util.NSTools
 import org.denigma.threejs._
 import org.denigma.threejs.THREE
@@ -50,6 +50,7 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
   }
 
   def applyTexture(tex: Texture): Unit = {
+//    console.log("tex", tex)
     getTile.map((t) => {
       tex.wrapT = THREE.ClampToEdgeWrapping
       tex.wrapS = THREE.ClampToEdgeWrapping
@@ -115,23 +116,35 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
       //      val future2: Future[SVG] = ask(svgProducer, ImageUrls.randomSvgShape).mapTo[SVG]
       //      val result2 = Await.result(future2, 100 second)
       //      console.log("result2", result2.textContent)
+
     })
+
 
   }
 
   def draw = {
-    NSTextureLoader.load(ImageUrls.randomPngShape, (tex: Texture) => {
-      if (!disposed) {
-        grid.generateNSTile(this, GridConstants.tileScaleFactor)
-        Viewer3D.board.group.add(getTile.get.sprites)
-        Viewer3D.board.addTile(tile)
-        applyTexture(tex)
-      }
-    })
+//    NSTextureLoader.load(ImageUrls.randomSvgShape, (tex: Texture) => {
+//      if (!disposed) {
+//        grid.generateNSTile(this, GridConstants.tileScaleFactor)
+//        Viewer3D.board.group.add(getTile.get.sprites)
+//        Viewer3D.board.addTile(tile)
+//        applyTexture(tex)
+//      }
+//    })
 
-    if (!disposed) {
-      ShapeProvider.gimmeShape(this, producer)
-    }
+    ShapeTextureProvider.gimmeShape(this, (tex: Texture) => {
+        if (!disposed) {
+          grid.generateNSTile(this, GridConstants.tileScaleFactor)
+          Viewer3D.board.group.add(getTile.get.sprites)
+          Viewer3D.board.addTile(tile)
+          applyTexture(tex)
+          Viewer3D.requestViewUpdate
+        }
+      })
+
+//    if (!disposed) {
+//      ShapeGeometryProvider.gimmeShape(this, producer)
+//    }
 
 
 

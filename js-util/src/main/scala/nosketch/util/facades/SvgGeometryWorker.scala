@@ -1,20 +1,15 @@
-package nosketch.worker.svg
+package nosketch.util.facades
 
-import org.denigma.threejs.Geometry
-import org.scalajs.dom.raw.AbstractWorker
 import org.scalajs.dom.MessageEvent
 import org.scalajs.dom.svg.SVG
-import org.scalajs.dom.webworkers._
 
 import scala.collection.mutable
-import scala.scalajs.js.timers._
-import scala.scalajs.js.Dynamic.{global => g}
-import scala.scalajs.js.Dynamic.{literal => l}
 import scala.scalajs.js
+import scala.scalajs.js.Dynamic.{global => g, literal => l}
 import scala.scalajs.js.UndefOr
 import scala.scalajs.js.annotation.JSExport
 
-@JSExport object SvgWorker {
+@JSExport object SvgGeometryWorker {
   val urlQueue = new mutable.Queue[String]
 
   var loadingSVGs = false

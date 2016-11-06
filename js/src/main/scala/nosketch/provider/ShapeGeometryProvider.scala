@@ -3,7 +3,7 @@ package nosketch.provider
 import nosketch.components.ImageHexagon
 import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.TextIndicator
-import nosketch.io.ImageUrls
+import nosketch.util.io.ImageUrls
 import org.denigma.threejs.Geometry
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Worker
@@ -17,23 +17,23 @@ import scala.scalajs.js.annotation.JSExport
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
 @JSExport("sp")
-object ShapeProvider {
+object ShapeGeometryProvider {
   @JSExport
   val shapeRequests = new mutable.Queue[(ImageHexagon, (Geometry) => Unit)]
 
   @JSExport
   val geometries = new mutable.Queue[(String, Geometry)]
 
-  DebugHUD.addElement(new TextIndicator("# shape requests", () => ShapeProvider.shapeRequests.size))
-  DebugHUD.addElement(new TextIndicator("# queued gemoetries ", () => ShapeProvider.geometries.size))
+  DebugHUD.addElement(new TextIndicator("# shape requests", () => shapeRequests.size))
+  DebugHUD.addElement(new TextIndicator("# queued gemoetries ", () => geometries.size))
 
-  var  svgWorkers: js.Array[Worker] = js.Array()
+  var  svgGeometryWorkers: js.Array[Worker] = js.Array()
 
   def init = {
     (0 to 4).foreach((i) => {
       val worker = new Worker("/assets/nosketchwebworker-fastopt.js")
       instrumentWorker(worker)
-      svgWorkers.push(worker)
+      svgGeometryWorkers.push(worker)
 
     })
   }
@@ -53,7 +53,7 @@ object ShapeProvider {
         }
       }
     }
-    worker.postMessage("nosketch.worker.svg.SvgWorker().run()")
+    worker.postMessage("nosketch.worker.svg.SvgGeometryWorker().run()")
   }
 
 
@@ -61,7 +61,7 @@ object ShapeProvider {
   // Initially we want to have a full queue!
   def addOneToSvgQueue(url: String): Unit = {
 //    console.info(s"adding $url to queue")
-    svgWorkers((Math.random() * svgWorkers.length).floor.toInt).postMessage(url)
+    svgGeometryWorkers((Math.random() * svgGeometryWorkers.length).floor.toInt).postMessage(url)
   }
 
 

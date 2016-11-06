@@ -1,4 +1,4 @@
-package nosketch.worker.svg
+package nosketch.util.facades
 
 import org.scalajs.dom.raw.Window
 

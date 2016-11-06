@@ -1,4 +1,4 @@
-package nosketch.shared.util
+package nosketch.util.loading
 
 object FA extends Enumeration {
   type FA = Value

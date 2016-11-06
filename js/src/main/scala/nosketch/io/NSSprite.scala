@@ -2,7 +2,8 @@ package nosketch.io
 
 import nosketch.components.{NSTile, VisibleHexagon}
 import nosketch.hud.DebugHUD
-import nosketch.shared.util.FA
+import nosketch.util.io.ImageUrls
+import nosketch.util.loading.FA
 import nosketch.util.NSTools
 import org.denigma.threejs._
 import org.scalajs.dom._
@@ -17,19 +18,7 @@ import scala.scalajs.js.annotation.ScalaJSDefined
 import scala.scalajs.js.Dynamic.{literal => l}
 
 
-object ImageUrls {
-  val notFound = "/assets/shapes/notFound.png"
 
-  def randomFA = FA(scala.util.Random.nextInt(729)).toString
-  def pngShape(name: String) = s"/assets/font-awesome/white/png/256/anchor.png"
-
-  def svgShape(name: String) = s"/assets/font-awesome/black/svg/$name.svg"
-
-  def randomPngShape = pngShape(randomFA)
-
-  // Attention, SVG freezes system wen load as sprites in masses!
-  def randomSvgShape = svgShape(randomFA)
-}
 
 object Materials {
   def default = new SpriteMaterial()

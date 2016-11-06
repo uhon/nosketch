@@ -9,6 +9,7 @@ Now viewer in webgl
 Nosketch uses node modules which have to be compiled into a native javascript-source file which is linked into nosketch-dependencies.
 Before first launch or after adding new node dependencies (in lib.js), they have to be generated like this:
 ```bash
+cd bundle && npm install && cd ..
 sbt "project bundle" bundle
 ```
 

@@ -1,12 +1,10 @@
-package nosketch.worker.svg
+package nosketch.util.facades
 
-import org.scalajs.dom.svg
-import org.denigma.threejs.{Geometry, Mesh}
+import org.denigma.threejs.Geometry
 import org.scalajs.dom.svg.SVG
 
 import scala.scalajs.js
 import scala.scalajs.js.UndefOr
-import scala.scalajs.js.annotation.{JSExport, JSName}
 
 
 @js.native
@@ -16,6 +14,7 @@ object Bundle extends js.Object {
   def svgMesh3d(svgPath: String, config: js.Object): Complex = js.native
   def createGeom(complex: Complex): Geometry = js.native
   def jsdom(): JsDom = js.native
+  def canvasWebWorker: CanvasWebWorker = js.native
 
 }
 

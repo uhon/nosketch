@@ -6,12 +6,13 @@ import components._
 import nosketch.controls.camera.NSOrbitControls
 import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.{MouseIndicator, TextIndicator, TouchIndicator}
-import nosketch.io.{ImageUrls, NSSprite}
-import nosketch.loading.NSTextureLoader
-import nosketch.provider.ShapeProvider
-import nosketch.shared.util.FA
-import nosketch.shared.util.FA.FA
+import nosketch.io.NSSprite
+import nosketch.util.loading.NSTextureLoader
+import nosketch.provider.{ShapeGeometryProvider, ShapeTextureProvider}
+import nosketch.util.loading.FA
+import nosketch.util.loading.FA.FA
 import nosketch.util.Profiler._
+import nosketch.util.io.ImageUrls
 import nosketch.viewport.ViewPort
 import org.denigma.threejs.{Texture, _}
 import org.denigma.threejs.extras.{HtmlSprite, OrbitControls}
@@ -25,7 +26,7 @@ import paperjs.Basic.Point
 import paperjs.{Paper, PaperScope}
 
 import scala.scalajs.js
-import scala.scalajs.js.{Any, JSApp}
+import scala.scalajs.js.{Any, JSApp, JSON}
 import scala.scalajs.js.annotation.{JSExport, JSName}
 import org.scalajs.dom._
 import org.querki.jquery._
@@ -42,6 +43,8 @@ import js.Dynamic.{global => g}
 import js.Dynamic.{literal => l}
 import scala.language.postfixOps
 import scala.util.Random
+
+
 
 @JSExport
 @JSName("nosketch.Viewer3D")
@@ -83,9 +86,6 @@ object Viewer3D extends JSApp with ViewportSubscriber {
       resetInProgress = true
       console.log("reseting and restarting")
       if (grid != null) {
-        console.log("grid", grid)
-        console.log("grid is there")
-        console.log("grid is there")
         grid.getVisibleCells.foreach((t: Tuple2[String, VisibleHexagon]) => t._2.destroy)
 
         //      scene = null
@@ -116,6 +116,22 @@ object Viewer3D extends JSApp with ViewportSubscriber {
     //if(canvas == null) { return }
 
 
+//
+//    NSTextureLoader.load(ImageUrls.randomPngShape, (t: Texture) => {
+//      println("loaded texture convert it to JSON")
+//      console.log("loaded texture convert it to JSON")
+//      val jsonString = JSON.stringify(t.toJSON().asInstanceOf[aResult])
+//      console.log(jsonString)
+//
+//      var loader = new JSONLoader()
+//
+//      var tex = loader.parse( jsonString )
+//
+//
+//      console.log("tex", tex)
+////      console.log(JSON.stringify(t))
+//    })
+
 
     //console.log("created viewport")
     // Initialize the ViewPort
@@ -132,12 +148,17 @@ object Viewer3D extends JSApp with ViewportSubscriber {
   def activate(element: Element): () => Unit = {
     console.log("activate")
 
+
+
+
+
+
     // TODO: For testing purposes (this value schould come from outside)
     // TODO: Also implement mechanisms to controll size of the queue
-    ShapeProvider.init
-    setTimeout(1 second) {
-      ShapeProvider.fillQueueWithRandomSVGs(1000)
-    }
+    ShapeTextureProvider.init
+//    setTimeout(100 millisecond) {
+      ShapeTextureProvider.fillQueueWithRandomSVGs(100)
+//    }
 
 
 
@@ -214,11 +235,11 @@ object Viewer3D extends JSApp with ViewportSubscriber {
     $("body").append(stats.dom)
 
     () => {
-      scene.render()
-      createFirstHexagon
-      requestViewUpdate
-      update
-    }
+        scene.render()
+        createFirstHexagon
+        requestViewUpdate
+        update
+      }
   }
 
   def preload(takeOff: () => Unit) = {
@@ -307,6 +328,9 @@ object Viewer3D extends JSApp with ViewportSubscriber {
       updateInProgress = true
       updateRequested = false
       frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
+
+      ShapeTextureProvider.serveRequesters
+
 
       updateView
       scene.render
@@ -456,7 +480,7 @@ object Viewer3D extends JSApp with ViewportSubscriber {
     reportDuration("assign Neighbours", assignNeighboursTime)
 
     // apply Shapes to tiles
-    ShapeProvider.serveRequesters
+    ShapeGeometryProvider.serveRequesters
   }
 
 
@@ -485,4 +509,8 @@ object Viewer3D extends JSApp with ViewportSubscriber {
     }
   }
 
+}
+
+trait aResult extends js.Object {
+  val image: js.Object
 }

@@ -2,8 +2,8 @@ package nosketch.components
 
 import nosketch.Viewer3D
 import nosketch.hud.DebugHUD
-import nosketch.io.{ImageUrls, NSSprite}
-import nosketch.shared.util.FA
+import nosketch.io.NSSprite
+import nosketch.util.loading.FA
 import nosketch.util.NSTools
 import org.denigma.threejs.{MeshPhongMaterial, MeshPhongMaterialParameters, Object3D}
 import paperjs.Paths.Path
