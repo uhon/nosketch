@@ -19,7 +19,7 @@ object GridConstants {
 }
 
 object CameraConstants {
-  val initialCameraPos: Vector3 = new Vector3(0, 50, 50)
+  val initialCameraPos: Vector3 = new Vector3(0, 20, 20)
 }
 
 object SceneConstants {

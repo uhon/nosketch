@@ -155,9 +155,9 @@ object Viewer3D extends JSApp with ViewportSubscriber {
 
     // TODO: For testing purposes (this value schould come from outside)
     // TODO: Also implement mechanisms to controll size of the queue
-    ShapeTextureProvider.init
+    ShapeGeometryProvider.init
 //    setTimeout(100 millisecond) {
-      ShapeTextureProvider.fillQueueWithRandomSVGs(100)
+    ShapeGeometryProvider.fillQueueWithRandomSVGs(1000)
 //    }
 
 
@@ -166,7 +166,7 @@ object Viewer3D extends JSApp with ViewportSubscriber {
       console.log("creating scene")
       scene = new Scene(
         SceneConfig.element(element.asInstanceOf[HTMLElement])
-          .antialias(false)
+          .antialias(true)
           .cameraPosition(CameraConstants.initialCameraPos)
           .fog(new Fog(SceneConstants.fogColor, 300, 400)),
         false
@@ -242,6 +242,7 @@ object Viewer3D extends JSApp with ViewportSubscriber {
       }
   }
 
+  // FIXME: We don't want to do that. remove it
   def preload(takeOff: () => Unit) = {
     NSTextureLoader.loadFA((map: Map[FA, Texture]) => {
       console.log("textures loaded")
@@ -313,6 +314,8 @@ object Viewer3D extends JSApp with ViewportSubscriber {
   }
 
 
+
+  var animationsBetweenShpaeServering = 0
   def update {
     stats.begin()
     mouse.update
@@ -324,12 +327,18 @@ object Viewer3D extends JSApp with ViewportSubscriber {
     scene.controls.update.apply()
 
 
+    animationsBetweenShpaeServering += 1
+    if(animationsBetweenShpaeServering > 100) {
+      animationsBetweenShpaeServering = 0
+      ShapeGeometryProvider.serveRequesters
+    }
+
     if(updateRequested && !updateInProgress) {
       updateInProgress = true
       updateRequested = false
+
       frustum.setFromMatrix( new Matrix4().multiplyMatrices( scene.camera.projectionMatrix, scene.camera.matrixWorldInverse ) )
 
-      ShapeTextureProvider.serveRequesters
 
 
       updateView
@@ -478,9 +487,9 @@ object Viewer3D extends JSApp with ViewportSubscriber {
     grid.getVisibleCells.foreach(_._2.assignNeighbours)
 
     reportDuration("assign Neighbours", assignNeighboursTime)
-
-    // apply Shapes to tiles
-    ShapeGeometryProvider.serveRequesters
+//
+//    // apply Shapes to tiles
+//    ShapeGeometryProvider.serveRequesters
   }
 
 

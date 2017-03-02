@@ -61,10 +61,10 @@ object ShapeTextureProvider {
 
 
   // Initially we want to have a full queue!
-  def addOneToSvgQueue(encodedData: EncodedImageTransferable): Unit = {
+  def addOneToSvgQueue(url: String): Unit = {
     //console.info(s"adding encodedData to Workerqueue", encodedData)
 
-    svgTextureWorkers((Math.random() * svgTextureWorkers.length).floor.toInt).postMessage(encodedData.data, UndefOr.any2undefOrA(js.Array(encodedData.buffer)))
+    svgTextureWorkers((Math.random() * svgTextureWorkers.length).floor.toInt).postMessage(url)
   }
 
 
@@ -92,30 +92,9 @@ object ShapeTextureProvider {
 
 
   def fillQueueWithRandomSVGs(amount: Int): Unit = {
-
-    def fillReq(amount: Int): Unit = {
-      var image = js.Dynamic.newInstance(Bundle.canvasWebWorker.Image)().asInstanceOf[Image]
-
-      image.onload = (event: Event) => {
-        if (image.width + image.height == 0) {
-          fillReq(amount)
-        } else {
-//            console.log("loaded image initially as ", image)
-          val encodedImageTransferable = NSTextureLoader.getEncodedImage(image)
-          addOneToSvgQueue(encodedImageTransferable)
-          if(amount > 0) {
-            fillReq(amount - 1)
-          }
-        }
-      }
-//      image.asInstanceOf[js.Dynamic].onerror = () => {
-//        js.Dynamic.global.alert("not found")
-//      }
-      image.src = ImageUrls.randomSvgShape
-
+    (0 to amount).foreach { i =>
+      addOneToSvgQueue(ImageUrls.randomSvgShape)
     }
-
-    fillReq(amount)
   }
 
 }

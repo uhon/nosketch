@@ -1,11 +1,12 @@
 package nosketch.worker.svg
 
-import nosketch.util.facades.{Bundle, EncodedImageDataTransferable, EncodedImageData}
+import nosketch.util.facades.{Bundle, EncodedImageData, EncodedImageDataTransferable}
 import nosketch.util.loading.NSTextureLoader
 import org.denigma.threejs.Texture
+import org.scalajs.dom
 import org.scalajs.dom.raw.HTMLImageElement
-import org.scalajs.dom.{MessageEvent, console, html, svg}
-import org.scalajs.dom.svg.SVG
+import org.scalajs.dom._
+import org.scalajs.dom.svg.{Image, SVG}
 
 import scala.collection.mutable
 import scala.scalajs.js
@@ -14,18 +15,18 @@ import scala.scalajs.js.{JSON, UndefOr}
 import scala.scalajs.js.annotation.JSExport
 
 @JSExport object SvgTextureWorker {
-  val imageQueue = new mutable.Queue[HTMLImageElement]
+  val urlQueue = new mutable.Queue[String]
 
   var loadingSVGs = false
 
   @JSExport def run(): MessageEvent => Unit = {
     { (event: MessageEvent) =>
-      val imageDataEncoded = event.data.asInstanceOf[EncodedImageData]
-      val imageDataDecoded = Bundle.canvasWebWorker.transfer.decode(imageDataEncoded)
 
 //      console.log("received by webworker", imageDataDecoded)
 
-      imageQueue.enqueue(imageDataDecoded.asInstanceOf[html.Image])
+      val url = event.data.asInstanceOf[String]
+
+      urlQueue.enqueue(url)
 
 //      println(s"svgWorker received url\n${url}")
 
@@ -35,10 +36,10 @@ import scala.scalajs.js.annotation.JSExport
 
   def processUrlQueue(): Unit = {
 
-    if (imageQueue.nonEmpty) {
+    if (urlQueue.nonEmpty) {
       loadingSVGs = true
       //console.info("process queue.........")
-      val image = imageQueue.dequeue()
+      val url = urlQueue.dequeue()
 //      console.info("require this: ", js.eval("Image"))
 
 //      var workerCanvas = js.eval(s"""
@@ -56,13 +57,20 @@ import scala.scalajs.js.annotation.JSExport
 //      workerImage.height = 1792
 
 
+//      val image = dom.document.createElement("img").asInstanceOf[HTMLImageElement]
+      val image = js.Dynamic.newInstance(Bundle.canvasWebWorker.Image)().asInstanceOf[HTMLImageElement]
+
+      image.onload = (e: Event) => {
+        console.log("send: ", image)
+        val encodedData = NSTextureLoader.getEncodedCanvas(image)
+        console.log("send: ", encodedData)
+        g.postMessage(js.Tuple2(Math.random().toString, encodedData.data), js.Array(encodedData.buffer))
+      }
+
+      image.src = url
 
 
-      val encodedData = NSTextureLoader.getEncodedCanvas(image)
-//      console.log("send: ", encodedData)
-      g.postMessage(js.Tuple2(Math.random().toString, encodedData.data), js.Array(encodedData.buffer))
-
-      if (imageQueue.nonEmpty) processUrlQueue()
+      if (urlQueue.nonEmpty) processUrlQueue()
       loadingSVGs = false
     }
   }

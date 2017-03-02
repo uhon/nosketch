@@ -9,7 +9,7 @@ import scala.collection.mutable
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
 object Profiler {
-  val treshhold = 1000000 // everything below that value is not reported
+  val treshhold = 100 // everything below that value is not reported
 
   val indicators = mutable.Map[String, DebugHUDElement]()
 

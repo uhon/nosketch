@@ -75,7 +75,7 @@ object NSTextureLoader {
   private def loadWithCanvas2D(url: String, callback: (Texture) => Unit): Unit = {
 
 
-    getDataUri(url, (dataUri:String) => {
+    getDataUrl(url, (dataUri:String) => {
       loadFromDataUri(dataUri, (t: Texture) => {
         textureCache += url -> t
         callback(textureCache(url))
@@ -113,21 +113,22 @@ object NSTextureLoader {
 
     val tl = new TextureLoader(lm)
 
-
+    console.log("drawingTime main-thread")
     val decodedCanvas = Bundle.canvasWebWorker.transfer.decode(encodedData)
 
-//    val decodedImageData = decodedCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D].getImageData(0, 0, 1792, 1792)
-//
-//    console.log("DECODED DATA", decodedImageData)
-//    val t = new DataTexture(decodedImageData.data.asInstanceOf[ImageData])
-//    t.needsUpdate = true
-//    val t = new DataTexture(decodedImageData, 1792, 1792, THREE.RGBFormat, THREE.ByteType, THREE., THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.NearestFilter, THREE.NearestFilter)
+    //    val decodedImageData = decodedCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D].getImageData(0, 0, 1792, 1792)
+    //
+    //    console.log("DECODED DATA", decodedImageData)
+    //    val t = new DataTexture(decodedImageData.data.asInstanceOf[ImageData])
+    //    t.needsUpdate = true
+    //    val t = new DataTexture(decodedImageData, 1792, 1792, THREE.RGBFormat, THREE.ByteType, THREE., THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.NearestFilter, THREE.NearestFilter)
 
     //console.info(decodedCanvas.toDataURL("image/png"))
 
-//    callback(new DataTexture(decodedCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D].getImageData(0,0,512,512)))
+    //    callback(new DataTexture(decodedCanvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D].getImageData(0,0,512,512)))
     tl.load(decodedCanvas.toDataURL("image/png"), (t: Texture) => callback(t))
-//
+    console.log("end drawing on main-thread")
+    //
 //    tl.load(decodedImageData, (t: Texture) => {
 //      console.log("textureCache", t)
 //
@@ -178,7 +179,7 @@ object NSTextureLoader {
   /**
     * Main-Thread only (does not work with canvas-webworker (npm plugin)
     */
-  def getDataUri(url: String, callback: (String) => Unit) = {
+  def getDataUrl(url: String, callback: (String) => Unit) = {
     var image = document.createElement("img").asInstanceOf[HTMLImageElement]
 
     image.onload = (event: Event) => {

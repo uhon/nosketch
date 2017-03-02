@@ -139,32 +139,6 @@ lazy val nosketchWebworker = (project in file("webworker"))
       "org.querki" %%% "querki-jsext" % "0.7"
     ),
     jsDependencies ++= Seq(
-//      RuntimeDOM,
-      ProvidedJS / "bundle.js"
-      //    "org.webjars" % "three.js" % "r77" / "three.js"
-    ),
-    scalaJSOutputWrapper := ("", "nosketch.worker.WorkerMain().main();"),
-    // Scala-Js Workbench (Live-Reload and such things)
-    persistLauncher in Compile := true
-//    bootSnippet := "nosketch.Viewer3D().reset();",
-//    localUrl := ("127.0.0.1", 12345),
-//    refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile)
-  ).enablePlugins(ScalaJSPlugin, ScalaJSWeb)
-  .dependsOn(nosketchUtil)
-
-lazy val nosketchUtil = (project in file("js-util"))
-//  .settings(workbenchSettings: _*)
-  .settings(
-    scalaVersion := scalaV,
-    persistLauncher := true,
-    //refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile),
-    persistLauncher in Test := false,
-    resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
-    libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-tools" % "0.6.6",
-      "org.querki" %%% "querki-jsext" % "0.7"
-    ),
-    jsDependencies ++= Seq(
       //      RuntimeDOM,
       ProvidedJS / "bundle.js"
       //    "org.webjars" % "three.js" % "r77" / "three.js"
@@ -175,7 +149,33 @@ lazy val nosketchUtil = (project in file("js-util"))
     //    bootSnippet := "nosketch.Viewer3D().reset();",
     //    localUrl := ("127.0.0.1", 12345),
     //    refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile)
-  ).enablePlugins(ScalaJSPlugin, ScalaJSWeb)
+    ).enablePlugins(ScalaJSPlugin, ScalaJSWeb)
+  .dependsOn(nosketchUtil)
+
+lazy val nosketchUtil = (project in file("js-util"))
+  //  .settings(workbenchSettings: _*)
+  .settings(
+  scalaVersion := scalaV,
+  persistLauncher := true,
+  //refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile),
+  persistLauncher in Test := false,
+  resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+  libraryDependencies ++= Seq(
+    "org.scala-js" %%% "scalajs-tools" % "0.6.6",
+    "org.querki" %%% "querki-jsext" % "0.7"
+  ),
+  jsDependencies ++= Seq(
+    //      RuntimeDOM,
+    ProvidedJS / "bundle.js"
+    //    "org.webjars" % "three.js" % "r77" / "three.js"
+  ),
+  scalaJSOutputWrapper := ("", "nosketch.worker.WorkerMain().main();"),
+  // Scala-Js Workbench (Live-Reload and such things)
+  persistLauncher in Compile := true
+  //    bootSnippet := "nosketch.Viewer3D().reset();",
+  //    localUrl := ("127.0.0.1", 12345),
+  //    refreshBrowsers <<= refreshBrowsers.triggeredBy(fastOptJS in Compile)
+).enablePlugins(ScalaJSPlugin, ScalaJSWeb)
   .dependsOn(nosketchSharedJs)
   .dependsOn(threejsFacade)
 
@@ -190,9 +190,9 @@ lazy val paperScalaJs = (project in file("paper-scala-js")).settings(
     "org.scala-js" %%% "scalajs-dom" % "0.9.0" withJavadoc(),
     "org.scala-js" %%% "scalajs-tools" % "0.6.6" withJavadoc()
   ),
-//  jsDependencies ++= Seq(
-//    "org.webjars" % "paperjs" % "0.9.24" / "paper-full.min.js" commonJSName "paper"
-//  ),
+  //  jsDependencies ++= Seq(
+  //    "org.webjars" % "paperjs" % "0.9.24" / "paper-full.min.js" commonJSName "paper"
+  //  ),
   persistLauncher in Compile := false,
   skip in packageJSDependencies := false
 )
@@ -206,7 +206,7 @@ lazy val threejsFacade = (project in file("threejs-facade/facade"))
     persistLauncher in Test := false,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.9.0" withJavadoc()
-  //    "org.scala-js" %%% "scalajs-tools" % "0.6.6" withJavadoc()
+      //    "org.scala-js" %%% "scalajs-tools" % "0.6.6" withJavadoc()
     ),
     //  jsDependencies ++= Seq(
     //    "org.webjars" % "paperjs" % "0.9.24" / "paper-full.min.js" commonJSName "paper"

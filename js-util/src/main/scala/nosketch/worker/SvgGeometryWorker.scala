@@ -1,5 +1,6 @@
-package nosketch.util.facades
+package nosketch.worker
 
+import nosketch.util.facades.Bundle
 import org.scalajs.dom.MessageEvent
 import org.scalajs.dom.svg.SVG
 
@@ -27,16 +28,20 @@ import scala.scalajs.js.annotation.JSExport
   }
 
   def processUrlQueue(): Unit = {
+    val svgLoadStart = System.nanoTime
     loadingSVGs = true
     var url = ""
     def callbackLoad(err: js.Any, svg: UndefOr[org.scalajs.dom.svg.SVG] = js.undefined): Unit = {
       if (svg.isDefined) {
-//        println("SVG loaded!!")
+
+        //        println("svg load took:" + (svgLoadStart - System.nanoTime()))
 
         val svgTuple = js.Tuple2(url, svg.get)
 
         val geo = createGeometry(svg.get)
-//        println("created Geometry", geo)
+
+//        scalajs.js.Dynamic.global.postMessage(js.Array("SVG loaded!!"))
+        //        println("created Geometry", geo)
         scalajs.js.Dynamic.global.postMessage(js.Tuple2(url, geo))
       } else {
         println("ERROR " + err)
@@ -47,6 +52,7 @@ import scala.scalajs.js.annotation.JSExport
 
     if(urlQueue.nonEmpty) {
       url = urlQueue.dequeue()
+
       Bundle.loadSvg(url, callbackLoad _)
     } else
       loadingSVGs = false
@@ -55,15 +61,24 @@ import scala.scalajs.js.annotation.JSExport
   def createGeometry(svg: SVG) = {
 //    println("do the math......")
     // grab all <path> data
+
+    val svgParseStart = System.nanoTime()
     val svgPath = Bundle.parsePath(svg)
+    println("svgParse took: " + (svgParseStart - System.nanoTime()))
+
+    val mesh3dStart = System.nanoTime()
     // triangulate
     val complex = Bundle.svgMesh3d(
       svgPath,
       l(
-        "scale" -> 1000,
-        "simplify" -> 0.01
+        "scale" -> 1,
+        "simplify" -> 50,
+        "delaunay" -> false
+
       )
     )
+    println("mesh3d took: " + (mesh3dStart - System.nanoTime()))
+
     // play with this value for different aesthetic
     // randomization: 500,
 

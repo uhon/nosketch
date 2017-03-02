@@ -26,6 +26,7 @@ dist
 /conf/local.conf
 /lib
 /bundle/node_modules
+/jvm/public/shapes/vertices
 /js-util/src/main/resources/*
 *~
 *.swp

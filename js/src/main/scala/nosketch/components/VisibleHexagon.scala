@@ -17,6 +17,7 @@ import scala.scalajs.js.timers._
 import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.annotation.ScalaJSDefined
+import scala.util.Random
 
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
@@ -73,7 +74,8 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
   def assignNeighbours: Any = {
     //console.log("====== assignNeighbours")
     // We assume this Hexagon is Visible
-    for(i <- 0 to 5) {
+    val order = Stream.continually(Random.nextInt(5)).distinct.take(5)
+    for(i <- order  ) {
       //console.log("=== checking neighbour " + i)
       neighbours(i) match {
         case PhantomHexagon => {

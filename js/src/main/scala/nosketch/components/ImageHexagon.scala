@@ -43,6 +43,8 @@ import scala.scalajs.js.{Any, Function2, UndefOr}
 class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = GridConstants.tileInitialHeight) extends VisibleHexagon(grid, q, r, s, h) {
   def this(grid: NSGrid) = this(grid, 0, 0, 0, GridConstants.tileInitialHeight)
 
+  val group = new Object3D
+  Viewer3D.board.group.add(group)
 
   def renderSvg(svg: SVG, delay: Double = 0d) = {
     console.log("render SVG")
@@ -51,7 +53,7 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
 
   def applyTexture(tex: Texture): Unit = {
 //    console.log("tex", tex)
-    getTile.map((t) => {
+    getTile.foreach((t) => {
       tex.wrapT = THREE.ClampToEdgeWrapping
       tex.wrapS = THREE.ClampToEdgeWrapping
       tex.repeat.set(0.06, 0.06)
@@ -61,24 +63,43 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
       tex.magFilter = THREE.NearestFilter
       tex.minFilter = THREE.NearestFilter
 
+      colorize(Some(tex))
+
+    })
+
+
+  }
+
+  // TODO: Deserves a better Name and misses Comments
+  def colorize(tex: Option[Texture] = None) = {
+
+    getTile.foreach((t) => {
       val color = NSTools.randomizeRGBDouble(30, 50, 120, 53)
 
       //      console.log("color", color)
 
       val sideMatParams = l().asInstanceOf[MeshPhongMaterialParameters]
+//      sideMatParams.color = color
+      // Make it a Rainbow
       sideMatParams.color = Math.random() * 0xffffff
-      //      sideMatParams.shininess = 0xFFFFFF
+      sideMatParams.shininess = 0xFFFFFF
 
       val sideMaterial = new MeshPhongMaterial(sideMatParams)
 
       val fmp = l().asInstanceOf[MeshPhongMaterialParameters]
       fmp.color = color // color drawing
-      //      fmP.emissive = 0x336699
-      //      fmP.ambient = 0x000000
-      fmp.refractionRatio = 1000
-      fmp.shininess = 100
-      fmp.transparent = false
-      fmp.map = tex
+
+      if(tex.isDefined) {
+        //      fmP.emissive = 0x336699
+        //      fmP.ambient = 0x000000
+        fmp.refractionRatio = 1000
+        fmp.shininess = 100
+        fmp.transparent = false
+        fmp.emissive = 0xff0000
+        tex.foreach(fmp.emissiveMap = _)
+        fmp.emissiveIntensity = 1d
+      }
+
       val fm = new MeshPhongMaterial(fmp)
 
 
@@ -89,13 +110,13 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
       val meshFaceMaterial = new MeshFaceMaterial(materials)
 
 
-
       t.mesh.material = meshFaceMaterial
       //        t.mesh = new Mesh(t.geometry, meshFaceMaterial)
       //        t.mesh.scale.set(GridConstants.tileScaleFactor, GridConstants.tileScaleFactor, GridConstants.tileScaleFactor)
       //        t.mesh.rotation.set(Math.PI/2,0,0)
       //        t.mesh.position.set(t.position.x, t.position.y, t.position.z)
       t.mesh.material = meshFaceMaterial
+
       //        meshContainer.remove(oldMesh)
       //        meshContainer.add(t.mesh)
 
@@ -116,35 +137,40 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
       //      val future2: Future[SVG] = ask(svgProducer, ImageUrls.randomSvgShape).mapTo[SVG]
       //      val result2 = Await.result(future2, 100 second)
       //      console.log("result2", result2.textContent)
-
     })
-
-
   }
 
   def draw = {
-//    NSTextureLoader.load(ImageUrls.randomSvgShape, (tex: Texture) => {
+
+// Uncomment this to load textures from png images
+//    NSTextureLoader.load(ImageUrls.randomPngShape, (tex: Texture) => {
 //      if (!disposed) {
 //        grid.generateNSTile(this, GridConstants.tileScaleFactor)
-//        Viewer3D.board.group.add(getTile.get.sprites)
+//        group.add(getTile.get.sprites)
 //        Viewer3D.board.addTile(tile)
 //        applyTexture(tex)
 //      }
 //    })
 
-    ShapeTextureProvider.gimmeShape(this, (tex: Texture) => {
-        if (!disposed) {
-          grid.generateNSTile(this, GridConstants.tileScaleFactor)
-          Viewer3D.board.group.add(getTile.get.sprites)
-          Viewer3D.board.addTile(tile)
-          applyTexture(tex)
-          Viewer3D.requestViewUpdate
-        }
-      })
+// Uncomment this to load Textures via Webworkers
+//    ShapeTextureProvider.gimmeShape(this, (tex: Texture) => {
+//        if (!disposed) {
+//          grid.generateNSTile(this, GridConstants.tileScaleFactor)
+//          group.add(getTile.get.sprites)
+//          Viewer3D.board.addTile(tile)
+//          applyTexture(tex)
+//          Viewer3D.requestViewUpdate
+//        }
+//      })
+//
 
-//    if (!disposed) {
-//      ShapeGeometryProvider.gimmeShape(this, producer)
-//    }
+// Uncomment this to load geometrys from svg-data via Webworkers
+    if (!disposed) {
+      grid.generateNSTile(this, GridConstants.tileScaleFactor)
+      group.add(getTile.get.sprites)
+      Viewer3D.board.addTile(tile)
+      ShapeGeometryProvider.gimmeShape(this, producer)
+    }
 
 
 
@@ -153,21 +179,27 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
     def producer(geometry: Geometry) = {
       // our shader material
       val material = new ShaderMaterial(materialSettings)
+
       val mesh = new Mesh(geometry, material)
+
       mesh.position.set(tile.position.x, tile.position.y + 2, tile.position.z)
-      console.log("creating mesh at", tile.position.x, tile.position.y + 2, tile.position.z)
+//      console.log("creating mesh at", tile.position.x, tile.position.y + 2, tile.position.z)
       mesh.rotation.y = Math.PI
       //    mesh.rotation.z = Math.PI / 2
       mesh.rotation.x = -Math.PI / 2
       mesh.scale.set(5, 5, 5)
       //    mesh.rotation.x = - Math.PI
       //    console.log("mesh", mesh)
-      Viewer3D.board.group.add(mesh)
+      colorize()
+      group.add(mesh)
+//      console.log("added mesh")
       Viewer3D.requestViewUpdate
     }
   }
 
   override def destroy: Unit = {
+    group.children.foreach(group.remove(_))
+    Viewer3D.board.group.remove(group)
     super.destroy
     // TODO: implement destroy (everything clean?)
   }
@@ -175,7 +207,8 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
 }
 
 object materialSettings extends ShaderMaterialParameters {
-  //      color = 0xffffff
+  val color = 0xffffff
+  
   side = THREE.DoubleSide
   //      vertexShader: vertShader,
   //      fragmentShader: fragShader,
@@ -185,5 +218,11 @@ object materialSettings extends ShaderMaterialParameters {
     "opacity" -> l("type" -> "f", "value" -> 1 ),
     "scale" -> l("type" -> "f", "value" -> 1 ),
     "animate" -> l("type" -> "f", "value" -> 1 )
+  )
+
+  val defaultAttributeValues = l(
+    "color" -> js.Array(1, 1, 1),
+    "uv" -> js.Array(0, 0),
+    "uv2" -> js.Array(0, 0)
   )
 }
