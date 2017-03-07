@@ -2,16 +2,20 @@ package nosketch.components
 
 import javafx.scene.image.PixelFormat
 
+import nosketch.animation.{EaseIn, IdleAnimation, SinusYWobbler}
+import nosketch.hud.DebugHUD
+import nosketch.hud.elements.debug.TextIndicator
+
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-import nosketch.provider.{ShapeGeometryProvider, ShapeTextureProvider}
+import nosketch.provider.{MeshProvider, ShapeTextureProvider}
 import nosketch.util.io.ImageUrls
-import nosketch.{GridConstants, Viewer3D}
+import nosketch.{Config, Viewer3D, animation}
+import nosketch.Config.Grid
 import nosketch.util.loading.NSTextureLoader
 import nosketch.util.NSTools
 import nosketch.worker.SvgGeometryWorker
 import nosketch.worker.materialSettings.{side, transparent, uniforms}
-import org.denigma.threejs._
 import org.denigma.threejs.THREE
 import org.scalajs.dom._
 
@@ -35,18 +39,26 @@ import org.denigma.threejs.extensions.Container3D
 import org.scalajs.dom.svg.SVG
 
 import scala.concurrent.Future
-import scala.scalajs.js.{Any, Function2, UndefOr}
+import scala.scalajs.js.typedarray.Float32Array
+import scala.scalajs.js.{Any, Dictionary, Function2, UndefOr}
 
 
 /**
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
 @ScalaJSDefined
-class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = GridConstants.tileInitialHeight) extends VisibleHexagon(grid, q, r, s, h) {
-  def this(grid: NSGrid) = this(grid, 0, 0, 0, GridConstants.tileInitialHeight)
+class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Grid.tileInitialHeight)
+  extends VisibleHexagon(grid, q, r, s, h)
+{
+
+  var animationEnabled = false
+
+
+  def this(grid: NSGrid) = this(grid, 0, 0, 0, Grid.tileInitialHeight)
 
   val group = new Object3D
   Viewer3D.board.group.add(group)
+
 
   def renderSvg(svg: SVG, delay: Double = 0d) = {
     console.log("render SVG")
@@ -71,6 +83,9 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
 
 
   }
+
+
+
 
   // TODO: Deserves a better Name and misses Comments
   def colorize(tex: Option[Texture] = None) = {
@@ -142,7 +157,7 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
     })
   }
 
-  def draw = {
+  def draw: NSTile = {
 
 // Uncomment this to load textures from png images
 //    NSTextureLoader.load(ImageUrls.randomPngShape, (tex: Texture) => {
@@ -168,10 +183,13 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
 
 // Uncomment this to load geometrys from svg-data via Webworkers
     if (!disposed) {
-      grid.generateNSTile(this, GridConstants.tileScaleFactor)
+      grid.generateNSTile(this, Grid.tileScaleFactor)
       group.add(getTile.get.sprites)
+      tile.material.transparent = true
+      tile.material.opacity = 0
       Viewer3D.board.addTile(tile)
-      ShapeGeometryProvider.gimmeShape(this, producer)
+
+      MeshProvider.gimmeShape(this, producer)
     }
 
 
@@ -182,44 +200,45 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
 
 //      mesh.parent = this.group
 
-      val newMesh = createNewMesh(mesh)
-      // Geometry doesn't really work as it comes from webworker.
-      // Create new to see if at least Meshes (as received) work
-      mesh.geometry = newMesh.geometry
-//
-//      console.log("received mesh in ImageHexagon", mesh)
-//      console.log("newly created mesh", newMesh)
+      //val newMesh = ImageHexagon.createNewMesh(mesh)
+      mesh.position.set(tile.position.x, tile.position.y + Config.Hex.geoHeight, tile.position.z)
 
-//      group.add(newMesh)
-//      Viewer3D.board.group.add(mesh)
       colorize()
+
       group.add(mesh)
+
+      animationEnabled = true
+
+
       //      console.log("added mesh")
-      Viewer3D.requestViewUpdate
+      //Viewer3D.requestViewUpdate
     }
+
+    getTile.get
   }
 
-  def createNewMesh(mesh: Mesh) = {
-    val newGeometry = new Geometry()
-    newGeometry.vertices = mesh.geometry.vertices
-    newGeometry.faces = mesh.geometry.faces
-    //      console.log("creating mesh at", tile.position.x, tile.position.y + 2, tile.position.z)
-    val newMesh = new Mesh(newGeometry, new ShaderMaterial(materialSettings))
 
-    newMesh.position.set(tile.position.x, tile.position.y + 2, tile.position.z)
-    //      console.log("creating newMesh at", tile.position.x, tile.position.y + 2, tile.position.z)
-    newMesh.rotation.y = Math.PI
-    //    newMesh.rotation.z = Math.PI / 2
-    newMesh.rotation.x = -Math.PI / 2
-    newMesh.scale.set(5, 5, 5)
-    newMesh
-  }
 
   override def destroy: Unit = {
     group.children.foreach(group.remove(_))
     Viewer3D.board.group.remove(group)
     super.destroy
     // TODO: implement destroy (everything clean?)
+  }
+
+
+  var animationMethod: animation.Animation = IdleAnimation
+  override def animate() = {
+    if(animationEnabled) {
+      if (animationMethod == IdleAnimation) animationMethod = Config.AnimationConstants.create(this)
+
+      DebugHUD.animationCycles.increment
+      animationEnabled = animationMethod.animationLoop
+//      Viewer3D.requestSceneUpdate
+      // FIXME: request scene update should be enough!
+      Viewer3D.requestViewUpdate
+
+    }
   }
 
 
@@ -246,3 +265,5 @@ object materialSettings extends ShaderMaterialParameters {
   //    "uv2" -> js.Array(0, 0)
   //  )
 }
+
+

@@ -5,7 +5,7 @@ import nosketch.hud.DebugHUD
 import nosketch.io.NSSprite
 import nosketch.util.loading.FA
 import nosketch.util.NSTools
-import org.denigma.threejs.{MeshPhongMaterial, MeshPhongMaterialParameters, Object3D}
+import org.denigma.threejs._
 import paperjs.Paths.Path
 import vongrid.Tile
 import vongrid.config.TileConfig
@@ -14,6 +14,7 @@ import vongrid.utils.Tools
 import scala.scalajs.js
 import scala.scalajs.js.annotation.ScalaJSDefined
 import scala.scalajs.js.timers._
+import scala.concurrent.duration._
 import js.Dynamic.{global => g}
 import js.Dynamic.{literal => l}
 import org.scalajs.dom._
@@ -37,22 +38,26 @@ class NSTile(board: NSBoard, config: TileConfig) extends Tile(config) {
 
   def showControls = {
 
-    getCell.map((c) => {
-      controlsHidden = false
+//    setTimeout(100 milliseconds) {
+      getCell.map((c) => {
+        controlsHidden = false
 
-      val tex = Viewer3D.predefinedTextures.get(FA.instagram)
-//      console.log("tex:", tex.get.toString)
-      if(tex.isDefined) {
-        new NSSprite(board, this, tex.get, "", (sprite: NSSprite) => {
-          if (!controlsHidden) {
-            DebugHUD.spriteShowCtrl.increment
-            sprite.activate(10, 10, 10)
-          } else {
-            sprite.dispose
-          }
-        })
-      }
-    })
+        val tex = Viewer3D.predefinedTextures.get(FA.asterisk)
+  //      console.log("tex:", tex.get.toString)
+        if(tex.isDefined) {
+          new NSSprite(board, this, tex.get, "", (sprite: NSSprite) => {
+            if (!controlsHidden) {
+              DebugHUD.spriteShowCtrl.increment
+              DebugHUD.activeCell.setValue(new Vector3(c.q, c.r, c.s))
+              sprite.scale.set(5,5,5)
+              sprite.activate(10, 2, 10)
+            } else {
+              sprite.dispose
+            }
+          })
+        }
+      })
+//    }
   }
 
   def hideControls = {
@@ -80,6 +85,15 @@ class NSTile(board: NSBoard, config: TileConfig) extends Tile(config) {
       }
     })
 
+  }
+  
+  override def toggle() = {
+    material match {
+      case m:MeshPhongMaterial => {
+        m.color= new Color(0, 0xff, 0)
+      }
+    }
+    super.toggle()
   }
 }
 

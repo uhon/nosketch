@@ -67,7 +67,7 @@ trait DebugHUDElement {
 
     val suffix = if(pointIndex < 0) "" else s.substring(s.indexOf(".")).take(figAfterPoint + 1)
     val base = Math.abs(d).floor
-    val sign = if(d > 0) "" else "-"
+    val sign = if(d >= 0) "" else "-"
     sign + prettifyNumber(base.toInt) + suffix
   }
 

@@ -27,21 +27,30 @@ object NSTextureLoader {
   val tl = new TextureLoader(lm)
   var textureCache = mutable.Map[String, Texture]()
 
+  val preloadedImages = List(
+    FA.blind,
+    FA.arrow_up,
+    FA.asterisk,
+    FA.bicycle,
+    FA.check_circle
+  )
+
   def loadFA(callback: (Map[FA, Texture]) => Unit) = {
 
 
-    var fontAwesome = FA.values.zipWithIndex.toList
+    var fontAwesome = FA.values
 
-    def incLoad(i: Int, acc: Map[FA, Texture], reportBack: (Map[FA, Texture]) => Unit): Unit = {
+    def incLoad(fa: List[FA], acc: Map[FA, Texture], reportBack: (Map[FA, Texture]) => Unit): Unit = {
 
       // FIXME: only subset is loaded
-      if(i < 20) {
-        val url = ImageUrls.pngShape(fontAwesome(i)._1.toString)
+      if(fa.nonEmpty) {
+        val url = ImageUrls.svgShape(fa.head.toString)
+        console.log("opening", url)
         load(
           url,
           (tex: Texture) => {
-            val newAcc = acc.+(fontAwesome(i)._1 -> tex)
-            incLoad(i+1, newAcc, reportBack)
+            val newAcc = acc.+(fa.head -> tex)
+            incLoad(fa.tail, newAcc, reportBack)
           }
         )
       } else {
@@ -49,7 +58,7 @@ object NSTextureLoader {
       }
     }
 
-    incLoad(0, Map(), callback)
+    incLoad(preloadedImages, Map(), callback)
 //    val map = Map[FA, Texture]()
 //    callback(map)
   }

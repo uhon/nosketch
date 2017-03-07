@@ -9,7 +9,6 @@ import scala.collection.mutable
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
 object Profiler {
-  val treshhold = 100 // everything below that value is not reported
 
   val indicators = mutable.Map[String, DebugHUDElement]()
 
@@ -29,8 +28,7 @@ object Profiler {
 
   def reportDuration(task: String, startTime: Long): Unit = {
 
-    val duration = System.nanoTime - startTime
-    if(duration > treshhold) {
+    val duration = System.currentTimeMillis() - startTime
       if(!indicators.contains(task)) {
         indicators += task -> new SimpleIndicator(task)
         DebugHUD.addElement(indicators(task))
@@ -38,6 +36,5 @@ object Profiler {
 
       indicators(task).setValue(duration)
       //console.warn(task + " took: " + formatNumber(duration.toString) + "ns")
-    }
   }
 }

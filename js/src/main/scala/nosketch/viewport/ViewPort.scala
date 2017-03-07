@@ -146,19 +146,19 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
           val mousePosition = MouseEventDistributor.currentMousePosition
           console.log("mousePosition on scroll", mousePosition)
 
-          val startZoomAndOffset = System.nanoTime()
+          val startZoomAndOffset = System.currentTimeMillis()
           val zoomAndOffset = StableZoom.changeZoom(view.zoom, x.delta, view.center, mousePosition)
           activeZoomAction = None
           reportDuration("zoom and offset calc", startZoomAndOffset)
 
-          val startZoomView = System.nanoTime()
+          val startZoomView = System.currentTimeMillis()
           view.zoom = zoomAndOffset._1
           //playground.onZoom
           reportDuration("zoom the PaperJs-View", startZoomView)
 
           val currentOffset = zoomAndOffset._2
 
-          val startOffsetTime = System.nanoTime()
+          val startOffsetTime = System.currentTimeMillis()
           view.center = view.center add currentOffset
           reportDuration("offset PaperJs-View", startOffsetTime)
 

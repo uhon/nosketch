@@ -1,5 +1,6 @@
 package nosketch.io
 
+import nosketch.Config
 import nosketch.components.{NSTile, VisibleHexagon}
 import nosketch.hud.DebugHUD
 import nosketch.util.io.ImageUrls
@@ -48,7 +49,7 @@ class NSSprite(
 
   var v = new Vector3(2, 3 ,9)
 
-  scale.set(9,9,9)
+  scale.set(2,2,2)
 
   var highlight = new Color(222, 168, 228)
 
@@ -95,7 +96,7 @@ class NSSprite(
     active = true
     visible = true
     position.add(new Vector3(x, y, z))
-    heightOffset = 5
+    heightOffset = Config.Sprite.heightOffset
     container.add(this)
     board.setEntityOnTile(this, tile)
   }

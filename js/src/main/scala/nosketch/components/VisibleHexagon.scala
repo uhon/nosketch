@@ -3,7 +3,9 @@ package nosketch.components
 import java.time.LocalDate
 import java.util.Date
 
-import nosketch.{HexConstants, Viewer3D}
+import nosketch.Config.Hex
+import nosketch.animation.IdleAnimation
+import nosketch.Viewer3D
 import org.scalajs.dom.console
 import nosketch.hud.DebugHUD
 import org.denigma.threejs.{Object3D, Vector3}
@@ -23,7 +25,13 @@ import scala.util.Random
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
 @ScalaJSDefined
-abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = 0d) extends Cell(q, r, s, h) {
+abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = 0d)
+  extends Cell(q, r, s, h)
+{
+  def animate(): Unit = {
+    // We do nothing here (can be overwritten by children
+  }
+
   DebugHUD.cellCreations.increment
   val created = new Date()
 
@@ -36,7 +44,7 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
   def getTile: Option[NSTile] = {
     tile match {
       case t:NSTile => Option(t)
-      case null => console.log("no tile present"); Option.empty // If its null, or not a NSTile, we just give an empty Option
+      case null => Option.empty // If its null, or not a NSTile, we just give an empty Option
       case t:js.Any => console.log("weird, there should only be NSTiles present", t); Option.empty // If its null, or not a NSTile, we just give an empty Option
       case _ => console.log("weird, something else caught"); Option.empty // If its null, or not a NSTile, we just give an empty Option
     }
@@ -55,7 +63,7 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
 
     for (i <- 0 to 5) {
       neighbours(i) match {
-        case x: VisibleHexagon => x.neighbours(HexConstants.sideMappings(i)) = PhantomHexagon
+        case x: VisibleHexagon => x.neighbours(Hex.sideMappings(i)) = PhantomHexagon
         case PhantomHexagon =>
       }
     }
@@ -90,7 +98,7 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
           neighbours(i) = hexTuple._1
           hexTuple match {
             case (v: VisibleHexagon, r:Boolean) =>
-              v.neighbours(HexConstants.sideMappings(i)) = this
+              v.neighbours(Hex.sideMappings(i)) = this
               // TODO:
               // val leftNeighbour = i -1  <== tell the new hexagon the two relevant neighbours
               if(r) {
@@ -100,7 +108,7 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
           }
         }
         case x: VisibleHexagon  => {
-          x.neighbours(HexConstants.sideMappings(i)) = this
+          x.neighbours(Hex.sideMappings(i)) = this
           /*console.log("Neighbour " + i + " is a visible Hexagon")*/
         }
       }

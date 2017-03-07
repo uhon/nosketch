@@ -1,5 +1,6 @@
 package nosketch.controls.camera
 
+import nosketch.Config
 import nosketch.hud.DebugHUD
 import org.denigma.threejs.{Camera, Matrix4, OrthographicCamera, PerspectiveCamera, Vector3}
 import org.scalajs.dom._
