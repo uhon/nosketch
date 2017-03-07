@@ -143,7 +143,49 @@ lazy val nosketchWebworker = (project in file("webworker"))
       ProvidedJS / "bundle.js"
       //    "org.webjars" % "three.js" % "r77" / "three.js"
     ),
-    scalaJSOutputWrapper := ("", "nosketch.worker.WorkerMain().main();"),
+    scalaJSOutputWrapper := ("", s"""canBeCloned = function(val, pathAggregator) {
+                                     var pa = (typeof pathAggregator === 'undefined') ? '' : pathAggregator;
+                                        //if (Object(val) !== val) // Primitive value return true;
+                                            switch ({}.toString.call(val).slice(8, -1)) {
+                                                // Class
+                                                case 'Boolean':
+                                                case 'Number':
+                                                case 'String':
+                                                case 'Date':
+                                                case 'RegExp':
+                                                case 'Blob':
+                                                case 'FileList':
+                                                case 'ImageData':
+                                                case 'ImageBitmap':
+                                                case 'ArrayBuffer':
+                                                    return true;
+                                                case 'Array':
+                                                case 'Object':
+                                                    return Object.keys(val).every(prop => canBeCloned(val[prop], pa + "." + prop));
+                                                case 'Map':
+                                                    return [...val.keys()].every(canBeCloned) && [...val.values()].every(canBeCloned);
+                                                case 'Set':
+                                                    return [...val.keys()].every(canBeCloned);
+                                                default:
+                                                    console.warn("this can not be serialized", pathAggregator)
+                                                    return false;
+                                            }
+                                        //}
+                                    };
+
+                                    deleteFunction = function(obj, key) {
+                                      obj[key] = undefined;
+                                    };
+
+
+                                    nosketch.worker.WorkerMain().main();
+      """),
+      
+
+
+
+
+
     // Scala-Js Workbench (Live-Reload and such things)
     persistLauncher in Compile := true
     //    bootSnippet := "nosketch.Viewer3D().reset();",

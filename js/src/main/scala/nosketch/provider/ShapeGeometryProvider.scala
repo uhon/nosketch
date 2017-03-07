@@ -5,6 +5,7 @@ import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.TextIndicator
 import nosketch.util.io.ImageUrls
 import org.denigma.threejs.Geometry
+import org.denigma.threejs.Mesh
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Worker
 import org.scalajs.dom.svg.SVG
@@ -22,13 +23,13 @@ import scala.scalajs.js.timers._
 @JSExport("sp")
 object ShapeGeometryProvider {
   @JSExport
-  val shapeRequests = new mutable.Queue[(ImageHexagon, (Geometry) => Unit)]
+  val shapeRequests = new mutable.Queue[(ImageHexagon, (Mesh) => Unit)]
 
   @JSExport
-  val geometries = new mutable.Queue[(String, Geometry)]
+  val meshes = new mutable.Queue[(String, Mesh)]
 
   DebugHUD.addElement(new TextIndicator("# shape requests", () => shapeRequests.size))
-  DebugHUD.addElement(new TextIndicator("# queued gemoetries ", () => geometries.size))
+  DebugHUD.addElement(new TextIndicator("# queued meshes ", () => meshes.size))
 
   var  svgGeometryWorkers: js.Array[Worker] = js.Array()
 
@@ -49,14 +50,14 @@ object ShapeGeometryProvider {
 //          if(r.data.isInstanceOf[String]) {
 
 //          }
-          val geoTuple = r.data.asInstanceOf[js.Tuple2[String, Geometry]]
+          console.log("received message from worker")
+          val mesh = r.data.asInstanceOf[Mesh]
           //          println(s"Received Geometry, applying it")
 //                    console.info("loaded geometry vertices", JSON.stringify(geoTuple._2.vertices))
 
-          val newGeo = new Geometry()
-          newGeo.vertices = geoTuple._2.vertices
-          newGeo.faces = geoTuple._2.faces
-          geometries.enqueue((geoTuple._1, newGeo))
+          console.log("it is now a mesh", mesh)
+
+          meshes.enqueue((mesh.userData.asInstanceOf[String], mesh))
         }
         case x: Any => {
           console.log(x)
@@ -81,18 +82,18 @@ object ShapeGeometryProvider {
 
 
 
-  def gimmeShape(imageHexagon: ImageHexagon, callback: (Geometry) => Unit) = {
+  def gimmeShape(imageHexagon: ImageHexagon, callback: (Mesh) => Unit) = {
     shapeRequests.enqueue((imageHexagon, callback))
   }
 
   def serveRequesters: Unit = {
-    if(shapeRequests.nonEmpty && geometries.nonEmpty) {
+    if(shapeRequests.nonEmpty && meshes.nonEmpty) {
       val request = shapeRequests.dequeue()
       if(request._1.disposed) {
         // This request is outdated, take the next
 //        serveRequesters
       } else {
-        request._2.apply(geometries.dequeue()._2)
+        request._2.apply(meshes.dequeue()._2)
       }
       // Without setTimeout all requesters get served at once which blocks main thread and all sketches appear
       // simultanously (after a period).

@@ -9,6 +9,8 @@ import nosketch.util.io.ImageUrls
 import nosketch.{GridConstants, Viewer3D}
 import nosketch.util.loading.NSTextureLoader
 import nosketch.util.NSTools
+import nosketch.worker.SvgGeometryWorker
+import nosketch.worker.materialSettings.{side, transparent, uniforms}
 import org.denigma.threejs._
 import org.denigma.threejs.THREE
 import org.scalajs.dom._
@@ -176,25 +178,41 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
 
 
 
-    def producer(geometry: Geometry) = {
-      // our shader material
-      val material = new ShaderMaterial(materialSettings)
+    def producer(mesh: Mesh) = {
 
-      val mesh = new Mesh(geometry, material)
+//      mesh.parent = this.group
 
-      mesh.position.set(tile.position.x, tile.position.y + 2, tile.position.z)
-//      console.log("creating mesh at", tile.position.x, tile.position.y + 2, tile.position.z)
-      mesh.rotation.y = Math.PI
-      //    mesh.rotation.z = Math.PI / 2
-      mesh.rotation.x = -Math.PI / 2
-      mesh.scale.set(5, 5, 5)
-      //    mesh.rotation.x = - Math.PI
-      //    console.log("mesh", mesh)
+      val newMesh = createNewMesh(mesh)
+      // Geometry doesn't really work as it comes from webworker.
+      // Create new to see if at least Meshes (as received) work
+      mesh.geometry = newMesh.geometry
+//
+//      console.log("received mesh in ImageHexagon", mesh)
+//      console.log("newly created mesh", newMesh)
+
+//      group.add(newMesh)
+//      Viewer3D.board.group.add(mesh)
       colorize()
       group.add(mesh)
-//      console.log("added mesh")
+      //      console.log("added mesh")
       Viewer3D.requestViewUpdate
     }
+  }
+
+  def createNewMesh(mesh: Mesh) = {
+    val newGeometry = new Geometry()
+    newGeometry.vertices = mesh.geometry.vertices
+    newGeometry.faces = mesh.geometry.faces
+    //      console.log("creating mesh at", tile.position.x, tile.position.y + 2, tile.position.z)
+    val newMesh = new Mesh(newGeometry, new ShaderMaterial(materialSettings))
+
+    newMesh.position.set(tile.position.x, tile.position.y + 2, tile.position.z)
+    //      console.log("creating newMesh at", tile.position.x, tile.position.y + 2, tile.position.z)
+    newMesh.rotation.y = Math.PI
+    //    newMesh.rotation.z = Math.PI / 2
+    newMesh.rotation.x = -Math.PI / 2
+    newMesh.scale.set(5, 5, 5)
+    newMesh
   }
 
   override def destroy: Unit = {
@@ -204,11 +222,13 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
     // TODO: implement destroy (everything clean?)
   }
 
-}
 
+
+
+}
 object materialSettings extends ShaderMaterialParameters {
-  val color = 0xffffff
-  
+
+
   side = THREE.DoubleSide
   //      vertexShader: vertShader,
   //      fragmentShader: fragShader,
@@ -219,10 +239,10 @@ object materialSettings extends ShaderMaterialParameters {
     "scale" -> l("type" -> "f", "value" -> 1 ),
     "animate" -> l("type" -> "f", "value" -> 1 )
   )
-
-  val defaultAttributeValues = l(
-    "color" -> js.Array(1, 1, 1),
-    "uv" -> js.Array(0, 0),
-    "uv2" -> js.Array(0, 0)
-  )
+  //
+  //  val defaultAttributeValues = l(
+  //    "color" -> js.Array(1, 1, 1),
+  //    "uv" -> js.Array(0, 0),
+  //    "uv2" -> js.Array(0, 0)
+  //  )
 }
