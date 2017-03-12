@@ -88,10 +88,15 @@ class NSTile(board: NSBoard, config: TileConfig) extends Tile(config) {
   }
   
   override def toggle() = {
-    material match {
-      case m:MeshPhongMaterial => {
-        m.color= new Color(0, 0xff, 0)
+    mesh.material match {
+      case m:MeshFaceMaterial => {
+        m.materials(0) match {
+          case face: MeshPhongMaterial =>
+            face.color = new Color(0, 0xff, 0)
+            face.needsUpdate = true
+        }
       }
+      case _ =>
     }
     super.toggle()
   }

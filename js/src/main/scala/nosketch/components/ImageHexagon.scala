@@ -10,12 +10,10 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import nosketch.provider.{MeshProvider, ShapeTextureProvider}
 import nosketch.util.io.ImageUrls
-import nosketch.{Config, Viewer3D, animation}
-import nosketch.Config.Grid
+import nosketch.{Config, ShapeSpecies, Viewer3D}
 import nosketch.util.loading.NSTextureLoader
 import nosketch.util.NSTools
 import nosketch.worker.SvgGeometryWorker
-import nosketch.worker.materialSettings.{side, transparent, uniforms}
 import org.denigma.threejs.THREE
 import org.scalajs.dom._
 
@@ -47,23 +45,24 @@ import scala.scalajs.js.{Any, Dictionary, Function2, UndefOr}
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
 @ScalaJSDefined
-class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Grid.tileInitialHeight)
-  extends VisibleHexagon(grid, q, r, s, h)
+class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Config.Grid.tileInitialHeight)
+extends VisibleHexagon(grid, q, r, s, h)
 {
-
   var animationEnabled = false
+  var animationMethod: nosketch.animation.Animation = nosketch.animation.IdleAnimation
 
-
-  def this(grid: NSGrid) = this(grid, 0, 0, 0, Grid.tileInitialHeight)
-
+  def this(grid: NSGrid) = this(grid, 0, 0, 0, Config.Grid.tileInitialHeight)
   val group = new Object3D
   Viewer3D.board.group.add(group)
 
+  var shape: Option[Mesh] = None
 
-  def renderSvg(svg: SVG, delay: Double = 0d) = {
+  def renderSvg(svg: SVG, delay: Double = 0d): Unit = {
     console.log("render SVG")
-
   }
+
+
+
 
   def applyTexture(tex: Texture): Unit = {
 //    console.log("tex", tex)
@@ -84,11 +83,8 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
 
   }
 
-
-
-
   // TODO: Deserves a better Name and misses Comments
-  def colorize(tex: Option[Texture] = None) = {
+  def colorize(tex: Option[Texture] = None): Unit = {
 
     getTile.foreach((t) => {
       val color = NSTools.randomizeRGBDouble(30, 50, 120, 53)
@@ -122,7 +118,7 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
 
       val materials = js.Array[Material]()
       materials.push(fm)
-      (1 to t.mesh.geometry.faces.length).foreach((i) => materials.push(sideMaterial))
+      (1 to t.mesh.geometry.faces.length).foreach((_) => materials.push(sideMaterial))
 
       val meshFaceMaterial = new MeshFaceMaterial(materials)
 
@@ -132,7 +128,6 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
       //        t.mesh.scale.set(GridConstants.tileScaleFactor, GridConstants.tileScaleFactor, GridConstants.tileScaleFactor)
       //        t.mesh.rotation.set(Math.PI/2,0,0)
       //        t.mesh.position.set(t.position.x, t.position.y, t.position.z)
-      t.mesh.material = meshFaceMaterial
 
       //        meshContainer.remove(oldMesh)
       //        meshContainer.add(t.mesh)
@@ -157,33 +152,44 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
     })
   }
 
+
+
   def draw: NSTile = {
+    import ShapeSpecies._
+    Config.Environment.shapeSpecies match {
+      case GEO => requestShapeAsMesh()
+      case TEX => requestShapeAsTexture()
+    }
 
-// Uncomment this to load textures from png images
-//    NSTextureLoader.load(ImageUrls.randomPngShape, (tex: Texture) => {
-//      if (!disposed) {
-//        grid.generateNSTile(this, GridConstants.tileScaleFactor)
-//        group.add(getTile.get.sprites)
-//        Viewer3D.board.addTile(tile)
-//        applyTexture(tex)
-//      }
-//    })
+    getTile.get
+  }
 
-// Uncomment this to load Textures via Webworkers
-//    ShapeTextureProvider.gimmeShape(this, (tex: Texture) => {
-//        if (!disposed) {
-//          grid.generateNSTile(this, GridConstants.tileScaleFactor)
-//          group.add(getTile.get.sprites)
-//          Viewer3D.board.addTile(tile)
-//          applyTexture(tex)
-//          Viewer3D.requestViewUpdate
-//        }
-//      })
-//
+  private def requestShapeAsTexture() = {
+    if(Config.Environment.useWorker) {
+      ShapeTextureProvider.gimmeShape(this, (tex: Texture) => {
+        if (!disposed) {
+          grid.generateNSTile(this, Config.Grid.tileScaleFactor)
+          group.add(getTile.get.sprites)
+          Viewer3D.board.addTile(tile)
+          applyTexture(tex)
+          Viewer3D.requestViewUpdate
+        }
+      })
+    } else {
+      NSTextureLoader.load(ImageUrls.randomPngShape, (tex: Texture) => {
+        if (!disposed) {
+          grid.generateNSTile(this, Config.Grid.tileScaleFactor)
+          group.add(getTile.get.sprites)
+          Viewer3D.board.addTile(tile)
+          applyTexture(tex)
+        }
+      })
+    }
+  }
 
-// Uncomment this to load geometrys from svg-data via Webworkers
+  private def requestShapeAsMesh() = {
     if (!disposed) {
-      grid.generateNSTile(this, Grid.tileScaleFactor)
+      grid.generateNSTile(this, Config.Grid.tileScaleFactor)
       group.add(getTile.get.sprites)
       tile.material.transparent = true
       tile.material.opacity = 0
@@ -191,79 +197,40 @@ class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Gr
 
       MeshProvider.gimmeShape(this, producer)
     }
+  }
 
-
-
-
-
-    def producer(mesh: Mesh) = {
-
-//      mesh.parent = this.group
+  private def producer(mesh: Mesh) = {
+    if (! disposed) {
 
       //val newMesh = ImageHexagon.createNewMesh(mesh)
+      shape = Some(mesh)
       mesh.position.set(tile.position.x, tile.position.y + Config.Hex.geoHeight, tile.position.z)
 
       colorize()
 
       group.add(mesh)
 
+      animationMethod = Config.AnimationConstants.create(this)
       animationEnabled = true
-
-
-      //      console.log("added mesh")
-      //Viewer3D.requestViewUpdate
     }
-
-    getTile.get
   }
 
-
-
   override def destroy: Unit = {
-    group.children.foreach(group.remove(_))
+    group.children.foreach(group.remove)
     Viewer3D.board.group.remove(group)
     super.destroy
     // TODO: implement destroy (everything clean?)
   }
-
-
-  var animationMethod: animation.Animation = IdleAnimation
-  override def animate() = {
+  override def animate(): Unit = {
     if(animationEnabled) {
-      if (animationMethod == IdleAnimation) animationMethod = Config.AnimationConstants.create(this)
-
       DebugHUD.animationCycles.increment
       animationEnabled = animationMethod.animationLoop
 //      Viewer3D.requestSceneUpdate
       // FIXME: request scene update should be enough!
+      // Probably not, since assign-neighbours finds hexagons by pixel coordinates, hex might not be there
+      // if this happens, so maybe a new one is created. do research on extra hexagons crated (which might overlap another)?
       Viewer3D.requestViewUpdate
 
     }
   }
-
-
-
-
 }
-object materialSettings extends ShaderMaterialParameters {
-
-
-  side = THREE.DoubleSide
-  //      vertexShader: vertShader,
-  //      fragmentShader: fragShader,
-  transparent = true
-  //      attributes: attributes,
-  uniforms = l(
-    "opacity" -> l("type" -> "f", "value" -> 1 ),
-    "scale" -> l("type" -> "f", "value" -> 1 ),
-    "animate" -> l("type" -> "f", "value" -> 1 )
-  )
-  //
-  //  val defaultAttributeValues = l(
-  //    "color" -> js.Array(1, 1, 1),
-  //    "uv" -> js.Array(0, 0),
-  //    "uv2" -> js.Array(0, 0)
-  //  )
-}
-
-

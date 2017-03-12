@@ -35,7 +35,7 @@ object Config {
       o.enableDamping = true
       o.dampingFactor = 0.1
       o.enableMomentum = true
-      o.keyPanSpeed = 10
+      o.keyPanSpeed = 30
       o.enableRotate = true
       o.enableZoom = true
       o.zoomSpeed = 2
@@ -70,7 +70,7 @@ object Config {
 //    def create(hex: VisibleHexagon) = IdleAnimation
 //
     object EaseIn {
-      var height: Double = 80
+      var height: Double = 27
       var duration: FiniteDuration = 0.7 seconds
     }
 
@@ -81,13 +81,13 @@ object Config {
 
   object Caching {
     var interval: FiniteDuration = 5 milliseconds
-    var minNumMeshes: Int = 500
+    var minNumMeshes: Int = 800
     var minNumRequests: Int = 8
   }
 
   object World {
-    var distanceClipping = 250
-    var fogDepth = 40
+    var distanceClipping = 400
+    var fogDepth = 30
     var intersectionSphereRadius: Double = 10
 
   }
@@ -95,6 +95,16 @@ object Config {
   object Sprite {
     var heightOffset = 2
   }
+
+  object Environment {
+    var useWorker = true
+    var shapeSpecies = ShapeSpecies.GEO
+  }
+}
+
+object ShapeSpecies extends Enumeration {
+  type ShapeSpecies = Value
+  val GEO, TEX = Value
 }
 
 

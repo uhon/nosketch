@@ -17,6 +17,7 @@ import vongrid.{AbstractCell, Cell, Tile}
 
 import scala.scalajs.js.timers._
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.scalajs.js
 import scala.scalajs.js.annotation.ScalaJSDefined
 import scala.util.Random
@@ -80,12 +81,13 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
    * @return
    */
   def assignNeighbours: Any = {
-    //console.log("====== assignNeighbours")
-    // We assume this Hexagon is Visible
-    val order = Stream.continually(Random.nextInt(5)).distinct.take(5)
+//    val order = Stream.continually(Random.nextInt(5)).distinct.take(5)
+    val order = 0 to 5
+    val placesToGrow: ListBuffer[VisibleHexagon] = ListBuffer()
     for(i <- order  ) {
       //console.log("=== checking neighbour " + i)
       neighbours(i) match {
+        case x: VisibleHexagon =>
         case PhantomHexagon => {
           val neighbourCenter = PhantomHexagon.calculateCellAtCenter(this, grid.getDirection(i))
 //          console.log("Neighbour is a Phantom  with center", neighbourCenter)
@@ -93,25 +95,53 @@ abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: 
           // TODO: calc position of new hex by adding directions-cell
           val hexTuple = Viewer3D.findOrCreateHexagon(grid.cellToPixel(neighbourCenter))
 
-//          console.log("hexTUPLE", hexTuple.toString())
-
           neighbours(i) = hexTuple._1
           hexTuple match {
-            case (v: VisibleHexagon, r:Boolean) =>
-              v.neighbours(Hex.sideMappings(i)) = this
-              // TODO:
-              // val leftNeighbour = i -1  <== tell the new hexagon the two relevant neighbours
-              if(r) {
-                v.assignNeighbours
+            case (v: VisibleHexagon, justCreated:Boolean) =>
+              if(justCreated) {
+                v.neighbours(Hex.sideMappings(i)) = this
+                placesToGrow += v
+//                distributeNeighbourKnowledge(this, v, i)
+//                v.assignNeighbours
               }
             case _ =>
           }
         }
-        case x: VisibleHexagon  => {
-          x.neighbours(Hex.sideMappings(i)) = this
-          /*console.log("Neighbour " + i + " is a visible Hexagon")*/
-        }
       }
     }
+
+//    util.Random.shuffle(placesToGrow)foreach(_.assignNeighbours)
+    placesToGrow.foreach(_.assignNeighbours)
   }
+
+  def distributeNeighbourKnowledge(origHex: VisibleHexagon, newHex: VisibleHexagon, origHexSide: Int) = {
+
+
+    val origLeftNeighbour = origHex.neighbours(sideLeftOf(origHexSide))
+    val origRightNeighbour = origHex.neighbours(sideRightOf(origHexSide))
+
+    val newHexSide = Hex.sideMappings(origHexSide)
+
+    val newHexSideLeft = sideLeftOf(newHexSide)
+    val newHexSideRight = sideRightOf(newHexSide)
+
+    val leftNeihbourSide = sideLeftOf(Hex.sideMappings(sideLeftOf(origHexSide)))
+    val rightNeihbourSide = sideRightOf(Hex.sideMappings(sideRightOf(origHexSide)))
+
+//    console.log(s"""side: $origHexSide, newSide: $newHexSide, newHexLeft: $newHexSideLeft, newHexRight: $newHexSideRight, leftNeighbourSide: $leftNeihbourSide, rightNeighbourSide: $rightNeihbourSide""")
+
+
+    origLeftNeighbour match {
+      case v: VisibleHexagon => v.neighbours(leftNeihbourSide) = newHex; newHex.neighbours(newHexSideRight) = v
+      case _ =>
+    }
+
+    origRightNeighbour match {
+      case v: VisibleHexagon => v.neighbours(rightNeihbourSide) = newHex; newHex.neighbours(newHexSideLeft) = v
+      case _ =>
+    }
+  }
+
+  def sideLeftOf(side: Int) = if(side +1 > 5) 0 else side +1
+  def sideRightOf(side: Int) = if(side -1 < 0) 5 else side -1
 }

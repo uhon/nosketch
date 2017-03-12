@@ -20,15 +20,18 @@ import scala.scalajs.js.annotation.JSExport
     { (event: MessageEvent) =>
       val url = event.data.asInstanceOf[String]
 
-      urlQueue.enqueue(url)
-
-//      println(s"svgWorker received url\n${url}")
-
-      if (!loadingSVGs) processUrlQueue()
+      urlRequest(url)
     }
   }
 
-  def processUrlQueue(): Unit = {
+
+  def urlRequest(url: String, callback: (js.Tuple2[String, Geometry]) => Unit = g.postMessage(_)) = {
+    urlQueue.enqueue(url)
+    if (!loadingSVGs) processUrlQueue(callback)
+  }
+
+
+  def processUrlQueue(requesterFunc: (js.Tuple2[String, Geometry]) => Unit): Unit = {
 //    g.console.log("process queue in worker")
     val svgLoadStart = System.currentTimeMillis()
     loadingSVGs = true
@@ -36,18 +39,15 @@ import scala.scalajs.js.annotation.JSExport
     def callbackLoad(err: js.Any, svg: UndefOr[org.scalajs.dom.svg.SVG] = js.undefined): Unit = {
       if (svg.isDefined) {
 
-        //        println("svg load took:" + (svgLoadStart - System.currentTimeMillis()))
-
         val geo = createGeometry(svg.get)
         val geoTuple = js.Tuple2(url, geo)
 
-        g.postMessage(geoTuple)
-//        g.console.log("message posted!!!!")
+        requesterFunc(geoTuple)
       } else {
-        println("ERROR " + err)
-        g.postMessage(js.Tuple2(url, new Geometry()))
+//        println("ERROR " + err)
+        requesterFunc(js.Tuple2(url, new Geometry()))
       }
-      if(urlQueue.nonEmpty) processUrlQueue()
+      if(urlQueue.nonEmpty) processUrlQueue(requesterFunc)
 
       loadingSVGs = false
     }
@@ -61,12 +61,9 @@ import scala.scalajs.js.annotation.JSExport
   }
 
   def createGeometry(svg: SVG) = {
-//    println("do the math......")
-    // grab all <path> data
 
     val svgParseStart = System.currentTimeMillis()
     val svgPath = Bundle.parsePath(svg)
-//    println("svgParse took: " + (svgParseStart - System.currentTimeMillis()))
 
     val mesh3dStart = System.currentTimeMillis()
     // triangulate
@@ -76,24 +73,12 @@ import scala.scalajs.js.annotation.JSExport
         "scale" -> 1,
         "simplify" -> 5,
         "delaunay" -> false
+//      "scale" -> 20,
+//      "simplify" -> 0,
+//      "delaunay" -> false
 
       )
     )
     Bundle.createGeom(complex)
   }
-}
-
-object materialSettings extends ShaderMaterialParameters {
-
-
-  side = THREE.DoubleSide
-  //      vertexShader: vertShader,
-  //      fragmentShader: fragShader,
-  transparent = true
-  //      attributes: attributes,
-  uniforms = l(
-    "opacity" -> l("type" -> "f", "value" -> 1 ),
-    "scale" -> l("type" -> "f", "value" -> 1 ),
-    "animate" -> l("type" -> "f", "value" -> 1 )
-  )
 }

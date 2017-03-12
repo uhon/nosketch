@@ -33,7 +33,7 @@ object ShapeTextureProvider {
 
   var  svgTextureWorkers: js.Array[Worker] = js.Array()
 
-  def init = {
+  def init() = {
     (0 to 2).foreach((i) => {
       val worker = new Worker("/assets/nosketchwebworker-fastopt.js")
       instrumentWorker(worker)

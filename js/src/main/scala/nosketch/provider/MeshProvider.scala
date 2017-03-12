@@ -1,5 +1,6 @@
 package nosketch.provider
 
+import java.util.NoSuchElementException
 import javax.swing.plaf.nimbus.ImageScalingHelper
 
 import nosketch.{Config, Viewer3D}
@@ -7,6 +8,7 @@ import nosketch.components.ImageHexagon
 import nosketch.hud.DebugHUD
 import nosketch.hud.elements.debug.TextIndicator
 import nosketch.util.io.ImageUrls
+import nosketch.worker.SvgGeometryWorker
 import org.denigma.threejs.{Geometry, Mesh, MeshPhongMaterial, MeshPhongMaterialParameters}
 import org.scalajs.dom._
 import org.scalajs.dom.raw.Worker
@@ -38,6 +40,7 @@ object MeshProvider {
 
   private var servingEnabled = false
 
+
   DebugHUD.addElement(new TextIndicator("# shape requests", () => shapeRequests.size))
   DebugHUD.addElement(new TextIndicator("# worker requests", () => workerRequests.size))
   DebugHUD.addElement(new TextIndicator("# queued meshes ", () => meshes.size))
@@ -45,12 +48,14 @@ object MeshProvider {
   var  svgGeometryWorkers: js.Array[Worker] = js.Array()
 
   def init = {
-    (0 to 4).foreach((i) => {
-      val worker = new Worker("/assets/nosketchwebworker-fastopt.js")
-      instrumentWorker(worker)
-      svgGeometryWorkers.push(worker)
+    if(Config.Environment.useWorker) {
+      (0 to 4).foreach((i) => {
+        val worker = new Worker("/assets/nosketchwebworker-fastopt.js")
+        instrumentWorker(worker)
+        svgGeometryWorkers.push(worker)
 
-    })
+      })
+    }
   }
 
   def isServingEnabled = servingEnabled
@@ -66,15 +71,7 @@ object MeshProvider {
           r.data match {
             case a: Any => {
               val geoTuple = a.asInstanceOf[js.Tuple2[String, Geometry]]
-              // TODO: Not sure if it is the right place to create the mesh, since it puts pressure onto main-thread
-              if(geoTuple._2.vertices.length > 0) {
-                val newMesh = createMesh(geoTuple._2)
-                //Viewer3D.board.group.add(newMesh)
-
-                val newTuple = (geoTuple._1, newMesh)
-                meshes.enqueue(newTuple)
-              }
-              workerRequests -= geoTuple._1
+              digestResponseTuple(geoTuple)
             }
 
           }
@@ -84,8 +81,36 @@ object MeshProvider {
         }
       }
     }
-//    worker.postMessage("nosketch.worker.svg.SvgGeometryWorker().run()")
-    worker.postMessage("nosketch.worker.SvgGeometryWorker().run()")
+
+    if(Config.Environment.useWorker) {
+      worker.postMessage("nosketch.worker.SvgGeometryWorker().run()")
+    } else {
+
+    }
+  }
+
+  def digestResponseTuple(geoTuple: js.Tuple2[String, Geometry]) = {
+    // TODO: Not sure if it is the right place to create the mesh, since it puts pressure onto main-thread
+    if(geoTuple._2.vertices.length > 0) {
+      val newMesh = createMesh(geoTuple._2)
+      //Viewer3D.board.group.add(newMesh)
+
+      val newTuple = (geoTuple._1, newMesh)
+      try {
+        val request =  shapeRequests.dequeue()
+//        setTimeout(Math.random * 5 milliseconds) {
+          if(! request._1.disposed) {
+            request._2(newMesh)
+          } else {
+            meshes.enqueue(newTuple)
+          }
+//        }
+      } catch {
+        case e:NoSuchElementException =>
+          meshes.enqueue(newTuple)
+      }
+    }
+    workerRequests -= geoTuple._1
   }
 
 
@@ -94,8 +119,12 @@ object MeshProvider {
   def addOneToSvgQueue(url: String): Unit = {
     workerRequests += url
     // Round Robin would make more sense (probably)
-    val currentWorker = numberOfAdds % svgGeometryWorkers.length
-    svgGeometryWorkers(currentWorker).postMessage(url)
+    if(Config.Environment.useWorker) {
+      val currentWorker = numberOfAdds % svgGeometryWorkers.length
+      svgGeometryWorkers(currentWorker).postMessage(url)
+    } else {
+      SvgGeometryWorker.urlRequest(url, digestResponseTuple)
+    }
     numberOfAdds += 1
   }
 
@@ -123,51 +152,39 @@ object MeshProvider {
 
   }
 
-  def gimmeShape(imageHexagon: ImageHexagon, callback: (Mesh) => Unit) = {
-//    setTimeout(Math.random() * 2) {
-      if (meshes.nonEmpty) {
-
-        callback(meshes.dequeue()._2)
-      } else {
-        shapeRequests enqueue ((imageHexagon, callback))
+  def gimmeShape(imageHexagon: ImageHexagon, callback: (Mesh) => Unit): Unit = {
+      try {
+        val mesh = meshes.dequeue()._2
+        callback(mesh)
+      } catch {
+        case e: NoSuchElementException => shapeRequests enqueue ((imageHexagon, callback))
       }
-//    }
   }
 
   def serveRequesters: Unit = {
     if(servingEnabled)
 
       if(shapeRequests.nonEmpty && meshes.nonEmpty) {
-        val request = shapeRequests.dequeue()
-//        setTimeout(1 milliseconds) {
-//            serveRequesters
-//        }
-        if (request._1.disposed) {
-          // This request is outdated, take the next
-          serveRequesters
-        } else {
-          request._2.apply(meshes.dequeue()._2)
+        try {
+          val request = shapeRequests.dequeue()
+          if (!request._1.disposed) request._2.apply(meshes.dequeue()._2)
+        } catch {
+          case e:NoSuchElementException => serveRequesters
         }
-//        serveRequesters
-      } else {
-//        setTimeout(10 milliseconds) {
-//          serveRequesters
-//        }
       }
-
     }
 
 
   def startCaching(): Unit = {
     if(Config.Caching.minNumMeshes > meshes.size )
       if(Config.Caching.minNumRequests > workerRequests.size)
-        0.to(Config.Caching.minNumRequests  - workerRequests.size).foreach(_ => addOneToSvgQueue(ImageUrls.randomSvgShape))
+        0.to(Config.Caching.minNumRequests  - workerRequests.size)
+          .foreach(_ => addOneToSvgQueue(ImageUrls.randomSvgShape))
 
     setTimeout(Config.Caching.interval) {
       startCaching()
     }
   }
-
 }
 
 

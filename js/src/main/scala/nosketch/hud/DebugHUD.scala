@@ -65,7 +65,7 @@ object DebugHUD {
   // Default indicators
   val meshCreation = new SimpleIndicator("Δ mesh creation")
   val animationCycles = new IncrementalIndicator("# anim. cycles")
-  val viewUpdates = new IncrementalIndicator("# view updates")
+  val viewUpdates = new IncrementalIndicator("# world updates")
   val sceneUpdates = new IncrementalIndicator("# scene updates")
   val tileCreations = new IncrementalIndicator("# created tiles")
   val tileDisposes = new IncrementalIndicator("# disposed tiles")

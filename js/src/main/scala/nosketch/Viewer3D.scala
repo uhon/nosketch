@@ -1,6 +1,7 @@
 package nosketch
 
 import java.awt.event.MouseWheelEvent
+import java.time.LocalDate
 
 import components._
 import nosketch.Config.{Camera, Grid, Scene}
@@ -173,8 +174,8 @@ object Viewer3D extends JSApp with ViewportSubscriber {
       scene.controls = new NSOrbitControls(scene.camera, scene.renderer.domElement.asInstanceOf[HTMLElement])
       Config.OrbitControls.apply(scene.controls.asInstanceOf[NSOrbitControls])
       scene.controls.addEventListener("change", (a: js.Any) => requestViewUpdate)
-      scene.controls.addEventListener("start", (a: js.Any) => requestViewUpdate)
-      scene.controls.addEventListener("end", (a: js.Any) => requestViewUpdate)
+//      scene.controls.addEventListener("start", (a: js.Any) => requestViewUpdate)
+//      scene.controls.addEventListener("end", (a: js.Any) => requestViewUpdate)
 
       scene.controlled = false
     }
@@ -276,8 +277,8 @@ object Viewer3D extends JSApp with ViewportSubscriber {
   def initMouseEvents: Unit = {
     mouse.signal.add((evt: String, tile: js.Object) => {
       if (evt == MC.OVER) {
-        showControls(evt, tile)
-        requestSceneUpdate
+//        showControls(evt, tile)
+//        requestSceneUpdate
       }
 
       if (evt == MC.OUT) {
@@ -302,7 +303,10 @@ object Viewer3D extends JSApp with ViewportSubscriber {
             //            console.log("cell:", cell)
             //            console.log("neighbours", cell.asInstanceOf[VisibleHexagon].neighbours)
             cell.asInstanceOf[VisibleHexagon].neighbours.zipWithIndex.foreach {
-              case (c: VisibleHexagon, i: Int) => setTimeout(i*100) { board.getTileAtCell(c).toOption.get.toggle() }
+              case (c: VisibleHexagon, i: Int) => setTimeout(i*100) {
+                board.getTileAtCell(c).toOption.get.toggle()
+                requestSceneUpdate
+              }
             }
 
           }
@@ -318,25 +322,22 @@ object Viewer3D extends JSApp with ViewportSubscriber {
   def update {
     numberOfupdates += 1
     stats.begin()
-    mouse.update
+    mouse.update()
+    if(numberOfupdates % 5 == 0) {
+      DebugHUD.cameraPosition.setValue(scene.camera.position)
+      DebugHUD.cameraRotation.setValue(scene.camera.rotation)
+      DebugHUD.update
+    }
 
-    DebugHUD.cameraPosition.setValue(scene.camera.position)
-    DebugHUD.cameraRotation.setValue(scene.camera.rotation)
-
-    DebugHUD.update
     scene.controls.update.apply()
-
 
     MeshProvider.enableServing
 
-
-
-
     MeshProvider.serveRequesters
+
     grid.getVisibleCells.foreach((t: Tuple2[String,VisibleHexagon]) => {
       t._2.animate
     })
-
 
 
     if(sceneUpdateRequested) {
@@ -509,8 +510,12 @@ object Viewer3D extends JSApp with ViewportSubscriber {
   var viewUpdateInProgress = false
   var sceneUpdateRequested = false
 
-  def requestViewUpdate: Unit = {
-    viewUpdateRequested = true
+  var lastViewUpdate = System.currentTimeMillis()
+  def requestViewUpdate: Unit = {                    // FIXME: Add to config
+    if(System.currentTimeMillis() - lastViewUpdate > 30) {
+      viewUpdateRequested = true
+      lastViewUpdate = System.currentTimeMillis()
+    }
   }
 
   def requestSceneUpdate: Unit = {
@@ -518,20 +523,11 @@ object Viewer3D extends JSApp with ViewportSubscriber {
   }
 
   override def onZoom = {
-
-    if (viewPort != null) {
-      //DebugHUD.redraw(viewPort)
       requestViewUpdate
-    }
   }
 
   override def onScale = {
-    if (viewPort != null) {
-      //DebugHUD.redraw(viewPort)
-      //this.clusterList.foreach(_.redraw(viewPort.scaleFactor))
       requestViewUpdate
-
-    }
   }
 
 }
