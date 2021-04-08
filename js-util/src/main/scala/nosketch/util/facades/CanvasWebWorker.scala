@@ -4,14 +4,14 @@ import org.scalajs.dom.{ImageData, Transferable}
 import org.scalajs.dom.html.{Canvas, Image}
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSName
+import scala.scalajs.js.annotation.{JSName, JSGlobal}
 import scala.scalajs.js.typedarray.Uint8ClampedArray
 
 /**
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
 @js.native
-@JSName("canvasWebWorker")
+@JSGlobal("canvasWebWorker")
 trait CanvasWebWorker extends js.Object {
   def Canvas: js.Dynamic = js.native
   def Image: js.Dynamic = js.native
