@@ -65,8 +65,8 @@ object Config {
   }
 
   object AnimationConstants {
-//    def create(hex: VisibleHexagon) = new SinusYWobbler(hex)
-    def create(hex: VisibleHexagon) = new EaseIn(hex)
+    def create(hex: VisibleHexagon) = new SinusYWobbler(hex)
+//    def create(hex: VisibleHexagon) = new EaseIn(hex)
 //    def create(hex: VisibleHexagon) = IdleAnimation
 //
     object EaseIn {
