@@ -12,9 +12,9 @@ import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.Dynamic.{global => g, literal => l}
 import scala.scalajs.js.{JSON, UndefOr}
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
-@JSExport object SvgTextureWorker {
+@JSExportTopLevel("SvgTextureWorker") object SvgTextureWorker {
   val urlQueue = new mutable.Queue[String]
 
   var loadingSVGs = false

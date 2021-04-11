@@ -5,6 +5,7 @@ import Keys._
 import play.sbt._
 import Play.autoImport._
 import PlayKeys._
+import org.scalajs.linker.interface.StandardConfig
 
 name := """nosketch"""
 
@@ -38,7 +39,7 @@ lazy val nosketch = crossProject(JSPlatform, JVMPlatform).
 //                               """.trim.stripMargin,
     testFrameworks          += new TestFramework("utest.runner.Framework"),
     libraryDependencies    ++= Seq(
-      "org.scalaz"                %%  "scalaz-core" % "7.1.0",
+//      "org.scalaz"                %%  "scalaz-core" % "7.1.0",
       "org.scala-js"              %%% "scalajs-dom" % "1.1.0",
       "com.lihaoyi"               %%% "utest"       % "0.3.0" % "test",
       "com.github.japgolly.nyaya" %%% "nyaya-test"  % "0.5.3" % "test"
@@ -51,6 +52,10 @@ lazy val nosketch = crossProject(JSPlatform, JVMPlatform).
 lazy val nosketchJVM = (project in file("jvm")).settings(
   scalaVersion := scalaV,
   scalaJSProjects := clients,
+  pipelineStages in Assets := Seq(scalaJSPipeline),
+  pipelineStages := Seq(digest, gzip),
+  // triggers scalaJSPipeline when using compile or continuous compilation
+  compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
 //  pipelineStages in Assets := Seq(scalaJSPipeline),
 //  pipelineStages := Seq(scalaJSProd, gzip),
   // triggers scalaJSPipeline when using compile or continuous compilation
@@ -61,7 +66,8 @@ lazy val nosketchJVM = (project in file("jvm")).settings(
     "com.vmunier" %% "scalajs-scripts" % "1.1.4",
     "org.webjars" % "bootstrap" % "3.3.5",
     "org.webjars" % "font-awesome" % "4.4.0",
-    filters
+    filters,
+    guice
   )
 ).enablePlugins(PlayScala, SbtWeb)
   .aggregate(clients.map(projectToRef): _*)
@@ -97,7 +103,7 @@ lazy val nosketchJS = (project in file("js"))
 //  .settings(workbenchSettings: _*)
   .settings(
   scalaVersion := scalaV,
-//  persistLauncher := true,
+
 //  refreshBrowsers := refreshBrowsers.triggeredBy(fastOptJS in Compile),
 //  persistLauncher in Test := false,
   resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"),
@@ -108,17 +114,22 @@ lazy val nosketchJS = (project in file("js"))
     "org.querki" %%% "jquery-facade" % "2.0", //scalajs facade for jQuery + jQuery extensions
 //    "com.lihaoyi" %%% "scalarx" % "0.2.8",
 //    "org.denigma" %%% "threejs-facade" % "0.0.74-0.1.6",
-    "org.querki" %%% "querki-jsext" % "0.10",
-//    "com.lihaoyi" %%% "scalatags" % "0.6.0"
+    "org.querki" %%% "querki-jsext" % "0.10"
   ),
   jsDependencies ++= Seq(
 //    RuntimeDOM,
     "org.webjars" % "jquery" % "2.2.1" / "jquery.js",
-    "org.webjars" % "bootstrap" % "3.3.5" / "bootstrap.js"
-//    ProvidedJS / "bundle.js"
+    "org.webjars" % "bootstrap" % "3.3.5" / "bootstrap.js",
+    ProvidedJS / "bundle.js"
 //    "org.webjars" % "three.js" % "r77" / "three.js"
   ),
-  // Scala-Js Workbench (Live-Reload and such things)
+  scalacOptions ++= Seq(
+    "-language:postfixOps"
+  ),
+//  mainClass := Some("nosketch.Viewer3D"),
+  scalaJSUseMainModuleInitializer := true
+
+    // Scala-Js Workbench (Live-Reload and such things)
 //  persistLauncher in Compile := true,
 //  bootSnippet := "nosketch.Viewer3D().reset();",
 //  localUrl := ("127.0.0.1", 12345),
@@ -138,13 +149,14 @@ lazy val nosketchWebworker = (project in file("webworker"))
     resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
     libraryDependencies ++= Seq(
 //      "org.scala-js" %%% "scalajs-tools" % "1.0.0-M2",
-      "org.querki" %%% "querki-jsext" % "0.10"
+//      "org.querki" %%% "querki-jsext" % "0.10"
     ),
     jsDependencies ++= Seq(
       //      RuntimeDOM,
       ProvidedJS / "bundle.js"
       //    "org.webjars" % "three.js" % "r77" / "three.js"
-    )
+    ),
+    scalaJSUseMainModuleInitializer := true
 //    scalaJSOutputWrapper := ("", s"""canBeCloned = function(val, pathAggregator) {
 //                                     var pa = (typeof pathAggregator === 'undefined') ? '' : pathAggregator;
 //                                        //if (Object(val) !== val) // Primitive value return true;
@@ -295,13 +307,11 @@ updateOptions := updateOptions.value.withCachedResolution(true)
 //
 //scalaJSStage in Global := FastOptStage
 
-
 //persistLauncher in Compile := false
 
 //persistLauncher in Test := false
 
 skip in packageJSDependencies := false
-
 
 // loads the Play project at sbt startup
 onLoad in Global := (Command.process("project nosketchJVM", _: State)) compose (onLoad in Global).value

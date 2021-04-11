@@ -9,9 +9,10 @@ import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.Dynamic.{global => g, literal => l}
 import scala.scalajs.js.{Dictionary, UndefOr}
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
-@JSExport object SvgGeometryWorker {
+@JSExportTopLevel("SvgGeometryWorker")
+object SvgGeometryWorker {
   val urlQueue = new mutable.Queue[String]
 
   var loadingSVGs = false

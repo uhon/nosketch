@@ -7,7 +7,7 @@ import org.scalajs.dom._
 import org.scalajs.dom.raw.HTMLElement
 import vongrid.controls._
 
-import scala.scalajs.js.annotation.{JSName, ScalaJSDefined}
+import scala.scalajs.js.annotation.{JSName}
 
 
 object NsTouchControls extends TouchControls {
@@ -24,7 +24,6 @@ object NsMouseControls extends MouseControls {
 /**
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
-@ScalaJSDefined
 class NSOrbitControls(camera: Camera, element: HTMLElement) extends OrbitControlsPort(camera, element, NsMouseControls, NsTouchControls) {
 
 }

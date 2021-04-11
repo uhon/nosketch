@@ -6,6 +6,7 @@ import nosketch.components.VisibleHexagon
 import scala.concurrent.duration._
 import org.denigma.threejs.Vector3
 import nosketch.controls.camera._
+import vongrid.Cell
 
 object Config {
   object Hex {
@@ -19,10 +20,84 @@ object Config {
     val tileScaleFactor = 0.95d
     val tileInitialHeight = 2
     val fogColor = 0x000000
+    val funkyText = Seq(
+      new Cell(0, 2, -2),
+      new Cell( 1, 1, -2),
+      new Cell( 1, 0, -1),
+      new Cell( 0, 0, 0),
+      new Cell( -1, 2, -1),
+      new Cell( 3, -2, -1),
+      new Cell( 4, -4, 0),
+      new Cell( 5, -4, -1),
+      new Cell( -4, 4, 0),
+      new Cell( -3, 4, -1),
+      new Cell( -2, 4, -2),
+      new Cell( -6, 6, 0),
+      new Cell( -5, 6, -1),
+      new Cell( -4, 6, -2),
+      new Cell( -7, 6, 1),
+      new Cell( -7, 8, -1),
+      new Cell( -6, 8, -2),
+      new Cell( -8, 8, 0),
+      new Cell( -7, 9, -2),
+      new Cell( -8, 10, -2),
+      new Cell( -9, 10, -1),
+      new Cell( -10, 10, 0),
+      new Cell( -5, 5, 0),
+      new Cell( -8, 6, 2),
+      new Cell( -9, 8, 1),
+      new Cell( -11, 10, 1),
+      new Cell( 8, -6, -2),
+      new Cell( 2, 6, -8),
+      new Cell( -1, 5, -4),
+      new Cell( -5, 10, -5),
+      new Cell( 6, 1, -7),
+      new Cell( -2, 2, 0),
+      new Cell( -1, 0, 1),
+      new Cell( -2, 1, 1),
+      new Cell( 2, -2, 0),
+      new Cell( 1, -2, 1),
+      new Cell( 2, -3, 1),
+      new Cell( 3, -4, 1),
+      new Cell( 6, -4, -2),
+      new Cell( 4, -2, -2),
+      new Cell( 22, -18, -4),
+      new Cell( -2, 7, -5),
+      new Cell( -1, 7, -6),
+      new Cell( 0, 7, -7),
+      new Cell( 1, 7, -8),
+      new Cell( -2, 6, -4),
+      new Cell( 0, 6, -6),
+      new Cell( 0, 5, -5),
+      new Cell( 2, 5, -7),
+      new Cell( 2, 3, -5),
+      new Cell( 3, 3, -6),
+      new Cell( 4, 3, -7),
+      new Cell( 5, 3, -8),
+      new Cell( 6, 2, -8),
+      new Cell( 2, 2, -4),
+      new Cell( 3, 1, -4),
+      new Cell( 5, -1, -4),
+      new Cell( 6, -1, -5),
+      new Cell( 7, -1, -6),
+      new Cell( 8, -1, -7),
+      new Cell( 9, -1, -8),
+      new Cell( 8, -2, -6),
+      new Cell( 9, -3, -6),
+      new Cell( 10, -3, -7),
+      new Cell( 11, -3, -8),
+      new Cell( -4, 10, -6),
+      new Cell( -3, 10, -7),
+      new Cell( -2, 10, -8),
+      new Cell( -6, 11, -5),
+      new Cell( -5, 9, -4),
+      new Cell( -6, 10, -4)
+    )
+
   }
 
   object Camera {
-    val initialCameraPos: Vector3 = new Vector3(0, 100, 100)
+    val initialCameraPos: Vector3 = new Vector3(26.93727178563309, 468.1783929249074, 95.01345055746958)
   }
 
   object Scene {
@@ -38,8 +113,8 @@ object Config {
       o.keyPanSpeed = 30
       o.enableRotate = true
       o.enableZoom = true
-      o.zoomSpeed = 2
-      o.maxAzimuthAngle = 40 // TODO: find out why!
+      o.zoomSpeed = 1
+      o.maxAzimuthAngle = Double.MaxValue // TODO: find out why!
 
       //        o.autoRotate = true
       //        o.autoRotateSpeed = 20
@@ -75,7 +150,7 @@ object Config {
     }
 
     object SinusYWobbler {
-      var height: Double = 2
+      var height: Double = 1.5
     }
   }
 
@@ -86,9 +161,9 @@ object Config {
   }
 
   object World {
-    var distanceClipping = 400
-    var fogDepth = 30
-    var intersectionSphereRadius: Double = 10
+    var distanceClipping = 600
+    var fogDepth = 50
+    var intersectionSphereRadius: Double = 20
 
   }
 

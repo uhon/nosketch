@@ -3,18 +3,18 @@
   "version": "0.0.1",
   "description": "helper to fetch dependencies via npm (run $ sbt bundle)",
   "dependencies": {
-    "svg-mesh-3d": "1.1.0",
     "bound-points": "^1.0.0",
+    "canvas-webworker": "0.0.2",
     "cdt2d": "^1.0.0",
     "clean-pslg": "^1.1.0",
+    "jsdom": "7.0.0",
     "normalize-path-scale": "^2.0.0",
     "object-assign": "^4.0.1",
     "parse-svg-path": "^0.1.1",
     "random-float": "^1.0.0",
     "simplify-path": "^1.1.0",
-    "svg-path-contours": "^2.0.0",
-    "jsdom": "7.0.0",
-    "canvas-webworker": "0.0.2"
+    "svg-mesh-3d": "1.1.0",
+    "svg-path-contours": "^2.0.0"
   },
   "devDependencies": {
     "array-shuffle": "^1.0.0",

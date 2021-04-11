@@ -9,14 +9,12 @@ import paperjs.Typography.PointText
 
 import scala.scalajs.js
 import scala.scalajs.js.Math
-import scalatags.Text.TypedTag
 import nosketch.components.ZoomAwareObject
 import paperjs.Basic.Point
 import paperjs.Items.{Item, Layer}
 import vongrid.utils.Tools
 import org.querki.jquery._
 
-import scalatags.Text.all._
 import org.scalajs.dom._
 
 /**
@@ -24,8 +22,8 @@ import org.scalajs.dom._
  */
 class TextIndicator(override val key: String, contentProducer: () => js.Any) extends DebugHUDElement {
 
-  override def render: TypedTag[String] = {
-    setValue(contentProducer())
+  override def render = {
+    contentProducer() +
     super.render
   }
 

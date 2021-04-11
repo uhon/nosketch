@@ -14,8 +14,8 @@ import vongrid.rendering.BoardSprite
 import vongrid.utils.Tools
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.ScalaJSDefined
-import scala.scalajs.js.annotation.ScalaJSDefined
+
+
 import scala.scalajs.js.Dynamic.{literal => l}
 
 
@@ -28,7 +28,6 @@ object Materials {
 /**
   * Created by uhon on 27/03/16.
   */
-@ScalaJSDefined
 /*
 	Wraps three.sprite to take care of boilerplate and add data for the board to use.
  */

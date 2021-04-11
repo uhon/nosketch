@@ -11,7 +11,6 @@ import scala.scalajs.js.typedarray.Uint8ClampedArray
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
 @js.native
-@JSGlobal("canvasWebWorker")
 trait CanvasWebWorker extends js.Object {
   def Canvas: js.Dynamic = js.native
   def Image: js.Dynamic = js.native

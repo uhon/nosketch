@@ -19,13 +19,12 @@ import scala.scalajs.js.timers._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.scalajs.js
-import scala.scalajs.js.annotation.ScalaJSDefined
+
 import scala.util.Random
 
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-@ScalaJSDefined
 abstract class VisibleHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = 0d)
   extends Cell(q, r, s, h)
 {

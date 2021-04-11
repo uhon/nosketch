@@ -2,19 +2,20 @@
 
 @script = {
     <script type="text/javascript">
-//        document.onreadystatechange = function () {
-//            if (document.readyState == "complete") {
-//                // Get a re ference to the canvas object
-//                // var canvas = document.getElementById('canvas');
-//                // Call the scalajs app entry point
-//                nosketch.Viewer3D.main();
-//            }
-//        };
+       document.onreadystatechange = function () {
+           if (document.readyState == "complete") {
+               // Get a re ference to the canvas object
+               // var canvas = document.getElementById('canvas');
+               // Call the scalajs app entry point
+               Viewer3D.main();
+               // WorkerMain.main();
+           }
+       };
     </script>
 }
 
 @main(title, script) {
-    <p><a href="@routes.App.draw()">you might want to start drawing...</a></p>
+    <p><a href="@routes.App.draw">you might want to start drawing...</a></p>
 
     <div id="magicContainer">
 

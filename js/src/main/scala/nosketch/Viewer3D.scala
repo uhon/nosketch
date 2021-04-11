@@ -2,7 +2,6 @@ package nosketch
 
 import java.awt.event.MouseWheelEvent
 import java.time.LocalDate
-
 import components._
 import nosketch.Config.{Camera, Grid, Scene}
 import nosketch.controls.camera.NSOrbitControls
@@ -28,8 +27,8 @@ import paperjs.Basic.Point
 import paperjs.{Paper, PaperScope}
 
 import scala.scalajs.js
-import scala.scalajs.js.{Any, JSApp, JSON}
-import scala.scalajs.js.annotation.{JSExport, JSName}
+import scala.scalajs.js.{Any, JSON}
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel, JSName}
 import org.scalajs.dom._
 import org.querki.jquery._
 import vongrid._
@@ -48,9 +47,8 @@ import scala.util.Random
 
 
 
-@JSExport
-@JSName("nosketch.Viewer3D")
-object Viewer3D extends JSApp with ViewportSubscriber {
+@JSExportTopLevel("Viewer3D")
+object Viewer3D extends ViewportSubscriber {
 
   var viewPort: ViewPort = null
   var grid: NSGrid = null
@@ -71,16 +69,13 @@ object Viewer3D extends JSApp with ViewportSubscriber {
    * Main Entry-Point when not triggered by Script-Tag in Html-Head
    */
   @JSExport
-  def main() = {
-    // TODO: Enable again if run without workbench
+  def main(args: Array[String]): Unit = {
     $("document").ready(() => startViewer(document.getElementById("magicContainer")) )
-//    reset
   }
 
   var resetInProgress = false
 
   @JSExport
-  @JSName("reset")
   def reset() = {
     if(resetInProgress) {
       console.log("reset avoided its in progress")
@@ -300,7 +295,7 @@ object Viewer3D extends JSApp with ViewportSubscriber {
           if (t.isDefined) {
             //t.get.toggle()
 
-            //            console.log("cell:", cell)
+                        console.log("cell:", cell)
             //            console.log("neighbours", cell.asInstanceOf[VisibleHexagon].neighbours)
             cell.asInstanceOf[VisibleHexagon].neighbours.zipWithIndex.foreach {
               case (c: VisibleHexagon, i: Int) => setTimeout(i*100) {

@@ -1,6 +1,5 @@
 package nosketch.components
 
-import javafx.scene.image.PixelFormat
 
 import nosketch.animation.{EaseIn, IdleAnimation, SinusYWobbler}
 import nosketch.hud.DebugHUD
@@ -27,7 +26,7 @@ import org.denigma.threejs.Color
 import scala.scalajs.js
 import scala.scalajs.js.Dynamic.{literal, _}
 import scala.scalajs.js.timers._
-import scala.scalajs.js.annotation.ScalaJSDefined
+
 import scala.scalajs.js.timers._
 import js.Dynamic.{global => g}
 import js.Dynamic.{literal => l}
@@ -44,7 +43,6 @@ import scala.scalajs.js.{Any, Dictionary, Function2, UndefOr}
 /**
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
-@ScalaJSDefined
 class ImageHexagon(grid: NSGrid, q: Double, r: Double, s: Double, h: Double = Config.Grid.tileInitialHeight)
 extends VisibleHexagon(grid, q, r, s, h)
 {
@@ -61,6 +59,9 @@ extends VisibleHexagon(grid, q, r, s, h)
     console.log("render SVG")
   }
 
+  val isFunkyTile = Config.Grid.funkyText exists { c =>
+    q == c.q && r == c.r && s == c.s
+  }
 
 
 
@@ -87,26 +88,48 @@ extends VisibleHexagon(grid, q, r, s, h)
   def colorize(tex: Option[Texture] = None): Unit = {
 
     getTile.foreach((t) => {
-      val color = NSTools.randomizeRGBDouble(30, 50, 120, 53)
+      val color = if (isFunkyTile) {
+        NSTools.randomizeRGBDouble(30, 50, 120, 53)
+      } else {
+        NSTools.randomizeRGBDouble(20, 20, 20, 20)
+      }
 
       //      console.log("color", color)
 
       val sideMatParams = l().asInstanceOf[MeshPhongMaterialParameters]
 //      sideMatParams.color = color
       // Make it a Rainbow
-      sideMatParams.color = Math.random() * 0xffffff
-      sideMatParams.shininess = 0xFFFFFF
+      sideMatParams.color = if (isFunkyTile) {
+        Math.random() * 0xffffff
+      } else {
+        0x222222
+      }
+
+      sideMatParams.shininess = if (isFunkyTile) {
+        Math.random() * 0xffffff
+      } else {
+        Math.random() * 0x222222
+      }
 
       val sideMaterial = new MeshPhongMaterial(sideMatParams)
 
       val fmp = l().asInstanceOf[MeshPhongMaterialParameters]
       fmp.color = color // color drawing
+      fmp.emissiveIntensity = if (isFunkyTile) {
+        100
+      } else {
+        10
+      }
 
       if(tex.isDefined) {
         //      fmP.emissive = 0x336699
         //      fmP.ambient = 0x000000
         fmp.refractionRatio = 1000
-        fmp.shininess = 100
+        fmp.shininess = if (isFunkyTile) {
+          Math.random() * 0xffffff
+        } else {
+          Math.random() * 0x222222
+        }
         fmp.transparent = false
         fmp.emissive = 0xff0000
         tex.foreach(fmp.emissiveMap = _)
@@ -210,7 +233,7 @@ extends VisibleHexagon(grid, q, r, s, h)
 
       group.add(mesh)
 
-      animationMethod = Config.AnimationConstants.create(this)
+      animationMethod = if (!isFunkyTile) Config.AnimationConstants.create(this) else new EaseIn(this)
       animationEnabled = true
     }
   }
@@ -222,6 +245,7 @@ extends VisibleHexagon(grid, q, r, s, h)
     // TODO: implement destroy (everything clean?)
   }
   override def animate(): Unit = {
+
     if(animationEnabled) {
       DebugHUD.animationCycles.increment
       animationEnabled = animationMethod.animationLoop

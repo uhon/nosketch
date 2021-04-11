@@ -15,12 +15,12 @@ import org.scalajs.dom.svg.SVG
 import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.{JSON, JavaScriptException, UndefOr}
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 /**
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
-@JSExport("stp")
+@JSExportTopLevel("stp")
 object ShapeTextureProvider {
   @JSExport
   val shapeRequests = new mutable.Queue[(ImageHexagon, (Texture) => Unit)]

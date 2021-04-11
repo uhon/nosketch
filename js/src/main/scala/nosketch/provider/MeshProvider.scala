@@ -2,7 +2,6 @@ package nosketch.provider
 
 import java.util.NoSuchElementException
 import javax.swing.plaf.nimbus.ImageScalingHelper
-
 import nosketch.{Config, Viewer3D}
 import nosketch.components.ImageHexagon
 import nosketch.hud.DebugHUD
@@ -18,14 +17,15 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.scalajs.js
 import scala.scalajs.js.JSON
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scala.concurrent.duration._
 import scala.scalajs.js.timers._
+import js.Dynamic.{literal => l}
 
 /**
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
-@JSExport("mp")
+@JSExportTopLevel("mp")
 object MeshProvider {
   @JSExport
   val shapeRequests = new mutable.Queue[(ImageHexagon, (Mesh) => Unit)]
@@ -83,7 +83,7 @@ object MeshProvider {
     }
 
     if(Config.Environment.useWorker) {
-      worker.postMessage("nosketch.worker.SvgGeometryWorker().run()")
+      worker.postMessage("SvgGeometryWorker.run()")
     } else {
 
     }
@@ -136,6 +136,7 @@ object MeshProvider {
     newGeometry.faces = geo.faces
 
     //    val material = new ShaderMaterial(materialSettings)
+    val meshPhongMaterialSettings = l(color = 0xFFFFFF).asInstanceOf[MeshPhongMaterialParameters]
     val material = new MeshPhongMaterial(meshPhongMaterialSettings)
 
     //      console.log("creating mesh at", tile.position.x, tile.position.y + 2, tile.position.z)
@@ -187,7 +188,3 @@ object MeshProvider {
   }
 }
 
-
-object meshPhongMaterialSettings extends MeshPhongMaterialParameters {
-  color = 0xFFFFFF
-}

@@ -10,7 +10,6 @@ import paperjs.Items.{Group, Item, Layer, Shape}
 import paperjs.Items.Shape.Rectangle
 import paperjs.Styling.Color
 import org.querki.jquery.{JQueryEventObject, _}
-import scalatags.Text.all._
 import scala.scalajs.js
 import scala.scalajs.js.Object
 import scala.scalajs.js
@@ -118,17 +117,17 @@ object DebugHUD {
   def render = {
     $("#debugHUD").remove()
 //    $("#magicContainer").append(
-    $("body").append(
-      div(id := "debugHUD",
-        div(`class` := "row",
-          div(`class` := "col-xs-12 toggler",
-            i(`class` := "fa fa-bar-chart")
-          ),
-          div(`class` := "col-xs-12 stats", css("display") := "none",
-            elements.map(_.render)
-          )
+    $("body").append(s"""
+      <div id="debugHUD">
+        <div class"row">
+          <div class"col-xs-12 toggler">
+            <i class="fa fa-bar-chart"/>
+          </div>
+          <div class"col-xs-12 stats" style="display: none;">
+            ${elements.map(_.render)}
+          </div>
         )
-      ).toString()
+      )"""
     )
 
     $("#debugHUD .toggler").on("click", toggle _)

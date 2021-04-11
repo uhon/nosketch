@@ -10,13 +10,12 @@ import vongrid.config.{AStarFinderConfig, HexGridConfig}
 
 import scala.scalajs.js
 import scala.scalajs.js.UndefOr
-import scala.scalajs.js.annotation.ScalaJSDefined
+
 import scala.scalajs.js.timers._
 
 /**
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
-@ScalaJSDefined
 class NSBoard(grid: NSGrid, finderConfig: js.UndefOr[AStarFinderConfig] = js.undefined) extends Board(grid, finderConfig) {
     grid.board = this
   // TODO: Fade in Tiles (crappy implementation!)

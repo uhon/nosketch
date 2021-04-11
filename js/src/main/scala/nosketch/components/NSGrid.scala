@@ -11,19 +11,19 @@ import org.scalajs.dom._
 import vongrid.utils.Tools
 
 import scala.scalajs.js.Dynamic.literal
-import scala.scalajs.js.annotation.{JSExport, ScalaJSDefined}
+import scala.scalajs.js.annotation.JSExport
 import js.Dynamic.{literal => l}
-import scala.scalajs.js.UndefOr
+import scala.scalajs.js.{UndefOr, undefined}
+
 /**
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
 
-@ScalaJSDefined
 class NSGrid(config: HexGridConfig) extends HexGrid(config) {
   // Is set by Board once it is created
   var board:NSBoard = null
 
-  val _directions = js.Array[Cell](
+  override val _directions = js.Array[Cell](
 
     new Cell(+1d, 0d, -1d),
     new Cell(0d, +1d, -1d),
@@ -62,7 +62,7 @@ class NSGrid(config: HexGridConfig) extends HexGrid(config) {
     if (height < 1) height = 1
 
     var geo = _geoCache(height)
-    if (UndefOr.any2undefOrA(geo).isEmpty) {
+    if (js.isUndefined(geo)) {
       ExtrudeSettings.amount(height)
       geo = new ExtrudeGeometry(this.cellShape, this.extrudeSettings);
       this._geoCache(height) = geo

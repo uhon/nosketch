@@ -5,29 +5,30 @@ import org.scalajs.dom.MessageEvent
 import org.scalajs.dom.webworkers.WorkerGlobalScope
 
 import scala.scalajs.js
-import scala.scalajs.js.JSApp
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scalajs.js.Dynamic.{global => g}
 import org.scalajs.dom.console
+
+import scala.scalajs.js.isUndefined
 
 /**
   * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
   */
-object WorkerMain extends JSApp {
+@JSExportTopLevel("WorkerMain")
+object WorkerMain {
   var delegate: Option[MessageEvent => Unit] = None
 
   @JSExport
-  def main(): Unit = {
+  def main(args: Array[String]): Unit = {
 
-    g.window = g.self
+//    g.window = g.self
 //
-    g.importScripts("/assets/js/three.js", "/assets/nosketchwebworker-jsdeps.js")
+    g.importScripts("/assets/js/three.js", "/assets/js/bundle.js", "/assets/nosketchwebworker-jsdeps.js")
 
-    var jsdom = Bundle.jsdom()
-    var jsdomWindow = jsdom.defaultView
 
-    g.document = jsdomWindow.document
-    g.Image = Bundle.canvasWebWorker.Image
+    if (!isUndefined(Bundle.canvasWebWorker.Image)) {
+      g.Image = Bundle.canvasWebWorker.Image
+    }
 //    g.Canvas = Bundle.canvasWebWorker.Canvas
 
 

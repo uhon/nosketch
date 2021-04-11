@@ -105,7 +105,7 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
         playground.onZoom
 
       }
-      case None => Unit
+      case None => ()
     }
   }
 
@@ -127,7 +127,7 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
           playground.onZoom
         }
       }
-      case None => Unit
+      case None => ()
     }
   }
 
@@ -164,7 +164,7 @@ class ViewPort(canvas: Canvas, playground: ViewportSubscriber, squared: Boolean 
 
           playground.onZoom
         }
-        case None => Unit
+        case None => ()
       }
     }
   }

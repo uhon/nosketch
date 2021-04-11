@@ -6,7 +6,7 @@ import org.denigma.threejs.Vector3
 import nosketch.controls.camera._
 
 import scala.concurrent.duration.FiniteDuration
-import scala.scalajs.js.annotation.ScalaJSDefined
+
 
 
 class SinusYWobbler(hex: VisibleHexagon) extends Animation {

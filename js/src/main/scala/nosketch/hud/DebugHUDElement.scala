@@ -11,7 +11,6 @@ import org.scalajs.dom.svg.Matrix
 
 import scala.annotation.tailrec
 import scala.scalajs.js
-import scalatags.Text.all._
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
@@ -26,16 +25,17 @@ trait DebugHUDElement {
   private val uid = NSTools.generateID()
 
 
-  def render = {
-    div (id := uid, `class` := "row indicator") (
-      div (`class` := "container col-xs-12") (
-        div (`class` := "row") (
-          div (`class` := "key col-xs-7") (key),
-          div (`class` := "value col-xs-5") (value)
-        )
-      )
-    )
-}
+  def render = s"""
+        <div id="$uid" class="row indicator">
+            <div class="container col-xs-12">
+                <div class="row">
+                    <div class="key col-xs-7"/>
+                    <div class="value col-xs-5"/>
+                </div>
+            </div>
+        </div>
+    """
+
 
   def setValue(newValue: String): Unit = {
     value = newValue

@@ -12,17 +12,17 @@ import vongrid.config.TileConfig
 import vongrid.utils.Tools
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.ScalaJSDefined
 import scala.scalajs.js.timers._
 import scala.concurrent.duration._
 import js.Dynamic.{global => g}
 import js.Dynamic.{literal => l}
 import org.scalajs.dom._
 
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel, JSGlobal, JSImport}
+
 /**
  * @author Urs Honegger &lt;u.honegger@insign.ch&gt;
  */
-@ScalaJSDefined
 class NSTile(board: NSBoard, config: TileConfig) extends Tile(config) {
   DebugHUD.tileCreations.increment
   val sprites: Object3D = new Object3D
@@ -102,14 +102,13 @@ class NSTile(board: NSBoard, config: TileConfig) extends Tile(config) {
   }
 }
 
+
 object NSTileMaterialFactory {
+  val defaultMeshPhongParams = l(color = NSTools.randomizeRGBDouble(10, 30, 90, 0)).asInstanceOf[MeshPhongMaterialParameters]
+
   def default = {
     new MeshPhongMaterial(defaultMeshPhongParams)
   }
-}
-
-object defaultMeshPhongParams extends MeshPhongMaterialParameters {
-  color = NSTools.randomizeRGBDouble(10, 30, 90, 0)
 }
 
 

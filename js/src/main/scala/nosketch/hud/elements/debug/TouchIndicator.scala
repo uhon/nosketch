@@ -1,6 +1,5 @@
 package nosketch.hud.elements.debug
 
-import javafx.scene.input.TouchEvent
 
 import nosketch.hud.DebugHUDElement
 import nosketch.io.{TouchEventDistributor, TouchEventListener, MouseEventDistributor, MouseEventListener}

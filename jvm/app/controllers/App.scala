@@ -3,11 +3,11 @@ package controllers
 import nosketch.shared.SharedMessages
 import play.api.mvc.Results.Ok
 import play.mvc.Controller
-import play.mvc.Action
-import play.api._
-import play.api.mvc._
+import play.api.mvc.{AbstractController, Action, BaseController, ControllerComponents}
 
-class App extends Controller {
+import javax.inject.Inject
+
+class App  @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
 
   def index = Action { request =>
     Ok(views.html.index(SharedMessages.itWorks))
